@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Календарь</title>
+</head>
+<body>
+    <h1>Календарь врачей</h1>
+    {% for doctor in doctors %}
+        <p>{{ doctor.name }}</p>
+    {% endfor %}
+    <hr>
+    {% for event in events %}
+        <p>{{ event.title }} — {{ event.date }}</p>
+    {% endfor %}
+</body>
+</html>
