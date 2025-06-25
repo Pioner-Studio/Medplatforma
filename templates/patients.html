@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Пациенты{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px;">
+    <h1 style="font-size: 2.2rem; font-weight: 700; margin: 0;">Список пациентов</h1>
+    <button onclick="window.location.href='/add_patient'" style="background:#445be2; color:#fff; border:none; border-radius:10px; padding:10px 26px; font-weight:600; font-size:1.1rem; cursor:pointer;">+ Добавить пациента</button>
+</div>
+<div style="margin-bottom: 22px;">
+    <input id="searchInput" type="text" placeholder="Поиск по имени, телефону, e-mail..." style="width:340px; padding:9px 18px; border-radius:10px; border:1px solid #ccd; font-size:1.08rem;">
+</div>
+<table id="patientsTable" style="width:100%; background:#fff; border-radius:22px; box-shadow:0 2px 12px rgba(20,40,80,.07);">
+    <thead style="background:#f2f6ff;">
+        <tr style="font-size:1.09rem;">
+            <th style="padding:14px 0; border-radius:22px 0 0 0;">Аватар</th>
+            <th>ФИО</th>
+            <th>Телефон</th>
+            <th>E-mail</th>
+            <th>Дата рождения</th>
+            <th>Долг</th>
+            <th style="border-radius:0 22px 0 0;">Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for patient in patients %}
+        <tr style="border-bottom:1px solid #f0f0f0;">
+            <td style="text-align:center;">
+                <img src="{{ patient.avatar_url }}" alt="avatar" style="width:52px; height:52px; border-radius:50%; object-fit:cover; box-shadow:0 2px 8px rgba(20,40,80,.07);">
+            </td>
+            <td style="font-weight:600;">
+                <a href="/patient/{{ patient._id }}" style="color:#2236a7; text-decoration:none;">{{ patient.full_name }}</a>
+            </td>
+            <td>{{ patient.phone }}</td>
+            <td>{{ patient.email }}</td>
+            <td>{{ patient.dob }}</td>
+            <td style="color:{% if patient.debt > 0 %}#d91f3c{% else %}#222{% endif %}; font-weight:600;">
+                {{ patient.debt if patient.debt else '—' }}
+            </td>
+            <td>
+                <a href="/patient/{{ patient._id }}" style="color:#445be2; font-weight:600;">Подробнее</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="7" style="text-align:center; color:#aaa; padding:30px;">Пациентов нет</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script>
+    // Быстрый поиск по таблице
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let value = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#patientsTable tbody tr');
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(value) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

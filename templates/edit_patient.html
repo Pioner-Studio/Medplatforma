@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Редактировать пациента{% endblock %}
+{% block content %}
+<div style="max-width:440px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:38px 42px;">
+    <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:28px;">Редактировать данные пациента</h2>
+    <form method="POST">
+        <label style="font-weight:600; margin-bottom:5px;">ФИО</label>
+        <input name="full_name" type="text" required value="{{ patient.full_name }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
+        <label style="font-weight:600; margin-bottom:5px;">Дата рождения</label>
+        <input name="dob" type="date" value="{{ patient.dob }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
+        <label style="font-weight:600; margin-bottom:5px;">E-mail</label>
+        <input name="email" type="email" value="{{ patient.email }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
+        <label style="font-weight:600; margin-bottom:5px;">Телефон</label>
+        <input name="phone" type="text" value="{{ patient.phone }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
+        <label style="font-weight:600; margin-bottom:5px;">Ссылка на аватар</label>
+        <input name="avatar_url" type="text" value="{{ patient.avatar_url }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
+        <label style="font-weight:600; margin-bottom:5px;">Примечания</label>
+        <textarea name="notes" rows="2" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:22px;">{{ patient.notes }}</textarea>
+        <button type="submit" style="background:#445be2; color:#fff; border:none; border-radius:10px; padding:12px 28px; font-weight:700; font-size:1.07rem; cursor:pointer;">Сохранить</button>
+    </form>
+</div>
+{% endblock %}

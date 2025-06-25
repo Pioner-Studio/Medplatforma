@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить пациента</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #f7f8fa;}
+        .form-card { width: 400px; margin: 40px auto; background: #fff; border-radius: 22px; box-shadow: 0 6px 32px rgba(20,40,80,.08); padding: 32px;}
+        .form-label { font-size: 1rem; font-weight: 600; margin-bottom: 4px; display: block;}
+        .form-input { width: 100%; border: 1px solid #ccd; border-radius: 8px; padding: 8px; margin-bottom: 14px; font-size: 1rem;}
+        .submit-btn { background: #445be2; color: #fff; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; cursor: pointer; transition: background 0.2s;}
+        .submit-btn:hover { background: #2236a7;}
+    </style>
+</head>
+<body>
+    <form class="form-card" method="POST">
+        <label class="form-label">ФИО</label>
+        <input class="form-input" type="text" name="full_name" required>
+        <label class="form-label">Дата рождения</label>
+        <input class="form-input" type="date" name="dob">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" type="email" name="email">
+        <label class="form-label">Телефон</label>
+        <input class="form-input" type="text" name="phone">
+        <label class="form-label">Ссылка на аватар (необязательно)</label>
+        <input class="form-input" type="text" name="avatar_url">
+        <label class="form-label">Примечания</label>
+        <textarea class="form-input" name="notes"></textarea>
+        <button class="submit-btn" type="submit">Добавить пациента</button>
+    </form>
+</body>
+</html>

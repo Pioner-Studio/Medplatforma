@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Добавить оплату{% endblock %}
+{% block content %}
+<div style="max-width:450px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:38px 42px;">
+    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:28px;">Добавить оплату</h2>
+    <form method="POST">
+        <div style="font-weight:600; margin-bottom:9px;">ФИО пациента:</div>
+        <div style="margin-bottom:18px;">{{ patient.full_name }}</div>
+        <div style="font-weight:600; margin-bottom:6px;">Сумма оплаты (₽):</div>
+        <input name="amount" type="number" min="0" step="0.01" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px; font-size:1.1rem;">
+        <div style="font-weight:600; margin-bottom:6px;">Комментарий (необязательно):</div>
+        <textarea name="comment" rows="2" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px; font-size:1.05rem;"></textarea>
+        <button type="submit" style="background:#13b949; color:#fff; border:none; border-radius:10px; padding:11px 32px; font-weight:700; font-size:1.09rem; cursor:pointer;">Добавить оплату</button>
+    </form>
+</div>
+{% endblock %}

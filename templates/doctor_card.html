@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Карточка врача</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #f7f8fa; }
+        .card { width: 400px; margin: 40px auto; background: #fff; border-radius: 22px; box-shadow: 0 6px 32px rgba(20,40,80,.08); padding: 32px; display: flex; flex-direction: column; gap: 18px;}
+        .avatar { width: 96px; height: 96px; border-radius: 50%; box-shadow: 0 2px 10px rgba(20,40,80,.1); object-fit: cover; margin-bottom: 10px;}
+        .name { font-size: 1.7rem; font-weight: 600;}
+        .specialization, .email, .phone { font-size: 1rem; color: #5b6b7b;}
+        .stats { margin: 8px 0 0 0; font-size: 1rem; color: #4365d7; font-weight: 600;}
+        .section-title { margin-top: 12px; font-weight: 600; font-size: 1.1rem;}
+        .appointments-list { background: #f2f6ff; border-radius: 16px; padding: 10px 16px; margin-top: 4px; max-height: 140px; overflow-y: auto;}
+        .appointment { display: flex; justify-content: space-between; padding: 6px 0; font-size: .98rem; border-bottom: 1px solid #e3e9f5;}
+        .appointment:last-child { border-bottom: none;}
+        .edit-btn { margin-top: 18px; background: #445be2; color: #fff; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; cursor: pointer; transition: background 0.2s;}
+        .edit-btn:hover { background: #2236a7;}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="{{ doctor.avatar_url or '/static/avatars/demo-doctor.png' }}" class="avatar" alt="Аватар">
+        <div class="name">{{ doctor.full_name }}</div>
+        <div class="specialization">{{ doctor.specialization }}</div>
+        <div class="email">✉️ {{ doctor.email }}</div>
+        <div class="phone">📞 {{ doctor.phone }}</div>
+        <div class="stats">
+            Суммарно приёмов: {{ doctor.appointments|length }}<br>
+            Доход: {{ doctor.total_income }} ₽
+        </div>
+        <div class="section-title">История приёмов</div>
+        <div class="appointments-list">
+            {% for appt in doctor.appointments %}
+                <div class="appointment">
+                    <span>{{ appt.datetime[:10] }} — {{ appt.service }}</span>
+                    <span>{{ appt.sum }} ₽</span>
+                </div>
+            {% else %}
+                <div class="appointment">Нет записей</div>
+            {% endfor %}
+        </div>
+        {% if is_admin %}
+        <button class="edit-btn">Редактировать</button>
+        {% endif %}
+    </div>
+</body>
+</html>

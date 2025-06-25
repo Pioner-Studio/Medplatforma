@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Структура клиники{% endblock %}
+{% block content %}
+<h1 style="font-size:2.1rem; font-weight:700; margin-bottom:30px;">Структура клиники</h1>
+{% for role, ru_title in roles.items() %}
+    <h2 style="color:#2236a7; font-size:1.25rem; margin-top:30px; margin-bottom:14px;">{{ ru_title }}</h2>
+    <div style="display:flex; flex-wrap:wrap; gap:26px; margin-bottom:10px;">
+        {% for u in staff_by_role[role] %}
+            <div style="background:#fff; border-radius:20px; box-shadow:0 2px 12px rgba(20,40,80,.09); width:270px; min-height:125px; display:flex; align-items:center; gap:18px; padding:14px 16px; margin-bottom:14px;">
+                <img src="{{ u.avatar_url }}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; box-shadow:0 2px 10px rgba(20,40,80,.07);">
+                <div>
+                    <div style="font-weight:600; font-size:1.07rem;">{{ u.full_name }}</div>
+                    <div style="font-size:0.96rem; color:#5b6b7b;">{{ u.email or '—' }}</div>
+                    <div style="font-size:0.95rem; color:#a5b6c7;">{{ u.phone or '—' }}</div>
+                    <div style="font-size:0.93rem; color:{% if u.status == 'vacancy' %}#d91f3c{% else %}#13b949{% endif %};">
+                        {% if u.status == 'vacancy' %}Вакансия{% else %}В штате{% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div style="color:#aaa; margin:16px 0 24px 0;">Нет сотрудников</div>
+        {% endfor %}
+    </div>
+{% endfor %}
+{% endblock %}
