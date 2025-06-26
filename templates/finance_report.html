@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Финансовый отчёт{% endblock %}
+{% block content %}
+<div style="max-width:1000px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:40px;">
+    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:16px;">Финансовый отчёт</h2>
+    <div style="margin-bottom:24px;">
+        <b>Общий доход:</b> <span style="color:#25c045;font-weight:700;">{{ total_income|round(2) }} ₽</span>
+        &nbsp; | &nbsp; <b>Общий долг:</b> <span style="color:red;font-weight:700;">{{ total_debt|round(2) }} ₽</span>
+    </div>
+    <h3>ТОП-10 Пациентов по оплатам</h3>
+    <ol>
+        {% for p in top_patients %}
+        <li><b>{{ p.full_name }}</b> — {{ p.total_paid|round(2) }} ₽</li>
+        {% endfor %}
+    </ol>
+    <hr style="margin:22px 0;">
+    <h3>ТОП-10 Врачей по доходу</h3>
+    <ol>
+        {% for d in top_doctors %}
+        <li><b>{{ d.full_name }}</b> — {{ d.total_income|round(2) }} ₽</li>
+        {% endfor %}
+    </ol>
+</div>
+{% endblock %}

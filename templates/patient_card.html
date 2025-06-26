@@ -1,73 +1,54 @@
 {% extends 'base.html' %}
-{% block title %}Пациент — {{ patient.full_name }}{% endblock %}
+{% block title %}Карточка пациента{% endblock %}
 {% block content %}
-<div style="max-width:780px; margin:0 auto; background:#fff; border-radius:24px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:38px 42px;">
-    <div style="display:flex; align-items:center; gap:34px; margin-bottom:32px;">
-        <img src="{{ patient.avatar_url }}" alt="avatar" style="width:102px; height:102px; border-radius:50%; object-fit:cover; box-shadow:0 2px 10px rgba(20,40,80,.11);">
-        <div>
-            <div style="font-size:2rem; font-weight:700; margin-bottom:4px;">{{ patient.full_name }}</div>
-            <div style="color:#5b6b7b; font-size:1.1rem;">
-                {{ patient.dob }}
-                {% if patient.age %} ({{ patient.age }} лет){% endif %}
-            </div>
-            <div style="margin:10px 0 6px 0; color:#2236a7;">
-                <span style="margin-right:20px;">📞 {{ patient.phone }}</span>
-                <span>✉️ {{ patient.email }}</span>
-            </div>
-        </div>
-        <div style="margin-left:auto; text-align:right;">
-            <button onclick="window.location.href='/edit_patient/{{ patient._id }}'" style="background:#445be2; color:#fff; border:none; border-radius:10px; padding:9px 22px; font-weight:600; font-size:1rem; cursor:pointer; margin-bottom:8px;">Редактировать</button><br>
-            <button onclick="window.location.href='/add_payment/{{ patient._id }}'" style="background:#13b949; color:#fff; border:none; border-radius:10px; padding:9px 22px; font-weight:600; font-size:1rem; cursor:pointer;">+ Добавить оплату</button>
-        </div>
+<div style="max-width:720px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:36px;">
+    <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:12px;">Карточка пациента: <span style="color:#445be2;">{{ patient.full_name }}</span></h2>
+    <div style="margin-bottom:18px;">
+        <b>Долг:</b> <span style="color:{{ 'red' if debt > 0 else '#25c045' }};">{{ debt|round(2) }} ₽</span>
+        &nbsp; | &nbsp; <b>Депозит:</b> <span style="color:#2590c0;">{{ deposit|round(2) }} ₽</span>
+        &nbsp; | &nbsp; <b>Партнёр:</b> {{ partner }}
     </div>
-    <div style="display:flex; gap:40px;">
-        <div style="flex:1;">
-            <div style="font-weight:600; color:#445be2; margin-bottom:8px;">Финансы</div>
-            <div style="margin-bottom:8px; font-size:1.14rem;">
-                Оплачено: <span style="color:#13b949; font-weight:700;">{{ patient.total_paid }} ₽</span>
-            </div>
-            <div style="font-size:1.11rem;">
-                Долг: <span style="color:{% if patient.debt > 0 %}#d91f3c{% else %}#13b949{% endif %}; font-weight:700;">
-                    {{ patient.debt if patient.debt else 'Нет' }} ₽
-                </span>
-            </div>
-            {% if patient.notes %}
-            <div style="margin-top:18px; font-size:1.04rem; background:#f6f8fd; border-radius:10px; padding:12px;">
-                <b>Примечания:</b> {{ patient.notes }}
-            </div>
+    <hr style="margin:18px 0;">
+
+    <h3>Внести оплату</h3>
+    <form method="POST" style="margin-bottom:18px;">
+        <input name="amount" type="number" step="0.01" placeholder="Сумма" required style="width:110px;padding:8px;margin-right:12px;">
+        <input name="comment" placeholder="Комментарий (например: оплата/зачёт депозита/частичная оплата)" style="padding:8px;width:240px;margin-right:12px;">
+        <button type="submit" style="background:#25c045;color:#fff;border:none;border-radius:8px;padding:9px 19px;font-weight:700;cursor:pointer;">Добавить</button>
+    </form>
+
+    <h3>История платежей</h3>
+    {% if payments and payments|length > 0 %}
+    <ul style="margin-bottom:18px;">
+        {% for pay in payments %}
+        <li>{{ pay.datetime }} — <b>{{ pay.amount|round(2) }} ₽</b> {% if pay.comment %}({{ pay.comment }}){% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нет платежей</p>
+    {% endif %}
+
+    <hr style="margin:18px 0;">
+    <h3>История посещений</h3>
+    {% if history and history|length > 0 %}
+    <ul>
+        {% for h in history %}
+        <li>
+            {{ h.datetime }} — {{ h.done }}<br>
+            {% if h.services %}
+                <ul>
+                {% for s in h.services %}
+                    <li>{{ s.name }} ({{ s.qty }} x {{ s.price }} ₽ = {{ s.total }} ₽)</li>
+                {% endfor %}
+                </ul>
+                <b>Сумма: {{ h.total_sum }} ₽</b>
             {% endif %}
-        </div>
-        <div style="flex:2;">
-            <div style="font-weight:600; color:#445be2; margin-bottom:8px;">История приёмов</div>
-            <table style="width:100%; background:#fff; border-radius:10px; font-size:1.08rem;">
-                <thead style="background:#f2f6ff;">
-                    <tr>
-                        <th>Дата</th>
-                        <th>Врач</th>
-                        <th>Услуга</th>
-                        <th>Сумма</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for appt in patient.appointments %}
-                    <tr style="border-bottom:1px solid #f0f0f0;">
-                        <td>{{ appt.datetime[:10] }}</td>
-                        <td>
-                            <a href="/doctor/{{ appt.doctor_id }}" style="color:#2236a7; text-decoration:none;">{{ appt.doctor_name }}</a>
-                        </td>
-                        <td>{{ appt.service }}</td>
-                        <td>{{ appt.sum }} ₽</td>
-                        <td></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" style="text-align:center; color:#aaa; padding:14px;">Нет посещений</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+            {% if h.plan %}<br><i>План: {{ h.plan }}</i>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нет посещений</p>
+    {% endif %}
 </div>
 {% endblock %}

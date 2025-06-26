@@ -1,25 +1,40 @@
 {% extends 'base.html' %}
-{% block title %}Структура клиники{% endblock %}
+{% block title %}Сотрудники и структура клиники{% endblock %}
 {% block content %}
-<h1 style="font-size:2.1rem; font-weight:700; margin-bottom:30px;">Структура клиники</h1>
-{% for role, ru_title in roles.items() %}
-    <h2 style="color:#2236a7; font-size:1.25rem; margin-top:30px; margin-bottom:14px;">{{ ru_title }}</h2>
-    <div style="display:flex; flex-wrap:wrap; gap:26px; margin-bottom:10px;">
-        {% for u in staff_by_role[role] %}
-            <div style="background:#fff; border-radius:20px; box-shadow:0 2px 12px rgba(20,40,80,.09); width:270px; min-height:125px; display:flex; align-items:center; gap:18px; padding:14px 16px; margin-bottom:14px;">
-                <img src="{{ u.avatar_url }}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; box-shadow:0 2px 10px rgba(20,40,80,.07);">
-                <div>
-                    <div style="font-weight:600; font-size:1.07rem;">{{ u.full_name }}</div>
-                    <div style="font-size:0.96rem; color:#5b6b7b;">{{ u.email or '—' }}</div>
-                    <div style="font-size:0.95rem; color:#a5b6c7;">{{ u.phone or '—' }}</div>
-                    <div style="font-size:0.93rem; color:{% if u.status == 'vacancy' %}#d91f3c{% else %}#13b949{% endif %};">
-                        {% if u.status == 'vacancy' %}Вакансия{% else %}В штате{% endif %}
-                    </div>
-                </div>
-            </div>
+<div style="max-width:950px; margin:0 auto; background:#fff; border-radius:24px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:34px 44px;">
+    <h2 style="font-size:2.1rem; font-weight:700; margin-bottom:28px;">Структура клиники</h2>
+    <table style="width:100%; background:#fff; border-radius:18px; font-size:1.11rem;">
+        <thead style="background:#f2f6ff;">
+            <tr>
+                <th>ФИО</th>
+                <th>Должность</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for staff in staff_list %}
+            <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="font-weight:600;">
+                    <img src="{{ staff.avatar_url or '/static/avatars/demo-staff.png' }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-right:8px; vertical-align:middle;">
+                    {{ staff.full_name }}
+                </td>
+                <td>{{ staff.position }}</td>
+                <td>{{ staff.phone }}</td>
+                <td>{{ staff.email }}</td>
+                <td>{{ staff.role }}</td>
+                <td style="color: {% if staff.status == 'активен' %}#13b949{% else %}#d91f3c{% endif %}; font-weight:600;">
+                    {{ staff.status|capitalize }}
+                </td>
+            </tr>
         {% else %}
-            <div style="color:#aaa; margin:16px 0 24px 0;">Нет сотрудников</div>
+            <tr>
+                <td colspan="6" style="text-align:center; color:#aaa; padding:26px;">Пока нет сотрудников</td>
+            </tr>
         {% endfor %}
-    </div>
-{% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

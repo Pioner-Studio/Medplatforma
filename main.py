@@ -1,17 +1,40 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = 'topsecretkey'  # замени на свой!
 
-# Подключение к MongoDB
 client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
 db = client['medplatforma']
 
-# --- КАЛЕНДАРЬ: Главный экран
+# --- Авторизация ---
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = db.staff.find_one({"email": email})
+        if user:
+            session['user_id'] = str(user['_id'])
+            session['user_role'] = user['role']
+            session['user_name'] = user['full_name']
+            return redirect(url_for('calendar'))
+        else:
+            flash("Неверный логин!", "danger")
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# --- Главный календарь ---
+@app.route('/')
 @app.route('/calendar')
 def calendar():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     doctors = list(db.doctors.find())
     for d in doctors: d['_id'] = str(d['_id'])
     patients = list(db.patients.find())
@@ -25,219 +48,144 @@ def calendar():
         e['start'] = e.get('datetime', '')
     return render_template('calendar.html', doctors=doctors, patients=patients, events=events)
 
-# --- API: Детали события для модалки
-@app.route('/api/event/<event_id>')
-def api_event(event_id):
-    ev = db.events.find_one({'_id': ObjectId(event_id)})
-    if not ev:
-        return jsonify({'error': 'not found'}), 404
-    doctor = db.doctors.find_one({'_id': ObjectId(ev.get('doctor_id'))}) if ev.get('doctor_id') else None
-    patient = db.patients.find_one({'_id': ObjectId(ev.get('patient_id'))}) if ev.get('patient_id') else None
-    data = {
-        "_id": str(ev['_id']),
-        "patient_id": str(ev.get('patient_id', '')),
-        "patient_name": patient['full_name'] if patient else '—',
-        "doctor_id": str(ev.get('doctor_id', '')),
-        "doctor_name": doctor['full_name'] if doctor else '—',
-        "datetime": ev.get('datetime', ''),
-        "service": ev.get('service', ''),
-        "sum": ev.get('sum', 0),
-        "comment": ev.get('comment', '')
-    }
-    return jsonify(data)
-
-# --- ДОБАВИТЬ приём (через модалку)
-@app.route('/add_event', methods=['POST'])
-def add_event():
-    data = request.form
-    event = {
-        "doctor_id": ObjectId(data['doctor_id']),
-        "patient_id": ObjectId(data['patient_id']),
-        "service": data.get('service', ''),
-        "datetime": data.get('datetime', ''),
-        "sum": float(data.get('sum', 0)),
-        "comment": data.get('comment', '')
-    }
-    db.events.insert_one(event)
-    return redirect(url_for('calendar'))
-
-# --- СПИСОК ПАЦИЕНТОВ
-@app.route('/patients')
-def patients():
-    patients = list(db.patients.find())
-    for p in patients:
-        p['_id'] = str(p['_id'])
-        p['dob'] = p.get('dob', '')
-        p['phone'] = p.get('phone', '')
-        p['email'] = p.get('email', '')
-        p['debt'] = p.get('debt', 0)
-        p['avatar_url'] = p.get('avatar_url', '/static/avatars/demo-patient.png')
-    return render_template('patients.html', patients=patients)
-
-# --- ДОБАВИТЬ ПАЦИЕНТА
+# --- Добавить пациента ---
 @app.route('/add_patient', methods=['GET', 'POST'])
 def add_patient():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     if request.method == 'POST':
         patient = {
             "full_name": request.form.get('full_name'),
             "dob": request.form.get('dob'),
-            "email": request.form.get('email'),
             "phone": request.form.get('phone'),
-            "avatar_url": request.form.get('avatar_url') or '/static/avatars/demo-patient.png',
+            "passport": request.form.get('passport'),
+            "referral": request.form.get('referral'),
+            "reg_address": request.form.get('reg_address'),
+            "live_address": request.form.get('live_address'),
+            "email": request.form.get('email'),
+            "business": request.form.get('business'),
+            "hobby": request.form.get('hobby'),
             "notes": request.form.get('notes'),
-            "debt": 0
+            "debt": 0,
+            "deposit": 0,
+            "partner_points": 0,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
         }
         db.patients.insert_one(patient)
         return redirect(url_for('patients'))
     return render_template('add_patient.html')
 
-# --- КАРТОЧКА ПАЦИЕНТА
-@app.route('/patient/<patient_id>')
-def patient_card(patient_id):
-    patient = db.patients.find_one({'_id': ObjectId(patient_id)})
-    if not patient:
-        return "Patient not found", 404
-    appointments = list(db.events.find({'patient_id': patient['_id']}))
-    for app in appointments:
-        app['_id'] = str(app['_id'])
-        app['doctor_id'] = str(app.get('doctor_id', ''))
-        app['datetime'] = app.get('datetime', '')
-        app['service'] = app.get('service', '')
-        app['sum'] = float(app.get('sum', 0))
-        doctor = db.doctors.find_one({'_id': ObjectId(app['doctor_id'])}) if app['doctor_id'] else None
-        app['doctor_name'] = doctor['full_name'] if doctor else '—'
-    total_paid = sum([app['sum'] for app in appointments])
-    debt = patient.get('debt', 0)
-    dob = patient.get('dob')
-    if dob:
-        try:
-            dob_dt = datetime.strptime(dob, "%Y-%m-%d")
-            age = (datetime.now() - dob_dt).days // 365
-        except:
-            age = ''
-    else:
-        age = ''
-    patient['_id'] = str(patient['_id'])
-    patient['avatar_url'] = patient.get('avatar_url', '/static/avatars/demo-patient.png')
-    patient['appointments'] = appointments
-    patient['total_paid'] = total_paid
-    patient['debt'] = debt
-    patient['age'] = age
-    return render_template('patient_card.html', patient=patient)
+# --- Пациенты, врачи, задачи, staff, отчёты ---
+@app.route('/patients')
+def patients():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    patients = list(db.patients.find())
+    for p in patients: p['_id'] = str(p['_id'])
+    return render_template('patients.html', patients=patients)
 
-# --- РЕДАКТИРОВАТЬ ПАЦИЕНТА
-@app.route('/edit_patient/<patient_id>', methods=['GET', 'POST'])
-def edit_patient(patient_id):
-    patient = db.patients.find_one({'_id': ObjectId(patient_id)})
-    if not patient:
-        return "Patient not found", 404
-    if request.method == 'POST':
-        db.patients.update_one(
-            {'_id': ObjectId(patient_id)},
-            {'$set': {
-                "full_name": request.form.get('full_name'),
-                "dob": request.form.get('dob'),
-                "email": request.form.get('email'),
-                "phone": request.form.get('phone'),
-                "avatar_url": request.form.get('avatar_url'),
-                "notes": request.form.get('notes'),
-            }})
-        return redirect(url_for('patient_card', patient_id=patient_id))
-    return render_template('edit_patient.html', patient=patient)
-
-# --- ДОБАВИТЬ ОПЛАТУ
-@app.route('/add_payment/<patient_id>', methods=['GET', 'POST'])
-def add_payment(patient_id):
-    patient = db.patients.find_one({'_id': ObjectId(patient_id)})
-    if not patient:
-        return "Patient not found", 404
-    if request.method == 'POST':
-        amount = float(request.form.get('amount', 0))
-        comment = request.form.get('comment', '')
-        payment = {
-            "patient_id": ObjectId(patient_id),
-            "amount": amount,
-            "comment": comment,
-            "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        }
-        db.payments.insert_one(payment)
-        db.patients.update_one({'_id': ObjectId(patient_id)}, {'$inc': {'debt': -amount}})
-        return redirect(url_for('patient_card', patient_id=patient_id))
-    return render_template('add_payment.html', patient=patient)
-
-# --- СПИСОК ВРАЧЕЙ
 @app.route('/doctors')
 def doctors():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     doctors = list(db.doctors.find())
-    for d in doctors:
-        d['_id'] = str(d['_id'])
-        d['full_name'] = d.get('full_name', '')
-        d['specialization'] = d.get('specialization', '')
-        d['phone'] = d.get('phone', '')
-        d['email'] = d.get('email', '')
-        d['status'] = d.get('status', '')
-        d['avatar_url'] = d.get('avatar_url', '/static/avatars/demo-doctor.png')
+    for d in doctors: d['_id'] = str(d['_id'])
     return render_template('doctors.html', doctors=doctors)
 
-# --- ДОБАВИТЬ ВРАЧА
-@app.route('/add_doctor', methods=['GET', 'POST'])
-def add_doctor():
+@app.route('/tasks')
+def tasks():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    tasks = list(db.tasks.find()) if 'tasks' in db.list_collection_names() else []
+    return render_template('tasks.html', tasks=tasks)
+
+@app.route('/staff')
+def staff():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    staff_list = list(db.staff.find())
+    for s in staff_list: s['_id'] = str(s['_id'])
+    return render_template('staff.html', staff_list=staff_list)
+
+@app.route('/reports')
+def reports():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('reports.html')
+
+# --- Финансовый отчёт (для инвестора) ---
+@app.route('/finance_report')
+def finance_report():
+    if 'user_id' not in session or session['user_role'] != 'investor':
+        return redirect(url_for('login'))
+    patients = list(db.patients.find())
+    doctors = list(db.doctors.find())
+    events = list(db.events.find())
+    total_income = sum(float(e.get('sum', 0)) for e in events)
+    total_debt = sum(float(p.get('debt', 0)) for p in patients)
+    for p in patients:
+        p['_id'] = str(p['_id'])
+        p['total_paid'] = sum(float(e.get('sum', 0)) for e in events if str(e.get('patient_id')) == p['_id'])
+    top_patients = sorted(patients, key=lambda x: x['total_paid'], reverse=True)[:10]
+    for d in doctors:
+        d['_id'] = str(d['_id'])
+        d['total_income'] = sum(float(e.get('sum', 0)) for e in events if str(e.get('doctor_id')) == d['_id'])
+    top_doctors = sorted(doctors, key=lambda x: x['total_income'], reverse=True)[:10]
+    return render_template('finance_report.html', total_income=total_income, total_debt=total_debt, top_patients=top_patients, top_doctors=top_doctors)
+
+# --- Партнёрская программа ---
+@app.route('/partners')
+def partners():
+    if 'user_id' not in session or session['user_role'] != 'investor':
+        return redirect(url_for('login'))
+    patients = list(db.patients.find())
+    partners_list = [p for p in patients if p.get('referral')]
+    for p in partners_list:
+        p['_id'] = str(p['_id'])
+        p['partner_points'] = p.get('partner_points', 0)
+    top_partners = sorted(partners_list, key=lambda x: x['partner_points'], reverse=True)[:10]
+    return render_template('partners.html', partners=partners_list, top_partners=top_partners)
+
+# --- Учёт расходов ---
+@app.route('/add_expense', methods=['GET', 'POST'])
+def add_expense():
+    if 'user_id' not in session or session['user_role'] != 'investor':
+        return redirect(url_for('login'))
     if request.method == 'POST':
-        doctor = {
-            "full_name": request.form.get('full_name'),
-            "specialization": request.form.get('specialization'),
-            "email": request.form.get('email'),
-            "phone": request.form.get('phone'),
-            "avatar_url": request.form.get('avatar_url') or '/static/avatars/demo-doctor.png',
-            "status": "активен"
+        expense = {
+            "date": request.form.get('date'),
+            "category": request.form.get('category'),
+            "amount": float(request.form.get('amount', 0)),
+            "comment": request.form.get('comment', '')
         }
-        db.doctors.insert_one(doctor)
-        return redirect(url_for('doctors'))
-    return render_template('add_doctor.html')
+        db.expenses.insert_one(expense)
+        return redirect(url_for('expenses'))
+    return render_template('add_expense.html')
 
-# --- КАРТОЧКА ВРАЧА
-@app.route('/doctor/<doctor_id>')
-def doctor_card(doctor_id):
-    doctor = db.doctors.find_one({'_id': ObjectId(doctor_id)})
-    if not doctor:
-        return "Doctor not found", 404
-    appointments = list(db.events.find({'doctor_id': doctor['_id']}))
-    total_income = sum(a.get('sum', 0) for a in appointments)
-    for a in appointments:
-        a['_id'] = str(a['_id'])
-        a['datetime'] = a.get('datetime', '')
-        a['service'] = a.get('service', '')
-        a['sum'] = a.get('sum', 0)
-    doctor['_id'] = str(doctor['_id'])
-    doctor['appointments'] = appointments
-    doctor['total_income'] = total_income
-    return render_template('doctor_card.html', doctor=doctor, is_admin=True)
+@app.route('/expenses')
+def expenses():
+    if 'user_id' not in session or session['user_role'] != 'investor':
+        return redirect(url_for('login'))
+    expenses = list(db.expenses.find())
+    for e in expenses:
+        e['_id'] = str(e['_id'])
+        e['amount'] = float(e.get('amount', 0))
+    total_expenses = sum(e['amount'] for e in expenses)
+    total_income = sum(float(e.get('sum', 0)) for e in db.events.find())
+    profit = total_income - total_expenses
+    return render_template('expenses.html', expenses=expenses, total_expenses=total_expenses, profit=profit, total_income=total_income)
 
-# --- РЕДАКТИРОВАТЬ ВРАЧА
-@app.route('/edit_doctor/<doctor_id>', methods=['GET', 'POST'])
-def edit_doctor(doctor_id):
-    doctor = db.doctors.find_one({'_id': ObjectId(doctor_id)})
-    if not doctor:
-        return "Doctor not found", 404
-    if request.method == 'POST':
-        db.doctors.update_one(
-            {'_id': ObjectId(doctor_id)},
-            {'$set': {
-                "full_name": request.form.get('full_name'),
-                "specialization": request.form.get('specialization'),
-                "email": request.form.get('email'),
-                "phone": request.form.get('phone'),
-                "avatar_url": request.form.get('avatar_url'),
-                "status": request.form.get('status', 'активен')
-            }})
-        return redirect(url_for('doctor_card', doctor_id=doctor_id))
-    return render_template('edit_doctor.html', doctor=doctor)
+# --- Должники/Депозиты ---
+@app.route('/debtors')
+def debtors():
+    if 'user_id' not in session or session['user_role'] != 'investor':
+        return redirect(url_for('login'))
+    debtors = list(db.patients.find({'debt': {'$gt': 0}}))
+    for p in debtors: p['_id'] = str(p['_id'])
+    depositors = list(db.patients.find({'deposit': {'$gt': 0}}))
+    for p in depositors: p['_id'] = str(p['_id'])
+    return render_template('debtors.html', debtors=debtors, depositors=depositors)
 
-# --- Главная страница (редирект на календарь)
-@app.route('/')
-def index():
-    return redirect(url_for('calendar'))
-
-# --- Запуск приложения
+# --- Запуск ---
 if __name__ == '__main__':
     app.run(debug=True)

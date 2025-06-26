@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Добавить запись в календарь{% endblock %}
+{% block content %}
+<div style="max-width:520px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:40px;">
+    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:24px;">Добавить запись в календарь</h2>
+    <form method="POST">
+        <label>Пациент *</label>
+        <select name="patient_id" required style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #ccd;">
+            <option value="">Выберите пациента</option>
+            {% for p in patients %}
+            <option value="{{ p._id }}">{{ p.full_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Врач *</label>
+        <select name="doctor_id" required style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #ccd;">
+            <option value="">Выберите врача</option>
+            {% for d in doctors %}
+            <option value="{{ d._id }}">{{ d.full_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Дата и время *</label>
+        <input name="datetime" type="datetime-local" required style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #ccd;">
+
+        <label>Длительность (мин.) *</label>
+        <select name="duration" required style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #ccd;">
+            <option value="30">30 минут</option>
+            <option value="60" selected>1 час</option>
+            <option value="90">1.5 часа</option>
+            <option value="120">2 часа</option>
+        </select>
+
+        <label>Партнёр / Кто пригласил</label>
+        <select name="partner" style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #ccd;">
+            <option value="">Выберите партнёра (если есть)</option>
+            {% for pr in partners %}
+            <option value="{{ pr.full_name }}">{{ pr.full_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Примечание (услуга, цель, комментарий)</label>
+        <input name="note" style="width:100%;padding:10px;margin-bottom:22px;border-radius:8px;border:1px solid #ccd;">
+
+        <button type="submit" style="background:#445be2;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-weight:700;font-size:1.09rem;cursor:pointer;">Добавить</button>
+    </form>
+</div>
+{% endblock %}

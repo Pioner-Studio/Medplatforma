@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Закрыть приём{% endblock %}
+{% block content %}
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:38px;">
+    <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:18px;">Закрыть приём для пациента: <span style="color:#445be2;">{{ patient.full_name }}</span></h2>
+    <form method="POST">
+        <label>Что сделано (описание)</label>
+        <textarea name="done" rows="2" style="width:100%;padding:10px;margin-bottom:18px;border-radius:8px;border:1px solid #ccd;"></textarea>
+        
+        <label>Услуги:</label>
+        <table style="width:100%;margin-bottom:18px;">
+            <tr>
+                <th style="text-align:left;">Услуга</th>
+                <th style="text-align:center;">Цена</th>
+                <th style="text-align:center;">Кол-во</th>
+            </tr>
+            {% for i, s in enumerate(price_list) %}
+            <tr>
+                <td>{{ s.name }}</td>
+                <td style="text-align:center;">{{ s.price }}</td>
+                <td style="text-align:center;">
+                    <input type="number" min="0" name="qty_{{i}}" value="0" style="width:60px;">
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <label>План лечения (по необходимости)</label>
+        <textarea name="plan" rows="2" style="width:100%;padding:10px;margin-bottom:22px;border-radius:8px;border:1px solid #ccd;"></textarea>
+
+        <button type="submit" style="background:#445be2;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-weight:700;font-size:1.09rem;cursor:pointer;">Закрыть приём</button>
+    </form>
+</div>
+{% endblock %}

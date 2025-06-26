@@ -1,22 +1,61 @@
 {% extends 'base.html' %}
 {% block title %}Редактировать пациента{% endblock %}
 {% block content %}
-<div style="max-width:440px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:38px 42px;">
-    <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:28px;">Редактировать данные пациента</h2>
+<div style="max-width:520px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:40px;">
+    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:24px;">Редактировать пациента</h2>
     <form method="POST">
-        <label style="font-weight:600; margin-bottom:5px;">ФИО</label>
-        <input name="full_name" type="text" required value="{{ patient.full_name }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
-        <label style="font-weight:600; margin-bottom:5px;">Дата рождения</label>
-        <input name="dob" type="date" value="{{ patient.dob }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
-        <label style="font-weight:600; margin-bottom:5px;">E-mail</label>
-        <input name="email" type="email" value="{{ patient.email }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
-        <label style="font-weight:600; margin-bottom:5px;">Телефон</label>
-        <input name="phone" type="text" value="{{ patient.phone }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
-        <label style="font-weight:600; margin-bottom:5px;">Ссылка на аватар</label>
-        <input name="avatar_url" type="text" value="{{ patient.avatar_url }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px;">
-        <label style="font-weight:600; margin-bottom:5px;">Примечания</label>
-        <textarea name="notes" rows="2" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:22px;">{{ patient.notes }}</textarea>
-        <button type="submit" style="background:#445be2; color:#fff; border:none; border-radius:10px; padding:12px 28px; font-weight:700; font-size:1.07rem; cursor:pointer;">Сохранить</button>
+        <label>ФИО *</label>
+        <input name="full_name" value="{{ patient.full_name }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Дата рождения *</label>
+        <input name="dob" type="date" value="{{ patient.dob }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Телефон *</label>
+        <input name="phone" value="{{ patient.phone }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Паспортные данные *</label>
+        <input name="passport" value="{{ patient.passport }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Партнёр / Кто пригласил *</label>
+        <input name="referral" value="{{ patient.referral }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Адрес регистрации</label>
+        <input name="reg_address" value="{{ patient.reg_address }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Адрес места жительства</label>
+        <input name="live_address" value="{{ patient.live_address }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Эл. почта</label>
+        <input name="email" type="email" value="{{ patient.email }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Бизнес</label>
+        <input name="business" value="{{ patient.business }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Хобби</label>
+        <input name="hobby" value="{{ patient.hobby }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
+        
+        <label>Примечания</label>
+        <textarea name="notes" rows="3" style="width:100%;padding:10px;margin-bottom:22px;border-radius:8px;border:1px solid #ccd;">{{ patient.notes }}</textarea>
+        
+        <button type="submit" style="background:#445be2;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-weight:700;font-size:1.09rem;cursor:pointer;">Сохранить</button>
     </form>
+    
+    <script>
+document.getElementById('same_address').addEventListener('change', function() {
+    if (this.checked) {
+        document.getElementById('live_address').value = document.getElementById('reg_address').value;
+        document.getElementById('live_address').setAttribute('readonly', true);
+    } else {
+        document.getElementById('live_address').removeAttribute('readonly');
+    }
+});
+
+document.getElementById('reg_address').addEventListener('input', function() {
+    if (document.getElementById('same_address').checked) {
+        document.getElementById('live_address').value = this.value;
+    }
+});
+</script>
+
 </div>
 {% endblock %}

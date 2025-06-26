@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Должники и депозиты{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:38px;">
+    <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:18px;">Должники</h2>
+    {% if debtors %}
+    <ul>
+        {% for p in debtors %}
+        <li>
+            <img src="{{ p.avatar_url }}" alt="" style="width:38px;height:38px;border-radius:50%;vertical-align:middle;margin-right:8px;">
+            <a href="{{ url_for('patient_card', patient_id=p._id) }}"><b>{{ p.full_name }}</b></a>
+            — <span style="color:red;">Долг: {{ p.debt|round(2) }} ₽</span>
+            {% if p.phone %} | <span>{{ p.phone }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нет должников!</p>
+    {% endif %}
+
+    <hr style="margin:24px 0;">
+    <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:18px;">Пациенты с депозитом</h2>
+    {% if depositors %}
+    <ul>
+        {% for p in depositors %}
+        <li>
+            <img src="{{ p.avatar_url }}" alt="" style="width:38px;height:38px;border-radius:50%;vertical-align:middle;margin-right:8px;">
+            <a href="{{ url_for('patient_card', patient_id=p._id) }}"><b>{{ p.full_name }}</b></a>
+            — <span style="color:#25a6c0;">Депозит: {{ p.deposit|round(2) }} ₽</span>
+            {% if p.phone %} | <span>{{ p.phone }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нет пациентов с депозитом.</p>
+    {% endif %}
+</div>
+{% endblock %}

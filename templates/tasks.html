@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Задачи{% endblock %}
+{% block content %}
+<div style="max-width:900px; margin:0 auto; background:#fff; border-radius:24px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:36px 40px;">
+    <h2 style="font-size:2.1rem; font-weight:700; margin-bottom:24px;">Задачи</h2>
+    <table style="width:100%; font-size:1.08rem;">
+        <thead>
+            <tr>
+                <th>Задача</th>
+                <th>Ответственный</th>
+                <th>Дедлайн</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for task in tasks %}
+            <tr>
+                <td>{{ task.title }}</td>
+                <td>{{ task.assignee }}</td>
+                <td>{{ task.deadline }}</td>
+                <td>{{ task.status }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" style="text-align:center; color:#aaa;">Нет задач</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

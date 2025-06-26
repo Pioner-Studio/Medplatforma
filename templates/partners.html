@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Партнёрская программа{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:36px;">
+    <h2>Партнёрская программа</h2>
+    <h3>ТОП-10 по баллам</h3>
+    <ol>
+        {% for p in top_partners %}
+        <li><b>{{ p.full_name }}</b> — {{ p.partner_points }} баллов (Партнёр: {{ p.referral }})</li>
+        {% endfor %}
+    </ol>
+    <hr style="margin:24px 0;">
+    <h3>Все участники</h3>
+    <table style="width:100%;">
+        <tr>
+            <th>Пациент</th>
+            <th>Партнёр</th>
+            <th>Баллы</th>
+        </tr>
+        {% for p in partners %}
+        <tr>
+            <td><a href="{{ url_for('patient_card', patient_id=p._id) }}">{{ p.full_name }}</a></td>
+            <td>{{ p.referral }}</td>
+            <td>{{ p.partner_points }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

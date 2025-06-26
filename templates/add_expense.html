@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Добавить расход{% endblock %}
+{% block content %}
+<div style="max-width:500px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:38px;">
+    <h2>Добавить расход</h2>
+    <form method="POST">
+        <label>Дата:<br>
+            <input type="date" name="date" required style="width:180px;margin-bottom:14px;">
+        </label><br>
+        <label>Категория:<br>
+            <input type="text" name="category" required placeholder="Аренда / ЗП / Материалы и т.д." style="width:220px;margin-bottom:14px;">
+        </label><br>
+        <label>Сумма:<br>
+            <input type="number" name="amount" required style="width:120px;margin-bottom:14px;">
+        </label><br>
+        <label>Комментарий:<br>
+            <input type="text" name="comment" style="width:300px;margin-bottom:16px;">
+        </label><br>
+        <button type="submit" style="background:#445be2;color:#fff;border:none;border-radius:8px;padding:9px 19px;font-weight:700;cursor:pointer;">Добавить</button>
+    </form>
+</div>
+{% endblock %}
