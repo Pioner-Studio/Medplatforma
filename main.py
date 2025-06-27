@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
@@ -8,6 +8,14 @@ app.secret_key = 'topsecretkey'  # замени на свой!
 
 client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
 db = client['medplatforma']
+
+def log_event(user, action, details=''):
+    db.logs.insert_one({
+        'datetime': datetime.now().strftime('%Y-%m-%d %H:%M'),
+        'user': user,
+        'action': action,
+        'details': details
+    })
 
 # --- Авторизация ---
 @app.route('/login', methods=['GET', 'POST'])
@@ -40,12 +48,20 @@ def calendar():
     patients = list(db.patients.find())
     for p in patients: p['_id'] = str(p['_id'])
     events = list(db.events.find())
+
+    # --- Исправляем все ObjectId ---
     for e in events:
-        e['_id'] = str(e.get('_id', ''))
-        e['doctor_id'] = str(e.get('doctor_id', ''))
-        e['patient_id'] = str(e.get('patient_id', ''))
-        e['title'] = f"{next((doc['full_name'] for doc in doctors if doc['_id'] == e['doctor_id']), '')} — {next((pat['full_name'] for pat in patients if pat['_id'] == e['patient_id']), '')}: {e.get('service', '')}"
+        e['_id'] = str(e['_id'])
+        if 'doctor_id' in e:
+            e['doctor_id'] = str(e['doctor_id'])
+        if 'patient_id' in e:
+            e['patient_id'] = str(e['patient_id'])
+        # Формируем title для календаря (опционально)
+        doctor_name = next((d['full_name'] for d in doctors if d['_id'] == e.get('doctor_id')), '')
+        patient_name = next((p['full_name'] for p in patients if p['_id'] == e.get('patient_id')), '')
+        e['title'] = f"{doctor_name} — {patient_name}: {e.get('service', '')}"
         e['start'] = e.get('datetime', '')
+
     return render_template('calendar.html', doctors=doctors, patients=patients, events=events)
 
 # --- Добавить пациента ---
@@ -72,10 +88,10 @@ def add_patient():
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
         }
         db.patients.insert_one(patient)
+        log_event(session['user_name'], 'Добавлен пациент', patient['full_name'])
         return redirect(url_for('patients'))
     return render_template('add_patient.html')
 
-# --- Пациенты, врачи, задачи, staff, отчёты ---
 @app.route('/patients')
 def patients():
     if 'user_id' not in session:
@@ -91,6 +107,54 @@ def doctors():
     doctors = list(db.doctors.find())
     for d in doctors: d['_id'] = str(d['_id'])
     return render_template('doctors.html', doctors=doctors)
+
+# --- Пациенты, врачи, задачи, staff, отчёты ---
+@app.route('/patient/<patient_id>')
+def patient_card(patient_id):
+    try:
+        patient = db.patients.find_one({'_id': ObjectId(patient_id)})
+    except Exception as ex:
+        print("ObjectId error:", ex)
+        return "Пациент не найден", 404
+    if not patient:
+        return "Пациент не найден", 404
+    patient['_id'] = str(patient['_id'])
+    return render_template('patient_card.html', patient=patient)
+
+    # История процедур (appointments/events)
+    appointments = list(db.events.find({'patient_id': ObjectId(patient_id)}))
+    for app in appointments:
+        app['_id'] = str(app['_id'])
+        app['doctor'] = db.doctors.find_one({'_id': ObjectId(app.get('doctor_id', ''))}) if app.get('doctor_id') else None
+        app['doctor_name'] = app['doctor']['full_name'] if app['doctor'] else '—'
+        app['service'] = app.get('service', '—')
+        app['datetime'] = app.get('datetime', '—')
+        app['sum'] = app.get('sum', 0)
+
+    # История оплат
+    payments = list(db.payments.find({'patient_id': ObjectId(patient_id)}))
+    for pay in payments:
+        pay['_id'] = str(pay['_id'])
+        pay['datetime'] = pay.get('datetime', '—')
+        pay['amount'] = pay.get('amount', 0)
+        pay['comment'] = pay.get('comment', '')
+
+    return render_template(
+        'patient_card.html',
+        patient=patient,
+        appointments=appointments,
+        payments=payments
+    )
+
+@app.route('/doctor/<doctor_id>')
+def doctor_card(doctor_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    doctor = db.doctors.find_one({'_id': ObjectId(doctor_id)})
+    if not doctor:
+        return "Врач не найден", 404
+    doctor['_id'] = str(doctor['_id'])
+    return render_template('doctor_card.html', doctor=doctor)
 
 @app.route('/tasks')
 def tasks():
@@ -185,6 +249,42 @@ def debtors():
     depositors = list(db.patients.find({'deposit': {'$gt': 0}}))
     for p in depositors: p['_id'] = str(p['_id'])
     return render_template('debtors.html', debtors=debtors, depositors=depositors)
+
+from flask import Response
+import csv
+
+@app.route('/export/patients')
+def export_patients():
+    if session.get('user_role') != 'investor':
+        return "Нет доступа", 403
+    patients = list(db.patients.find())
+    fieldnames = ['full_name', 'dob', 'phone', 'passport', 'email', 'referral', 'debt', 'deposit']
+    def generate():
+        yield ';'.join(fieldnames) + '\n'
+        for p in patients:
+            yield ';'.join([str(p.get(f, '')) for f in fieldnames]) + '\n'
+    return Response(generate(), mimetype='text/csv',
+                    headers={'Content-Disposition': 'attachment;filename=patients.csv'})
+
+@app.route('/export/doctors')
+def export_doctors():
+    if session.get('user_role') != 'investor':
+        return "Нет доступа", 403
+    doctors = list(db.doctors.find())
+    fieldnames = ['full_name', 'specialization', 'email', 'phone']
+    def generate():
+        yield ';'.join(fieldnames) + '\n'
+        for d in doctors:
+            yield ';'.join([str(d.get(f, '')) for f in fieldnames]) + '\n'
+    return Response(generate(), mimetype='text/csv',
+                    headers={'Content-Disposition': 'attachment;filename=doctors.csv'})
+
+@app.route('/logs')
+def logs():
+    if 'user_id' not in session or session['user_role'] not in ['investor','admin']:
+        return redirect(url_for('login'))
+    logs = list(db.logs.find().sort('datetime', -1).limit(100))
+    return render_template('logs.html', logs=logs)
 
 # --- Запуск ---
 if __name__ == '__main__':

@@ -1,59 +1,41 @@
 {% extends 'base.html' %}
-{% block title %}Врач — {{ doctor.full_name }}{% endblock %}
 {% block content %}
-<div style="max-width:780px; margin:0 auto; background:#fff; border-radius:24px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:38px 42px;">
-    <div style="display:flex; align-items:center; gap:34px; margin-bottom:32px;">
-        <img src="{{ doctor.avatar_url }}" alt="avatar" style="width:102px; height:102px; border-radius:50%; object-fit:cover; box-shadow:0 2px 10px rgba(20,40,80,.11);">
+<div class="card" style="max-width:700px;margin:auto;padding:32px 24px;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(20,40,80,.07);">
+    <h2>Карточка врача</h2>
+    <div style="display:flex;gap:32px;align-items:center;">
+        <img src="{{ doctor.avatar_url or '/static/avatars/demo-doctor.png' }}" alt="avatar" style="width:110px;height:110px;border-radius:50%;box-shadow:0 2px 10px rgba(20,40,80,.11);object-fit:cover;">
         <div>
-            <div style="font-size:2rem; font-weight:700; margin-bottom:4px;">{{ doctor.full_name }}</div>
-            <div style="color:#5b6b7b; font-size:1.13rem;">
-                {{ doctor.specialization }}
-            </div>
-            <div style="margin:10px 0 6px 0; color:#2236a7;">
-                <span style="margin-right:20px;">📞 {{ doctor.phone }}</span>
-                <span>✉️ {{ doctor.email }}</span>
-            </div>
-        </div>
-        <div style="margin-left:auto; text-align:right;">
-            <button onclick="window.location.href='/edit_doctor/{{ doctor._id }}'" style="background:#445be2; color:#fff; border:none; border-radius:10px; padding:9px 22px; font-weight:600; font-size:1rem; cursor:pointer;">Редактировать</button>
+            <div><b>ФИО:</b> {{ doctor.full_name }}</div>
+            <div><b>Специализация:</b> {{ doctor.specialization }}</div>
+            <div><b>Телефон:</b> {{ doctor.phone }}</div>
+            <div><b>Email:</b> {{ doctor.email }}</div>
+            <div><b>Статус:</b> {{ doctor.status }}</div>
         </div>
     </div>
-    <div style="display:flex; gap:40px;">
-        <div style="flex:1;">
-            <div style="font-weight:600; color:#445be2; margin-bottom:8px;">Доход</div>
-            <div style="margin-bottom:8px; font-size:1.14rem;">
-                <span style="color:#13b949; font-weight:700;">{{ doctor.total_income }} ₽</span>
-            </div>
+    <br>
+    <a href="/edit_doctor/{{ doctor._id }}" class="btn">Редактировать</a>
+    <a href="#" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editDoctorModal">Редактировать</a>
+</div>
+<div class="modal fade" id="editDoctorModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/edit_doctor/{{ doctor._id }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Редактировать врача</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div style="flex:2;">
-            <div style="font-weight:600; color:#445be2; margin-bottom:8px;">История приёмов</div>
-            <table style="width:100%; background:#fff; border-radius:10px; font-size:1.08rem;">
-                <thead style="background:#f2f6ff;">
-                    <tr>
-                        <th>Дата</th>
-                        <th>Пациент</th>
-                        <th>Услуга</th>
-                        <th>Сумма</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for appt in doctor.appointments %}
-                    <tr style="border-bottom:1px solid #f0f0f0;">
-                        <td>{{ appt.datetime[:10] }}</td>
-                        <td>
-                            <a href="/patient/{{ appt.patient_id }}" style="color:#2236a7; text-decoration:none;">{{ appt.patient_name }}</a>
-                        </td>
-                        <td>{{ appt.service }}</td>
-                        <td>{{ appt.sum }} ₽</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align:center; color:#aaa; padding:14px;">Нет приёмов</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="modal-body">
+          <input class="form-control" name="full_name" value="{{ doctor.full_name }}" placeholder="ФИО" required><br>
+          <input class="form-control" name="specialization" value="{{ doctor.specialization }}" placeholder="Специализация" required><br>
+          <input class="form-control" name="phone" value="{{ doctor.phone }}" placeholder="Телефон" required><br>
+          <input class="form-control" name="email" value="{{ doctor.email }}" placeholder="Email"><br>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-success">Сохранить</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}

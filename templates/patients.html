@@ -1,62 +1,100 @@
 {% extends 'base.html' %}
-
-{% block title %}Пациенты{% endblock %}
-
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px;">
-    <h1 style="font-size: 2.2rem; font-weight: 700; margin: 0;">Список пациентов</h1>
-    <button onclick="window.location.href='/add_patient'" style="background:#445be2; color:#fff; border:none; border-radius:10px; padding:10px 26px; font-weight:600; font-size:1.1rem; cursor:pointer;">+ Добавить пациента</button>
+<h2>Список пациентов</h2>
+<div style="margin-bottom:20px;">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPatientModal">+ Добавить пациента</button>
+    <button class="btn btn-outline-primary" onclick="filterDebt('all')">Все</button>
+    <button class="btn btn-outline-danger" onclick="filterDebt('debt')">Только должники</button>
+    <button class="btn btn-outline-success" onclick="filterDebt('deposit')">Только с депозитом</button>
+    <input type="text" id="searchInput" class="form-control" placeholder="Поиск по ФИО, телефону, email..." style="max-width:360px;display:inline-block;margin-left:10px;">
 </div>
-<div style="margin-bottom: 22px;">
-    <input id="searchInput" type="text" placeholder="Поиск по имени, телефону, e-mail..." style="width:340px; padding:9px 18px; border-radius:10px; border:1px solid #ccd; font-size:1.08rem;">
-</div>
-<table id="patientsTable" style="width:100%; background:#fff; border-radius:22px; box-shadow:0 2px 12px rgba(20,40,80,.07);">
-    <thead style="background:#f2f6ff;">
-        <tr style="font-size:1.09rem;">
-            <th style="padding:14px 0; border-radius:22px 0 0 0;">Аватар</th>
+<table id="patientsTable" style="width:100%;background:#fff;border-radius:22px;box-shadow:0 2px 12px rgba(20,40,80,.07);">
+    <thead>
+        <tr>
             <th>ФИО</th>
             <th>Телефон</th>
-            <th>E-mail</th>
             <th>Дата рождения</th>
             <th>Долг</th>
-            <th style="border-radius:0 22px 0 0;">Действия</th>
+            <th>Депозит</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
-    {% for patient in patients %}
+        {% for patient in patients %}
         <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="text-align:center;">
-                <img src="{{ patient.avatar_url }}" alt="avatar" style="width:52px; height:52px; border-radius:50%; object-fit:cover; box-shadow:0 2px 8px rgba(20,40,80,.07);">
-            </td>
-            <td style="font-weight:600;">
-                <a href="/patient/{{ patient._id }}" style="color:#2236a7; text-decoration:none;">{{ patient.full_name }}</a>
-            </td>
+            <td>{{ patient.full_name }}</td>
             <td>{{ patient.phone }}</td>
-            <td>{{ patient.email }}</td>
             <td>{{ patient.dob }}</td>
-            <td style="color:{% if patient.debt > 0 %}#d91f3c{% else %}#222{% endif %}; font-weight:600;">
-                {{ patient.debt if patient.debt else '—' }}
-            </td>
+            <td style="color:{% if patient.debt and patient.debt > 0 %}#d91f3c{% else %}#222{% endif %};font-weight:600;">{{ patient.debt or 0 }}</td>
+            <td style="color:#209a3a;font-weight:600;">{{ patient.deposit or 0 }}</td>
             <td>
-                <a href="/patient/{{ patient._id }}" style="color:#445be2; font-weight:600;">Подробнее</a>
+                <a href="/patient/{{ patient['_id'] }}">Подробнее</a>
             </td>
         </tr>
-    {% else %}
+        {% else %}
         <tr>
-            <td colspan="7" style="text-align:center; color:#aaa; padding:30px;">Пациентов нет</td>
+            <td colspan="6" style="text-align:center;color:#aaa;padding:30px;">Пациентов нет</td>
         </tr>
-    {% endfor %}
+        {% endfor %}
     </tbody>
 </table>
+
 <script>
-    // Быстрый поиск по таблице
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        let value = this.value.toLowerCase();
-        let rows = document.querySelectorAll('#patientsTable tbody tr');
-        rows.forEach(row => {
+document.addEventListener('DOMContentLoaded', function() {
+    let input = document.getElementById('searchInput');
+    let table = document.getElementById('patientsTable');
+    input.addEventListener('keyup', function() {
+        let filter = input.value.toLowerCase();
+        let rows = table.getElementsByTagName('tr');
+        for(let i=1; i<rows.length; i++) {
+            let row = rows[i];
             let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(value) ? '' : 'none';
-        });
+            row.style.display = (text.indexOf(filter) > -1) ? "" : "none";
+        }
     });
+});
+function filterDebt(type) {
+    let table = document.getElementById('patientsTable');
+    let rows = table.getElementsByTagName('tr');
+    for(let i=1; i<rows.length; i++) {
+        let row = rows[i];
+        let debt = parseFloat(row.cells[3]?.innerText.replace(',', '.') || 0);
+        let deposit = parseFloat(row.cells[4]?.innerText.replace(',', '.') || 0);
+        if (type === 'debt' && debt <= 0) row.style.display = 'none';
+        else if (type === 'deposit' && deposit <= 0) row.style.display = 'none';
+        else row.style.display = '';
+    }
+}
 </script>
+
+<!-- Модалка добавления пациента -->
+<div class="modal fade" id="addPatientModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/add_patient">
+        <div class="modal-header">
+          <h5 class="modal-title">Добавить пациента</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input class="form-control" name="full_name" placeholder="ФИО" required><br>
+          <input class="form-control" name="dob" type="date" placeholder="Дата рождения" required><br>
+          <input class="form-control" name="phone" placeholder="Телефон" required><br>
+          <input class="form-control" name="email" placeholder="Email"><br>
+          <input class="form-control" name="passport" placeholder="Паспорт"><br>
+          <input class="form-control" name="referral" placeholder="Партнер/реферал"><br>
+          <input class="form-control" name="reg_address" placeholder="Адрес регистрации"><br>
+          <input class="form-control" name="live_address" placeholder="Адрес проживания"><br>
+          <input class="form-control" name="business" placeholder="Бизнес"><br>
+          <input class="form-control" name="hobby" placeholder="Хобби"><br>
+          <input class="form-control" name="notes" placeholder="Примечания"><br>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-success">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

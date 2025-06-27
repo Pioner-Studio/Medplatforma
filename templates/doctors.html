@@ -1,59 +1,95 @@
 {% extends 'base.html' %}
-
-{% block title %}Врачи{% endblock %}
-
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px;">
-    <h1 style="font-size: 2.2rem; font-weight: 700; margin: 0;">Список врачей</h1>
-    <button onclick="window.location.href='/add_doctor'" style="background:#445be2; color:#fff; border:none; border-radius:10px; padding:10px 26px; font-weight:600; font-size:1.1rem; cursor:pointer;">+ Добавить врача</button>
+<h2>Список врачей</h2>
+<div style="margin-bottom:10px;">
+    <button class="btn btn-outline-primary" onclick="filterSpec('all')">Все</button>
+    <button class="btn btn-outline-info" onclick="filterSpec('стоматолог')">Стоматологи</button>
+    <button class="btn btn-outline-info" onclick="filterSpec('гигиенист')">Гигиенисты</button>
+    <!-- Добавь свои специализации -->
 </div>
-<table id="doctorsTable" style="width:100%; background:#fff; border-radius:22px; box-shadow:0 2px 12px rgba(20,40,80,.07);">
-    <thead style="background:#f2f6ff;">
-        <tr style="font-size:1.09rem;">
-            <th style="padding:14px 0; border-radius:22px 0 0 0;">Аватар</th>
+<div style="margin-bottom:20px;">
+    <input type="text" id="searchDoctor" class="form-control" placeholder="Поиск по ФИО, телефону, email..." style="max-width:360px;display:inline-block;">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal" style="margin-left:10px;">+ Добавить врача</button>
+</div>
+<table id="doctorsTable" style="width:100%;background:#fff;border-radius:22px;box-shadow:0 2px 12px rgba(20,40,80,.07);">
+    <thead>
+        <tr>
             <th>ФИО</th>
             <th>Специализация</th>
             <th>Телефон</th>
-            <th>E-mail</th>
+            <th>Email</th>
             <th>Статус</th>
-            <th style="border-radius:0 22px 0 0;">Действия</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
-    {% for doctor in doctors %}
+        {% for doctor in doctors %}
         <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="text-align:center;">
-                <img src="{{ doctor.avatar_url }}" alt="avatar" style="width:52px; height:52px; border-radius:50%; object-fit:cover; box-shadow:0 2px 8px rgba(20,40,80,.07);">
-            </td>
-            <td style="font-weight:600;">
-                <a href="/doctor/{{ doctor._id }}" style="color:#2236a7; text-decoration:none;">{{ doctor.full_name }}</a>
-            </td>
+            <td>{{ doctor.full_name }}</td>
             <td>{{ doctor.specialization }}</td>
             <td>{{ doctor.phone }}</td>
             <td>{{ doctor.email }}</td>
-            <td style="color:{% if doctor.status == 'активен' %}#13b949{% else %}#d91f3c{% endif %}; font-weight:600;">
-                {{ doctor.status|capitalize }}
-            </td>
+            <td>{{ doctor.status or 'активен' }}</td>
             <td>
-                <a href="/doctor/{{ doctor._id }}" style="color:#445be2; font-weight:600;">Подробнее</a>
+                <a href="/doctor/{{ doctor['_id'] }}">Подробнее</a>
             </td>
         </tr>
-    {% else %}
+        {% else %}
         <tr>
-            <td colspan="7" style="text-align:center; color:#aaa; padding:30px;">Врачей нет</td>
+            <td colspan="6" style="text-align:center;color:#aaa;padding:30px;">Врачей нет</td>
         </tr>
-    {% endfor %}
+        {% endfor %}
     </tbody>
 </table>
+
 <script>
-    // Быстрый поиск по таблице
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        let value = this.value.toLowerCase();
-        let rows = document.querySelectorAll('#doctorsTable tbody tr');
-        rows.forEach(row => {
+document.addEventListener('DOMContentLoaded', function() {
+    let input = document.getElementById('searchDoctor');
+    let table = document.getElementById('doctorsTable');
+    input.addEventListener('keyup', function() {
+        let filter = input.value.toLowerCase();
+        let rows = table.getElementsByTagName('tr');
+        for(let i=1; i<rows.length; i++) {
+            let row = rows[i];
             let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(value) ? '' : 'none';
-        });
+            row.style.display = (text.indexOf(filter) > -1) ? "" : "none";
+        }
     });
+});
+function filterSpec(type) {
+    let table = document.getElementById('doctorsTable');
+    let rows = table.getElementsByTagName('tr');
+    for(let i=1; i<rows.length; i++) {
+        let row = rows[i];
+        let spec = (row.cells[1]?.innerText || '').toLowerCase();
+        if (type === 'all' || !type) row.style.display = '';
+        else if (spec.indexOf(type) > -1) row.style.display = '';
+        else row.style.display = 'none';
+    }
+}
 </script>
+
+<!-- Модалка добавления врача -->
+<div class="modal fade" id="addDoctorModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/add_doctor">
+        <div class="modal-header">
+          <h5 class="modal-title">Добавить врача</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input class="form-control" name="full_name" placeholder="ФИО" required><br>
+          <input class="form-control" name="specialization" placeholder="Специализация" required><br>
+          <input class="form-control" name="phone" placeholder="Телефон" required><br>
+          <input class="form-control" name="email" placeholder="Email"><br>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-success">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
