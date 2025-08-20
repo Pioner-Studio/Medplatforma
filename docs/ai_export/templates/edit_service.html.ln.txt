@@ -1,0 +1,38 @@
+﻿    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: <h2>Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СѓСЃР»СѓРіСѓ</h2>
+    4: 
+    5: <form method="post" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;max-width:720px;">
+    6:   <div style="display:grid;grid-template-columns:1fr 180px;gap:12px;">
+    7:     <label>РќР°Р·РІР°РЅРёРµ
+    8:       <input type="text" name="name" value="{{ item.name }}" required>
+    9:     </label>
+   10:     <label>РљРѕРґ
+   11:       <input type="text" name="code" value="{{ item.code }}" required>
+   12:     </label>
+   13: 
+   14:     <label>Р¦РµРЅР°, в‚Ѕ
+   15:       <input type="number" name="price" value="{{ item.price }}" min="0" step="1">
+   16:     </label>
+   17:     <label>Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ (РјРёРЅ)
+   18:       <input type="number" name="duration_min" value="{{ item.duration_min }}" min="5" step="5">
+   19:     </label>
+   20: 
+   21:     <label>Р¦РІРµС‚
+   22:       <input type="color" name="color" value="{{ item.color or '#3498db' }}" style="height:42px;">
+   23:     </label>
+   24:     <label style="display:flex;align-items:center;gap:8px;margin-top:26px;">
+   25:       <input type="checkbox" name="is_active" {% if item.is_active %}checked{% endif %}> РђРєС‚РёРІРЅР°
+   26:     </label>
+   27: 
+   28:     <label style="grid-column:1/-1;">РћРїРёСЃР°РЅРёРµ
+   29:       <textarea name="description" rows="4">{{ item.description or '' }}</textarea>
+   30:     </label>
+   31:   </div>
+   32: 
+   33:   <div style="margin-top:14px;display:flex;gap:10px;">
+   34:     <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+   35:     <a href="{{ url_for('services_list') }}">РћС‚РјРµРЅР°</a>
+   36:   </div>
+   37: </form>
+   38: {% endblock %}

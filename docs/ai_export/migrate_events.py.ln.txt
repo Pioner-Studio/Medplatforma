@@ -1,0 +1,52 @@
+﻿    1: from pymongo import MongoClient
+    2: from bson import ObjectId
+    3: from datetime import datetime, timedelta
+    4: 
+    5: def to_dt(s):
+    6:     if isinstance(s, datetime): return s
+    7:     if not s: return None
+    8:     try:
+    9:         if 'T' in s and len(s) >= 16:
+   10:             try:
+   11:                 return datetime.strptime(s[:16], "%Y-%m-%dT%H:%M")
+   12:             except ValueError:
+   13:                 pass
+   14:         return datetime.fromisoformat(s.replace('Z','+00:00'))
+   15:     except Exception:
+   16:         return None
+   17: 
+   18: def add_minutes(dt, m): return dt + timedelta(minutes=int(m or 0))
+   19: 
+   20: client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
+   21: db = client['medplatforma']
+   22: 
+   23: def migrate():
+   24:     src = list(db.events.find())
+   25:     print(f"РќР°Р№РґРµРЅРѕ РІ events: {len(src)}")
+   26:     inserted = 0
+   27:     for e in src:
+   28:         start_dt = to_dt(e.get("start") or e.get("datetime"))
+   29:         if not start_dt:
+   30:             continue
+   31:         # РєР°Р±РёРЅРµС‚ РїРѕ РёРјРµРЅРё -> room_id
+   32:         room = db.rooms.find_one({"name": e.get("cabinet")}) if e.get("cabinet") else None
+   33:         # РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 30 РјРёРЅ
+   34:         end_dt = add_minutes(start_dt, 30)
+   35: 
+   36:         doc = {
+   37:             "doctor_id":  ObjectId(e["doctor_id"]) if e.get("doctor_id") else None,
+   38:             "patient_id": ObjectId(e["patient_id"]) if e.get("patient_id") else None,
+   39:             "room_id":    room["_id"] if room else None,
+   40:             "service_id": None,
+   41:             "start":      start_dt,
+   42:             "end":        end_dt,
+   43:             "status_key": "scheduled",
+   44:             "comment":    e.get("comment",""),
+   45:             "sum":        int((e.get("sum") or 0)) if str(e.get("sum","")).isdigit() else 0
+   46:         }
+   47:         db.appointments.insert_one(doc)
+   48:         inserted += 1
+   49:     print(f"РџРµСЂРµРЅРµСЃРµРЅРѕ РІ appointments: {inserted}")
+   50: 
+   51: if __name__ == "__main__":
+   52:     migrate()

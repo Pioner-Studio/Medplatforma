@@ -1,0 +1,78 @@
+﻿    1: <aside class="sidebar">
+    2:   <div class="sidebar-header" style="padding: 24px 0 50px 0; display: flex; justify-content: center;">
+    3:   <img src="{{ url_for('static', filename='logo_test123.png') }}" alt="ClubStom" class="sidebar-logo-img">
+    4: </div>
+    5:   <nav>
+    6:     <ul>
+    7:       <li>
+    8:         <a href="{{ url_for('calendar_view') }}"
+    9:            class="{% if '/calendar' in request.path or request.path == '/' %}active{% endif %}">
+   10:           <i class="fa-solid fa-calendar-days"></i> Р Р°СЃРїРёСЃР°РЅРёРµ
+   11:         </a>
+   12:       </li>
+   13:       <li>
+   14:         <a href="{{ url_for('patients_list') }}"
+   15:            class="{% if '/patients' in request.path %}active{% endif %}">
+   16:           <i class="fa-solid fa-user-injured"></i> РџР°С†РёРµРЅС‚С‹
+   17:         </a>
+   18:       </li>
+   19:       <li>
+   20:         <a href="{{ url_for('doctors') }}"
+   21:            class="{% if '/doctors' in request.path %}active{% endif %}">
+   22:           <i class="fa-solid fa-user-md"></i> Р’СЂР°С‡Рё
+   23:         </a>
+   24:       </li>
+   25:       <li>
+   26:         <a href="{{ url_for('tasks') }}"
+   27:            class="{% if '/tasks' in request.path %}active{% endif %}">
+   28:           <i class="fa-solid fa-list-check"></i> Р—Р°РґР°С‡Рё
+   29:         </a>
+   30:       </li>
+   31:       <li>
+   32:         <a href="{{ url_for('messages') }}"
+   33:            class="{% if '/messages' in request.path %}active{% endif %}">
+   34:           <i class="fa-solid fa-comments"></i> РЎРѕРѕР±С‰РµРЅРёСЏ
+   35:         </a>
+   36:       </li>
+   37:       <li>
+   38:         <a href="{{ url_for('xray_room') }}"
+   39:            class="{% if '/xray_room' in request.path %}active{% endif %}">
+   40:           <i class="fa-solid fa-x-ray"></i> Р РµРЅС‚РіРµРЅ РєР°Р±РёРЅРµС‚
+   41:         </a>
+   42:       </li>
+   43:       <li><a href="{{ url_for('rooms_list') }}"><i class="fa-solid fa-door-open"></i> РљР°Р±РёРЅРµС‚С‹</a></li>
+   44:       <li><a href="{{ url_for('services_list') }}"><i class="fa-solid fa-list-check"></i> РЈСЃР»СѓРіРё</a></li>
+   45:       <li><a href="{{ url_for('patients_list') }}"><i class="fa-solid fa-user-injured"></i> РџР°С†РёРµРЅС‚С‹</a></li>
+   46:       <li>
+   47:         <a href="{{ url_for('ztl') }}"
+   48:            class="{% if '/ztl' in request.path %}active{% endif %}">
+   49:           <i class="fa-solid fa-flask"></i> Р—РўР›
+   50:         </a>
+   51:       </li>
+   52:       <li>
+   53:         <a href="{{ url_for('partners') }}"
+   54:            class="{% if '/partners' in request.path %}active{% endif %}">
+   55:           <i class="fa-solid fa-handshake"></i> РџР°СЂС‚РЅРµСЂСЃРєР°СЏ РїСЂРѕРіСЂР°РјРјР°
+   56:         </a>
+   57:       </li>
+   58:       <li>
+   59:         <a href="{{ url_for('finance_report') }}"
+   60:            class="{% if '/finance_report' in request.path %}active{% endif %}">
+   61:           <i class="fa-solid fa-file-invoice-dollar"></i> Р¤РёРЅР°РЅСЃРѕРІС‹Р№ РѕС‚С‡С‘С‚
+   62:         </a>
+   63:       </li>
+   64:       <li>
+   65:         <a href="{{ url_for('logs') }}"
+   66:            class="{% if '/logs' in request.path %}active{% endif %}">
+   67:           <i class="fa-solid fa-book"></i> Р–СѓСЂРЅР°Р» РґРµР№СЃС‚РІРёР№
+   68:         </a>
+   69:       </li>
+   70:       <li>
+   71:         <a href="{{ url_for('data_tools') }}"
+   72:            class="{% if '/data_tools' in request.path %}active{% endif %}">
+   73:           <i class="fa-solid fa-cloud-arrow-down"></i> Р­РєСЃРїРѕСЂС‚ / РРјРїРѕСЂС‚
+   74:         </a>
+   75:       </li>
+   76:     </ul>
+   77:   </nav>
+   78: </aside>

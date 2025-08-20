@@ -1,0 +1,45 @@
+﻿    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: <h2>Р–СѓСЂРЅР°Р» РґРµР№СЃС‚РІРёР№</h2>
+    4: <div class="card shadow" style="max-width:1250px;margin:32px auto 0 auto;padding:34px 24px;">
+    5:   <table class="action-log-table" style="width:100%;border-radius:20px;overflow:hidden;">
+    6:     <thead>
+    7:       <tr>
+    8:         <th>Р”Р°С‚Р°/Р’СЂРµРјСЏ</th>
+    9:         <th>РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ</th>
+   10:         <th>Р РѕР»СЊ</th>
+   11:         <th>Р”РµР№СЃС‚РІРёРµ</th>
+   12:         <th>РћР±СЉРµРєС‚</th>
+   13:         <th>РљРѕРјРјРµРЅС‚Р°СЂРёР№</th>
+   14:       </tr>
+   15:     </thead>
+   16:     <tbody>
+   17:       {% for log in logs %}
+   18:       <tr>
+   19:         <td style="color:#888;">{{ log.time }}</td>
+   20:         <td>
+   21:           <img src="{{ log.avatar_url or '/static/avatars/staff_1.png' }}" class="avatar mini-avatar" style="width:38px;height:38px;vertical-align:middle;margin-right:10px;">
+   22:           {{ log.user }}
+   23:         </td>
+   24:         <td>
+   25:           <span class="badge bg-light text-primary">{{ log.role }}</span>
+   26:         </td>
+   27:         <td>
+   28:           {% if log.action == 'created' %}
+   29:             <span class="badge bg-light" style="color:#22c55e;"><b>РЎРѕР·РґР°РЅРёРµ</b></span>
+   30:           {% elif log.action == 'edited' %}
+   31:             <span class="badge bg-light" style="color:#eab308;"><b>РР·РјРµРЅРµРЅРёРµ</b></span>
+   32:           {% elif log.action == 'deleted' %}
+   33:             <span class="badge bg-light" style="color:#ef4444;"><b>РЈРґР°Р»РµРЅРёРµ</b></span>
+   34:           {% else %}
+   35:             <span class="badge bg-light">{{ log.action|capitalize }}</span>
+   36:           {% endif %}
+   37:         </td>
+   38:         <td>{{ log.object }}</td>
+   39:         <td>{{ log.comment }}</td>
+   40:       </tr>
+   41:       {% endfor %}
+   42:     </tbody>
+   43:   </table>
+   44: </div>
+   45: {% endblock %}

@@ -1,0 +1,10 @@
+﻿    1: import os, zipfile
+    2: base = r"D:\Projects\medplatforma"
+    3: docs = os.path.join(base, "docs")
+    4: out  = os.path.join(base, "docs.zip")
+    5: with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+    6:     for root, _, files in os.walk(docs):
+    7:         for f in files:
+    8:             p = os.path.join(root, f)
+    9:             z.write(p, os.path.relpath(p, docs))
+   10: print("Packed:", out)

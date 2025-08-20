@@ -1,0 +1,31 @@
+﻿    1: from datetime import datetime, timedelta
+    2: from pymongo import MongoClient
+    3: 
+    4: client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
+    5: db = client['medplatforma']
+    6: 
+    7: ops = []
+    8: start_date = datetime(2025, 1, 1)
+    9: doctors = ['Р”-СЂ РРІР°РЅРѕРІ РђР»РµРєСЃР°РЅРґСЂ', 'Р”-СЂ РЎРёРґРѕСЂРѕРІ РђР»РµРєСЃРµР№']
+   10: patients = ['РЎРјРёСЂРЅРѕРІР° Р•Р»РµРЅР°', 'РџРµС‚СЂРѕРІ РЎРµСЂРіРµР№', 'Р’Р°СЃРёР»СЊРµРІР° РњР°СЂРёСЏ', 'РљРѕР·Р»РѕРІР° РћР»СЊРіР°']
+   11: services = ['РљРѕРЅСЃСѓР»СЊС‚Р°С†РёСЏ', 'Р§РёСЃС‚РєР° Р·СѓР±РѕРІ', 'Р РµРЅС‚РіРµРЅ', 'Р›РµС‡РµРЅРёРµ', 'РЈРґР°Р»РµРЅРёРµ Р·СѓР±Р°']
+   12: types = ['Р”РѕС…РѕРґ', 'Р Р°СЃС…РѕРґ']
+   13: status = ['РѕРїР»Р°С‡РµРЅ', 'РѕС‚РјРµРЅС‘РЅ', 'РЅРѕРІС‹Р№']
+   14: 
+   15: for i in range(1, 50):
+   16:     dt = start_date + timedelta(days=i*3)
+   17:     op = {
+   18:         'date': dt.strftime('%d.%m.%Y'),
+   19:         'doctor': doctors[i % 2],
+   20:         'patient': patients[i % 4],
+   21:         'service': services[i % 5],
+   22:         'type': types[i % 2],
+   23:         'amount': 1000 * (i % 5 + 2),
+   24:         'status': status[i % 3],
+   25:         'comment': f"РљРѕРјРјРµРЅС‚Р°СЂРёР№ Рє РѕРїРµСЂР°С†РёРё {i}"
+   26:     }
+   27:     ops.append(op)
+   28: 
+   29: db.finance.delete_many({})
+   30: db.finance.insert_many(ops)
+   31: print("Р”РµРјРѕ-РѕРїРµСЂР°С†РёРё РґР»СЏ С„РёРЅРѕС‚С‡С‘С‚Р° РґРѕР±Р°РІР»РµРЅС‹!")

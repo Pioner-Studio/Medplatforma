@@ -1,0 +1,35 @@
+﻿    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: <h2>Р–СѓСЂРЅР°Р» РґРµР№СЃС‚РІРёР№</h2>
+    4: <div class="card shadow p-4" style="max-width:1100px;margin:0 auto;">
+    5:   <table class="table action-table" style="width:100%;">
+    6:     <thead>
+    7:       <tr>
+    8:         <th>Р”Р°С‚Р°/Р’СЂРµРјСЏ</th>
+    9:         <th>РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ</th>
+   10:         <th>Р РѕР»СЊ</th>
+   11:         <th>Р”РµР№СЃС‚РІРёРµ</th>
+   12:         <th>РћР±СЉРµРєС‚</th>
+   13:         <th>РљРѕРјРјРµРЅС‚Р°СЂРёР№</th>
+   14:       </tr>
+   15:     </thead>
+   16:     <tbody>
+   17:       {% for log in logs %}
+   18:       <tr>
+   19:         <td>{{ log.time }}</td>
+   20:         <td>
+   21:           <img src="{{ log.avatar_url }}" class="mini-avatar" style="width:28px;height:28px;border-radius:50%;margin-right:7px;">
+   22:           {{ log.user }}
+   23:         </td>
+   24:         <td>{{ log.role }}</td>
+   25:         <td>
+   26:           <span class="badge badge-info">{{ log.action_type }}</span>
+   27:         </td>
+   28:         <td>{{ log.target }}</td>
+   29:         <td>{{ log.comment or '' }}</td>
+   30:       </tr>
+   31:       {% endfor %}
+   32:     </tbody>
+   33:   </table>
+   34: </div>
+   35: {% endblock %}

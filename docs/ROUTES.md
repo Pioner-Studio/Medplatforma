@@ -1,16 +1,73 @@
 # ROUTES
 
-Не удалось импортировать приложение:
-
-```
-Traceback (most recent call last):
-  File "D:\Projects\medplatforma\tools\generate_docs.py", line 37, in _load_flask_app
-    spec.loader.exec_module(mod)  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
-  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-  File "D:\Projects\medplatforma\main.py", line 8, in <module>
-    import pandas as pd
-ModuleNotFoundError: No module named 'pandas'
-
-```
+| Route | Endpoint | Methods |
+|---|---|---|
+| `/` | **home** | GET |
+| `/add_doctor` | **add_doctor** | GET,POST |
+| `/add_event` | **add_event** | GET,POST |
+| `/add_patient` | **add_patient** | GET,POST |
+| `/add_room` | **add_room** | GET,POST |
+| `/add_service` | **add_service** | GET,POST |
+| `/add_task` | **add_task** | POST |
+| `/add_xray` | **add_xray** | GET,POST |
+| `/add_ztl` | **add_ztl** | GET,POST |
+| `/api/appointments/<id>` | **api_appointment_get** | GET |
+| `/api/appointments/<id>/update` | **api_appointment_update** | POST |
+| `/api/appointments/update_time` | **api_appointments_update_time** | POST |
+| `/api/busy_slots` | **api_busy_slots** | POST |
+| `/api/chat/<id>/send` | **api_chat_send** | POST |
+| `/api/dicts` | **api_dicts** | GET |
+| `/api/doctor_schedule` | **doctor_schedule** | POST |
+| `/api/events` | **api_events** | GET |
+| `/api/finance/record` | **api_finance_record** | POST |
+| `/api/free_slots` | **api_free_slots** | POST |
+| `/api/patients/<id>/full` | **api_patient_full** | GET |
+| `/api/patients/<id>/generate_card_no` | **api_patient_generate_card_no** | POST |
+| `/api/patients/<id>/update_info` | **api_patient_update_info** | POST |
+| `/api/patients/<id>/update_questionary` | **api_patient_update_questionary** | POST |
+| `/api/rooms/busy` | **api_room_busy** | GET |
+| `/api/rooms/status_now` | **api_rooms_status_now** | GET |
+| `/api/rooms/today_details` | **api_rooms_today_details** | GET |
+| `/api/services/<id>` | **api_service_get** | GET |
+| `/api/services_min` | **api_services_min** | GET |
+| `/api/visit_statuses_min` | **api_visit_statuses_min** | GET |
+| `/backup` | **backup** | GET |
+| `/busy_slots/<doctor_id>` | **busy_slots** | GET |
+| `/cabinet/<cabinet_name>` | **cabinet_card** | GET |
+| `/calendar` | **calendar_view** | GET |
+| `/data_tools` | **data_tools** | GET,POST |
+| `/delete_appointment/<id>` | **delete_appointment** | POST |
+| `/delete_patient/<id>` | **delete_patient** | POST |
+| `/delete_room/<id>` | **delete_room** | POST |
+| `/delete_service/<id>` | **delete_service** | POST |
+| `/doctor_busy_slots/<doctor_id>` | **doctor_busy_slots** | GET |
+| `/doctor_card/<doctor_id>` | **doctor_card** | GET |
+| `/doctors` | **doctors** | GET |
+| `/edit_event/<event_id>` | **edit_event** | GET,POST |
+| `/edit_patient/<id>` | **edit_patient** | GET,POST |
+| `/edit_room/<id>` | **edit_room** | GET,POST |
+| `/edit_service/<id>` | **edit_service** | GET,POST |
+| `/export_calendar` | **export_calendar** | GET |
+| `/export_data` | **export_data** | GET |
+| `/finance_report` | **finance_report** | GET |
+| `/finance_report/export` | **finance_report_export** | GET |
+| `/healthz` | **healthz** | GET |
+| `/import_data` | **import_data** | POST |
+| `/login` | **login** | GET,POST |
+| `/logout` | **logout** | GET |
+| `/logs` | **logs** | GET |
+| `/mark_task_done/<task_id>` | **mark_task_done** | GET |
+| `/messages` | **messages** | GET |
+| `/partners` | **partners** | GET |
+| `/patient_card/<id>` | **patient_card** | GET |
+| `/patients` | **patients_list** | GET |
+| `/profile` | **profile** | GET |
+| `/roadmap` | **roadmap_view** | GET |
+| `/rooms` | **rooms_list** | GET |
+| `/services` | **services_list** | GET |
+| `/settings` | **settings** | GET |
+| `/task/<task_id>` | **task_card** | GET |
+| `/tasks` | **tasks** | GET |
+| `/update_event_time` | **update_event_time** | POST |
+| `/xray_room` | **xray_room** | GET |
+| `/ztl` | **ztl** | GET |

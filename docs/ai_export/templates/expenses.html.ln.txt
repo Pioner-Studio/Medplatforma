@@ -1,0 +1,28 @@
+﻿    1: {% extends 'base.html' %}
+    2: {% block title %}РЈС‡С‘С‚ СЂР°СЃС…РѕРґРѕРІ{% endblock %}
+    3: {% block content %}
+    4: <div style="max-width:900px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:38px;">
+    5:     <h2>РЈС‡С‘С‚ СЂР°СЃС…РѕРґРѕРІ</h2>
+    6:     <div><b>РћР±С‰РёР№ РґРѕС…РѕРґ:</b> <span style="color:#25c045">{{ total_income|round(2) }} в‚Ѕ</span></div>
+    7:     <div><b>РћР±С‰РёРµ СЂР°СЃС…РѕРґС‹:</b> <span style="color:red;">{{ total_expenses|round(2) }} в‚Ѕ</span></div>
+    8:     <div><b>Р§РёСЃС‚Р°СЏ РїСЂРёР±С‹Р»СЊ:</b> <span style="color:{{ 'green' if profit >= 0 else 'red' }};font-weight:700;">{{ profit|round(2) }} в‚Ѕ</span></div>
+    9:     <hr style="margin:24px 0;">
+   10:     <table style="width:100%;">
+   11:         <tr>
+   12:             <th>Р”Р°С‚Р°</th>
+   13:             <th>РљР°С‚РµРіРѕСЂРёСЏ</th>
+   14:             <th>РЎСѓРјРјР°</th>
+   15:             <th>РљРѕРјРјРµРЅС‚Р°СЂРёР№</th>
+   16:         </tr>
+   17:         {% for e in expenses %}
+   18:         <tr>
+   19:             <td>{{ e.date }}</td>
+   20:             <td>{{ e.category }}</td>
+   21:             <td>{{ e.amount|round(2) }} в‚Ѕ</td>
+   22:             <td>{{ e.comment }}</td>
+   23:         </tr>
+   24:         {% endfor %}
+   25:     </table>
+   26:     <a href="/add_expense" style="margin-top:24px;display:inline-block;background:#445be2;color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;">Р”РѕР±Р°РІРёС‚СЊ СЂР°СЃС…РѕРґ</a>
+   27: </div>
+   28: {% endblock %}

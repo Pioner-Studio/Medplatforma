@@ -1,0 +1,116 @@
+﻿    1: import random
+    2: from datetime import datetime, timedelta
+    3: 
+    4: from pymongo import MongoClient
+    5: 
+    6: client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
+    7: db = client["medplatforma"]
+    8: 
+    9: # Р§РРЎРўРРњ РєРѕР»Р»РµРєС†РёРё:
+   10: db.doctors.delete_many({})
+   11: db.patients.delete_many({})
+   12: db.events.delete_many({})
+   13: 
+   14: # 1. Р”РµРјРѕ-РІСЂР°С‡Рё
+   15: doctor_names = [
+   16:     "РЎРјРёСЂРЅРѕРІ РџР°РІРµР»",
+   17:     "РРІР°РЅРѕРІР° РђРЅРЅР°",
+   18:     "РљСѓР·РЅРµС†РѕРІ Р”РјРёС‚СЂРёР№",
+   19:     "РџРѕРїРѕРІР° РњР°СЂРёСЏ",
+   20:     "Р’РѕР»РєРѕРІ РђСЂС‚С‘Рј",
+   21:     "РЎРѕРєРѕР»РѕРІР° Р•РєР°С‚РµСЂРёРЅР°",
+   22:     "Р›РµР±РµРґРµРІ РЎРµСЂРіРµР№",
+   23:     "РљРѕР·Р»РѕРІР° Р®Р»РёСЏ",
+   24:     "РќРѕРІРёРєРѕРІ РђРЅРґСЂРµР№",
+   25:     "Р¤РµРґРѕСЂРѕРІР° Р•Р»РµРЅР°",
+   26: ]
+   27: specializations = [
+   28:     "РўРµСЂР°РїРµРІС‚",
+   29:     "РҐРёСЂСѓСЂРі",
+   30:     "РћСЂС‚РѕРїРµРґ",
+   31:     "Р”РµС‚СЃРєРёР№ СЃС‚РѕРјР°С‚РѕР»РѕРі",
+   32:     "РџР°СЂРѕРґРѕРЅС‚РѕР»РѕРі",
+   33:     "Р РµРЅС‚РіРµРЅРѕР»РѕРі",
+   34:     "РћСЂС‚РѕРґРѕРЅС‚",
+   35:     "Р“РёРіРёРµРЅРёСЃС‚",
+   36:     "РРјРїР»Р°РЅС‚РѕР»РѕРі",
+   37:     "РЎС‚РѕРјР°С‚РѕР»РѕРі РѕР±С‰РµР№ РїСЂР°РєС‚РёРєРё",
+   38: ]
+   39: doctor_ids = []
+   40: for i, name in enumerate(doctor_names):
+   41:     doc = {
+   42:         "full_name": name,
+   43:         "specialization": specializations[i],
+   44:         "email": f"doctor{i+1}@mail.ru",
+   45:         "phone": f"+79990000{str(100+i)}",
+   46:         "avatar_url": f"/static/avatars/doctor_{i%6+1}.png",
+   47:         "status": "Р°РєС‚РёРІРµРЅ",
+   48:     }
+   49:     res = db.doctors.insert_one(doc)
+   50:     doctor_ids.append(str(res.inserted_id))
+   51: 
+   52: # 2. Р”РµРјРѕ-РїР°С†РёРµРЅС‚С‹
+   53: patient_names = [
+   54:     "РџРµС‚СЂРѕРІ РРІР°РЅ",
+   55:     "РЎРёРґРѕСЂРѕРІР° РћР»СЊРіР°",
+   56:     "РњРёС…Р°Р№Р»РѕРІ РЎРµСЂРіРµР№",
+   57:     "Р•РіРѕСЂРѕРІР° РўР°С‚СЊСЏРЅР°",
+   58:     "РћСЂР»РѕРІ Р”РјРёС‚СЂРёР№",
+   59:     "РЎРµРјРµРЅРѕРІР° РњР°СЂРёСЏ",
+   60:     "Р’Р°СЃРёР»СЊРµРІ РђРЅС‚РѕРЅ",
+   61:     "Р“СЂРѕРјРѕРІР° РќР°С‚Р°Р»СЊСЏ",
+   62:     "Р—Р°Р№С†РµРІ РђР»РµРєСЃРµР№",
+   63:     "РўРёС…РѕРЅРѕРІР° РСЂРёРЅР°",
+   64: ]
+   65: patient_ids = []
+   66: for i, name in enumerate(patient_names):
+   67:     pat = {
+   68:         "full_name": name,
+   69:         "dob": f"198{random.randint(0,9)}-0{random.randint(1,9)}-{random.randint(10,28)}",
+   70:         "phone": f"+79990000{str(200+i)}",
+   71:         "email": f"patient{i+1}@mail.ru",
+   72:         "avatar_url": f"/static/avatars/patient_{i%6+1}.png",
+   73:     }
+   74:     res = db.patients.insert_one(pat)
+   75:     patient_ids.append(str(res.inserted_id))
+   76: 
+   77: # 3. Р”РµРјРѕ-Р·Р°РїРёСЃРё (20 С€С‚СѓРє РІ СЂР°Р·РЅС‹Рµ РґР°С‚С‹ РјРµСЃСЏС†Р°)
+   78: cabinets = [
+   79:     "РўРµСЂР°РїРµРІС‚РёС‡РµСЃРєРёР№",
+   80:     "РҐРёСЂСѓСЂРіРёС‡РµСЃРєРёР№",
+   81:     "РћСЂС‚РѕРїРµРґРёС‡РµСЃРєРёР№",
+   82:     "Р”РµС‚СЃРєРёР№",
+   83:     "РџР°СЂРѕРґРѕРЅС‚РѕР»РѕРіРёС‡РµСЃРєРёР№",
+   84:     "Р РµРЅС‚РіРµРЅ",
+   85: ]
+   86: services = ["РџР»РѕРјР±Р°", "РРјРїР»Р°РЅС‚Р°С†РёСЏ", "Р›РµС‡РµРЅРёРµ", "Р“РёРіРёРµРЅР°"]
+   87: statuses = ["РџРµСЂРІРёС‡РЅС‹Р№", "РџРѕРІС‚РѕСЂРЅС‹Р№", "РћРїР»Р°С‡РµРЅ", "РћС‚РєР°Р·"]
+   88: 
+   89: for i in range(20):
+   90:     # Р“РµРЅРµСЂРёСЂСѓРµРј РґР°С‚С‹ СЃС‚СЂРѕРіРѕ РІРЅСѓС‚СЂРё С‚РµРєСѓС‰РµРіРѕ РјРµСЃСЏС†Р°
+   91:     now = datetime.now()
+   92:     year, month = now.year, now.month
+   93:     day = 1 + (i % 28)  # РґРЅРё СЃ 1 РїРѕ 28
+   94:     hour = 9 + (i % 8)  # РІСЂРµРјСЏ 9:00 - 16:00
+   95:     try:
+   96:         start_dt = datetime(year, month, day, hour, 0)
+   97:     except ValueError:
+   98:         start_dt = now  # fallback, РµСЃР»Рё РІРґСЂСѓРі РІС‹Р№РґРµС‚ Р·Р° РіСЂР°РЅРёС†С‹ РјРµСЃСЏС†Р°
+   99: 
+  100:     ev = {
+  101:         "doctor_id": random.choice(doctor_ids),
+  102:         "patient_id": random.choice(patient_ids),
+  103:         "cabinet": random.choice(cabinets),
+  104:         "start": start_dt.strftime("%Y-%m-%dT%H:%M"),
+  105:         "service": random.choice(services),
+  106:         "sum": random.choice([2000, 3500, 4000, 4500, 5000, 6000]),
+  107:         "status": random.choice(statuses),
+  108:         "status_color": "",
+  109:         "comment": f"РђРІС‚РѕСЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅР°СЏ Р·Р°РїРёСЃСЊ в„–{i+1}",
+  110:         "phone": f"+79990000{str(200 + random.randint(0,9))}",
+  111:         "whatsapp": f"79990000{str(200 + random.randint(0,9))}",
+  112:         "telegram": f"patient{i%10+1}",
+  113:     }
+  114:     db.events.insert_one(ev)
+  115: 
+  116: print("Р”РµРјРѕ-РґР°РЅРЅС‹Рµ СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅС‹!")

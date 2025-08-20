@@ -1,0 +1,172 @@
+﻿    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: <h2>РЎРїРёСЃРѕРє РІСЂР°С‡РµР№</h2>
+    4: <form method="get" class="doctors-filters" style="margin-bottom: 18px;">
+    5:   <select name="specialization" onchange="this.form.submit()" class="filter-select">
+    6:     <option value="">Р’СЃРµ СЃРїРµС†РёР°Р»СЊРЅРѕСЃС‚Рё</option>
+    7:     {% set all_specs = doctors | map(attribute='specialization') | list %}
+    8:     {% for spec in all_specs|unique %}
+    9:       {% if spec %}
+   10:         <option value="{{ spec }}" {% if request.args.get('specialization') == spec %}selected{% endif %}>{{ spec }}</option>
+   11:       {% endif %}
+   12:     {% endfor %}
+   13:   </select>
+   14:   <a href="{{ url_for('add_doctor') }}" class="btn-add-doc">
+   15:     <i class="fa fa-user-plus"></i> Р”РѕР±Р°РІРёС‚СЊ РІСЂР°С‡Р°
+   16:   </a>
+   17: </form>
+   18: <div class="doctors-list">
+   19:   {% for doc in doctors %}
+   20:     <div class="doctor-card-row">
+   21:       <div class="avatar-zone">
+   22:         <img src="{{ doc.avatar_url or '/static/avatars/demo-doctor.png' }}" alt="avatar" class="avatar-doctor">
+   23:       </div>
+   24:       <div class="info-zone">
+   25:         <div class="doctor-name">{{ doc.full_name }}</div>
+   26:         <div class="doctor-meta">
+   27:           <span class="special">{{ doc.specialization }}</span>
+   28:           <span class="email"><i class="fa fa-envelope"></i> {{ doc.email }}</span>
+   29:           <span class="phone"><i class="fa fa-phone"></i> {{ doc.phone }}</span>
+   30:         </div>
+   31:         {% if doc.schedule %}
+   32:           <div class="doctor-schedule-mini">
+   33:             <b>Р Р°СЃРїРёСЃР°РЅРёРµ:</b>
+   34:             <ul>
+   35:               {% for wd in range(1, 7) %}
+   36:                 {% if doc.schedule[wd|string] %}
+   37:                   <li>
+   38:                     {{ ['РџРЅ','Р’С‚','РЎСЂ','Р§С‚','РџС‚','РЎР±'][wd-1] }}:
+   39:                     {{ doc.schedule[wd|string].start }}вЂ“{{ doc.schedule[wd|string].end }}
+   40:                   </li>
+   41:                 {% endif %}
+   42:               {% endfor %}
+   43:               {% if not (doc.schedule['1'] or doc.schedule['2'] or doc.schedule['3'] or doc.schedule['4'] or doc.schedule['5'] or doc.schedule['6']) %}
+   44:                 <li style="color:#db2828;">Р’С‹С…РѕРґРЅС‹Рµ</li>
+   45:               {% endif %}
+   46:             </ul>
+   47:           </div>
+   48:         {% endif %}
+   49:       </div>
+   50:       <div class="status-zone">
+   51:         <span class="doc-status {{ 'active' if doc.status == 'Р°РєС‚РёРІРµРЅ' else 'inactive' }}">{{ doc.status }}</span>
+   52:       </div>
+   53:       <div class="actions-zone">
+   54:         <a href="{{ url_for('doctor_card', doctor_id=doc._id) }}" class="btn-main">РџРѕРґСЂРѕР±РЅРµРµ</a>
+   55:       </div>
+   56:     </div>
+   57:   {% endfor %}
+   58: </div>
+   59: {% endblock %}
+   60: 
+   61: {% block head %}
+   62: <style>
+   63: .doctors-list {
+   64:   margin-top: 30px;
+   65:   display: flex;
+   66:   flex-direction: column;
+   67:   gap: 18px;
+   68: }
+   69: .doctor-card-row {
+   70:   display: flex;
+   71:   align-items: center;
+   72:   gap: 28px;
+   73:   background: #fff;
+   74:   border-radius: 18px;
+   75:   box-shadow: 0 4px 12px #0001;
+   76:   padding: 16px 28px;
+   77:   font-family: 'Montserrat', sans-serif;
+   78:   min-height: 84px;
+   79:   transition: box-shadow 0.2s;
+   80: }
+   81: .doctor-card-row:hover {
+   82:   box-shadow: 0 8px 18px #0002;
+   83: }
+   84: .avatar-zone {
+   85:   flex: none;
+   86:   width: 64px; height: 64px;
+   87:   display: flex; align-items: center; justify-content: center;
+   88: }
+   89: .avatar-doctor {
+   90:   width: 60px; height: 60px;
+   91:   border-radius: 16px;
+   92:   object-fit: cover;
+   93:   border: 2px solid #e5e7eb;
+   94:   background: #fafaff;
+   95: }
+   96: .info-zone {
+   97:   flex: 1;
+   98:   display: flex;
+   99:   flex-direction: column;
+  100:   gap: 3px;
+  101: }
+  102: .doctor-name {
+  103:   font-size: 1.18em;
+  104:   font-weight: 600;
+  105:   color: #222;
+  106: }
+  107: .doctor-meta {
+  108:   display: flex;
+  109:   flex-wrap: wrap;
+  110:   gap: 18px;
+  111:   font-size: 0.98em;
+  112:   color: #6d7892;
+  113:   margin-top: 2px;
+  114:   align-items: center;
+  115: }
+  116: .special {
+  117:   color: #3887f6;
+  118:   font-weight: 500;
+  119: }
+  120: .doctor-schedule-mini {
+  121:   margin-top: 7px;
+  122:   font-size: 0.97em;
+  123:   color: #4867ae;
+  124:   background: #f4f8ff;
+  125:   border-radius: 6px;
+  126:   padding: 6px 13px 6px 13px;
+  127:   display: inline-block;
+  128:   box-shadow: 0 1px 3px #e8edfa;
+  129: }
+  130: .doctor-schedule-mini ul {
+  131:   margin: 4px 0 0 0;
+  132:   padding-left: 18px;
+  133: }
+  134: .doctor-schedule-mini li {
+  135:   margin-bottom: 1px;
+  136:   list-style: disc;
+  137: }
+  138: .status-zone {
+  139:   min-width: 78px;
+  140:   text-align: center;
+  141:   font-size: 1.12em;
+  142:   font-weight: 600;
+  143: }
+  144: .doc-status.active {
+  145:   color: #21c400;
+  146: }
+  147: .doc-status.inactive {
+  148:   color: #f54040;
+  149: }
+  150: .actions-zone {
+  151:   display: flex;
+  152:   flex-direction: column;
+  153:   gap: 8px;
+  154:   min-width: 120px;
+  155:   align-items: flex-end;
+  156: }
+  157: .btn-main {
+  158:   padding: 6px 18px;
+  159:   background: #2196f3;
+  160:   color: #fff;
+  161:   border-radius: 8px;
+  162:   font-weight: 500;
+  163:   text-decoration: none;
+  164:   font-size: 0.97em;
+  165:   margin-bottom: 3px;
+  166:   transition: background 0.2s;
+  167: }
+  168: .btn-main:hover {
+  169:   background: #1767a2;
+  170: }
+  171: </style>
+  172: {% endblock %}

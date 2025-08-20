@@ -1,0 +1,73 @@
+﻿    1: from datetime import datetime, timedelta
+    2: from bson import ObjectId
+    3: import random
+    4: 
+    5: def rand_date(days=10):
+    6:     return (datetime.now() - timedelta(days=random.randint(0, days))).strftime('%Y-%m-%d %H:%M')
+    7: 
+    8: def pick(lst):
+    9:     return random.choice(lst)
+   10: 
+   11: patients = [
+   12:     {"_id": ObjectId("666666666666666666666601"), "full_name": "РРІР°РЅРѕРІ Р’Р»Р°РґРёРјРёСЂ"},
+   13:     {"_id": ObjectId("666666666666666666666602"), "full_name": "РџРµС‚СЂРѕРІР° РњР°СЂРёСЏ"},
+   14:     {"_id": ObjectId("666666666666666666666603"), "full_name": "РЎРёРґРѕСЂРѕРІР° РћР»СЊРіР°"},
+   15:     {"_id": ObjectId("666666666666666666666604"), "full_name": "Р›РµР±РµРґРµРІ РЎРµСЂРіРµР№"},
+   16:     {"_id": ObjectId("666666666666666666666605"), "full_name": "РљРѕР·Р»РѕРІР° РђРЅРЅР°"},
+   17: ]
+   18: doctors = [
+   19:     {"_id": ObjectId("777777777777777777777701"), "full_name": "Р”-СЂ РЎРёРґРѕСЂРѕРІ РђР»РµРєСЃРµР№"},
+   20:     {"_id": ObjectId("777777777777777777777702"), "full_name": "Р”-СЂ РњРёС…Р°Р№Р»РѕРІР° Р•Р»РµРЅР°"},
+   21:     {"_id": ObjectId("777777777777777777777703"), "full_name": "Р”-СЂ РРІР°РЅРѕРІ Р”РјРёС‚СЂРёР№"},
+   22: ]
+   23: types = ["РџР°РЅРѕСЂР°РјР°", "РџСЂРёС†РµР»СЊРЅС‹Р№", "РљРў"]
+   24: 
+   25: comments = [
+   26:     "РџР°С‚РѕР»РѕРіРёР№ РЅРµ РІС‹СЏРІР»РµРЅРѕ.",
+   27:     "Р’РёР·СѓР°Р»РёР·РёСЂСѓРµС‚СЃСЏ РєР°СЂРёРµСЃ РїСЂРµРјРѕР»СЏСЂР°.",
+   28:     "Р РµРєРѕРјРµРЅРґРѕРІР°РЅРѕ РљРў РґР»СЏ РґРµС‚Р°Р»РёР·Р°С†РёРё.",
+   29:     "Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РїРѕСЃР»Рµ РёРјРїР»Р°РЅС‚Р°С†РёРё.",
+   30:     "РљРѕРЅС‚СЂРѕР»СЊРЅР°СЏ СЃРЅРёРјРѕРє РїРѕСЃР»Рµ Р»РµС‡РµРЅРёСЏ."
+   31: ]
+   32: 
+   33: reports = [
+   34:     "Р’СЃРµ С‚РєР°РЅРё Р±РµР· РёР·РјРµРЅРµРЅРёР№. РљРѕСЃС‚РЅР°СЏ СЃС‚СЂСѓРєС‚СѓСЂР° РІ РЅРѕСЂРјРµ.",
+   35:     "РћР±РЅР°СЂСѓР¶РµРЅ РєР°СЂРёРµСЃ. Р РµРєРѕРјРµРЅРґРѕРІР°РЅРѕ Р»РµС‡РµРЅРёРµ.",
+   36:     "Р’ РѕР±Р»Р°СЃС‚Рё 1.6 РЅРµР·РЅР°С‡РёС‚РµР»СЊРЅРѕРµ Р·Р°С‚РµРјРЅРµРЅРёРµ.",
+   37:     "Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РїСЂРѕР№РґРµРЅРѕ СѓСЃРїРµС€РЅРѕ.",
+   38:     "РџСЂРѕРІРµРґРµРЅР° РёРјРїР»Р°РЅС‚Р°С†РёСЏ Р·СѓР±Р° 2.4, СЃРѕСЃС‚РѕСЏРЅРёРµ С…РѕСЂРѕС€РµРµ."
+   39: ]
+   40: 
+   41: images = [
+   42:     "/static/xrays/demo_xray_1.png",
+   43:     "/static/xrays/demo_xray_2.png",
+   44:     "/static/xrays/demo_xray_3.png",
+   45:     "/static/xrays/demo_xray_4.png",
+   46:     "/static/xrays/demo_xray_5.png",
+   47: ]
+   48: 
+   49: xrays = []
+   50: 
+   51: for i in range(12):
+   52:     pat = pick(patients)
+   53:     doc = pick(doctors)
+   54:     xrays.append({
+   55:         "_id": ObjectId(),
+   56:         "patient_id": pat["_id"],
+   57:         "doctor_id": doc["_id"],
+   58:         "date": rand_date(),
+   59:         "type": pick(types),
+   60:         "image_url": pick(images),
+   61:         "comment": pick(comments),
+   62:         "report": pick(reports),
+   63:         "uploaded_by": pick([doc["full_name"], "admin"]),
+   64:         "created_at": rand_date()
+   65:     })
+   66: 
+   67: if __name__ == "__main__":
+   68:     from pymongo import MongoClient
+   69:     client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
+   70:     db = client['medplatforma']
+   71:     db.xrays.delete_many({})
+   72:     db.xrays.insert_many(xrays)
+   73:     print("вњ… РЎРёРґ-С„Р°Р№Р» СЂРµРЅС‚РіРµРЅ-РєР°Р±РёРЅРµС‚Р° СѓСЃРїРµС€РЅРѕ РІС‹РїРѕР»РЅРµРЅ! Р”РѕР±Р°РІР»РµРЅРѕ:", len(xrays))

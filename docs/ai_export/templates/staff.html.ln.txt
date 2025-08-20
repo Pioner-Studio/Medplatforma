@@ -1,0 +1,40 @@
+﻿    1: {% extends 'base.html' %}
+    2: {% block title %}РЎРѕС‚СЂСѓРґРЅРёРєРё Рё СЃС‚СЂСѓРєС‚СѓСЂР° РєР»РёРЅРёРєРё{% endblock %}
+    3: {% block content %}
+    4: <div style="max-width:950px; margin:0 auto; background:#fff; border-radius:24px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:34px 44px;">
+    5:     <h2 style="font-size:2.1rem; font-weight:700; margin-bottom:28px;">РЎС‚СЂСѓРєС‚СѓСЂР° РєР»РёРЅРёРєРё</h2>
+    6:     <table style="width:100%; background:#fff; border-radius:18px; font-size:1.11rem;">
+    7:         <thead style="background:#f2f6ff;">
+    8:             <tr>
+    9:                 <th>Р¤РРћ</th>
+   10:                 <th>Р”РѕР»Р¶РЅРѕСЃС‚СЊ</th>
+   11:                 <th>РўРµР»РµС„РѕРЅ</th>
+   12:                 <th>Email</th>
+   13:                 <th>Р РѕР»СЊ</th>
+   14:                 <th>РЎС‚Р°С‚СѓСЃ</th>
+   15:             </tr>
+   16:         </thead>
+   17:         <tbody>
+   18:         {% for staff in staff_list %}
+   19:             <tr style="border-bottom:1px solid #f0f0f0;">
+   20:                 <td style="font-weight:600;">
+   21:                     <img src="{{ staff.avatar_url or '/static/avatars/demo-staff.png' }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-right:8px; vertical-align:middle;">
+   22:                     {{ staff.full_name }}
+   23:                 </td>
+   24:                 <td>{{ staff.position }}</td>
+   25:                 <td>{{ staff.phone }}</td>
+   26:                 <td>{{ staff.email }}</td>
+   27:                 <td>{{ staff.role }}</td>
+   28:                 <td style="color: {% if staff.status == 'Р°РєС‚РёРІРµРЅ' %}#13b949{% else %}#d91f3c{% endif %}; font-weight:600;">
+   29:                     {{ staff.status|capitalize }}
+   30:                 </td>
+   31:             </tr>
+   32:         {% else %}
+   33:             <tr>
+   34:                 <td colspan="6" style="text-align:center; color:#aaa; padding:26px;">РџРѕРєР° РЅРµС‚ СЃРѕС‚СЂСѓРґРЅРёРєРѕРІ</td>
+   35:             </tr>
+   36:         {% endfor %}
+   37:         </tbody>
+   38:     </table>
+   39: </div>
+   40: {% endblock %}
