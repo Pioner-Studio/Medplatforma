@@ -1,17 +1,57 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-<h2>История изменений</h2>
-<table class="table table-striped">
-    <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Детали</th></tr></thead>
-    <tbody>
-        {% for log in logs %}
-        <tr>
-            <td>{{ log.datetime }}</td>
-            <td>{{ log.user }}</td>
-            <td>{{ log.action }}</td>
-            <td>{{ log.details }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+
+<div class="journal-header" style="display:flex;justify-content:space-between;align-items:center;">
+  <h2>Журнал действий</h2>
+  <a href="{{ url_for('export_logs', **request.args) }}" class="btn btn-outline-primary">Выгрузить видимое в CSV</a>
+</div>
+
+<form method="get" class="journal-filters" style="display:flex;gap:18px;align-items:center;margin-bottom:18px;">
+  <input type="text" name="search" placeholder="Поиск по пользователю или действию..." value="{{ request.args.get('search','') }}">
+  <select name="role">
+    <option value="">Все роли</option>
+    {% for r in roles %}
+      <option value="{{ r }}" {% if r == selected_role %}selected{% endif %}>{{ r }}</option>
+    {% endfor %}
+  </select>
+  <input type="date" name="start_date" value="{{ start_date }}">
+  <input type="date" name="end_date" value="{{ end_date }}">
+  <button type="submit" class="btn btn-outline-primary">Фильтр</button>
+</form>
+
+<div style="overflow-x:auto;">
+<table class="journal-table" style="width:100%;background:#fff;border-radius:18px;box-shadow:0 2px 22px #e3eaf92a;">
+  <thead>
+    <tr>
+      <th>Дата/Время</th>
+      <th>Пользователь</th>
+      <th>Роль</th>
+      <th>IP</th>
+      <th>Действие</th>
+      <th>Объект</th>
+      <th>Комментарий</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+      <tr>
+        <td>{{ log.datetime or "" }}</td>
+        <td>
+          {% if log.avatar_url %}
+            <img src="{{ log.avatar_url }}" style="width:28px;height:28px;border-radius:50%;margin-right:5px;vertical-align:middle;">
+          {% endif %}
+          {{ log.user or "" }}
+        </td>
+        <td>{{ log.role or "" }}</td>
+        <td style="color:#788;">{{ log.ip or "" }}</td>
+        <td>{{ log.action or "" }}</td>
+        <td>{{ log.object or "" }}</td>
+        <td style="max-width:240px;white-space:normal;">{{ log.comment or "" }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" style="color:#aaa;text-align:center;">Нет записей</td></tr>
+    {% endfor %}
+  </tbody>
 </table>
+</div>
 {% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Добавить услугу</h2>
+
+<form method="post" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;max-width:720px;">
+  <div style="display:grid;grid-template-columns:1fr 180px;gap:12px;">
+    <label>Название
+      <input type="text" name="name" value="{{ form.name or '' }}" required>
+    </label>
+    <label>Код
+      <input type="text" name="code" value="{{ form.code or '' }}" placeholder="CONSULT / FILL ..." required>
+    </label>
+
+    <label>Цена, ₽
+      <input type="number" name="price" value="{{ form.price or 0 }}" min="0" step="1">
+    </label>
+    <label>Длительность (мин)
+      <input type="number" name="duration_min" value="{{ form.duration_min or 30 }}" min="5" step="5">
+    </label>
+
+    <label>Цвет
+      <input type="color" name="color" value="{{ form.color or '#3498db' }}" style="height:42px;">
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:26px;">
+      <input type="checkbox" name="is_active" {% if form.is_active %}checked{% endif %}> Активна
+    </label>
+
+    <label style="grid-column:1/-1;">Описание
+      <textarea name="description" rows="4">{{ form.description or '' }}</textarea>
+    </label>
+  </div>
+
+  <div style="margin-top:14px;display:flex;gap:10px;">
+    <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;">Сохранить</button>
+    <a href="{{ url_for('services_list') }}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

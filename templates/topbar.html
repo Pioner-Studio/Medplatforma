@@ -1,0 +1,48 @@
+<header class="topbar">
+  <div class="topbar-center">
+  <div class="topbar-status">
+    <span class="topbar-task">
+      <i class="fa-solid fa-list-check"></i>
+      <b>3</b> открытые задачи
+    </span>
+    <span class="topbar-rating">
+      <i class="fa-solid fa-star" style="color:#f7ba07"></i>
+      4.9
+    </span>
+    <span class="topbar-online">
+      <i class="fa-solid fa-user-group"></i>
+      <b>5</b> пациентов в клинике
+    </span>
+    <span class="topbar-news">
+      <i class="fa-solid fa-bullhorn"></i>
+      <b>Новое:</b> Завтра рабочий день до 17:00
+    </span>
+  </div>
+</div>
+  <div class="topbar-right">
+    <!-- Колокольчик -->
+    <button class="topbar-icon-btn" id="notifBellBtn">
+      <i class="fa-regular fa-bell"></i>
+      <span class="notif-badge" id="notifBadge" style="display:inline;">3</span>
+    </button>
+
+    <!-- Переключатель темы -->
+    <button id="themeToggleBtn" class="topbar-icon-btn">
+      <i class="fa-solid fa-sun theme-sun" style="color: #ffd700;"></i>
+      <i class="fa-solid fa-moon theme-moon" style="display:none; color:#4667b9;"></i>
+    </button>
+
+    <!-- Профиль + меню -->
+    <div class="profile-block" onclick="toggleProfileMenu()" tabindex="0" style="margin-left:20px; position:relative;">
+      <img src="{{ url_for('static', filename='investor_avatar.png') }}" alt="Профиль" class="profile-avatar">
+      <span class="profile-name">{{ session.get('user_name', 'Инвестор Инвесторович') }}</span>
+      <i class="fa fa-chevron-down" style="margin-left:7px; font-size:0.9em; color:#bbb"></i>
+      <div class="profile-menu" id="profileMenu" tabindex="0">
+  <a href="{{ url_for('profile') }}"><i class="fa fa-user"></i> Личный кабинет</a>
+  <a href="#"><i class="fa fa-cog"></i> Настройки</a>
+  <a href="#"><i class="fa fa-question-circle"></i> Помощь</a>
+  <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out-alt"></i> Выйти</a>
+</div>
+    </div>
+  </div>
+</header>

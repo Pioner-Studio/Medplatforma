@@ -1,95 +1,172 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
 <h2>Список врачей</h2>
-<div style="margin-bottom:10px;">
-    <button class="btn btn-outline-primary" onclick="filterSpec('all')">Все</button>
-    <button class="btn btn-outline-info" onclick="filterSpec('стоматолог')">Стоматологи</button>
-    <button class="btn btn-outline-info" onclick="filterSpec('гигиенист')">Гигиенисты</button>
-    <!-- Добавь свои специализации -->
-</div>
-<div style="margin-bottom:20px;">
-    <input type="text" id="searchDoctor" class="form-control" placeholder="Поиск по ФИО, телефону, email..." style="max-width:360px;display:inline-block;">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal" style="margin-left:10px;">+ Добавить врача</button>
-</div>
-<table id="doctorsTable" style="width:100%;background:#fff;border-radius:22px;box-shadow:0 2px 12px rgba(20,40,80,.07);">
-    <thead>
-        <tr>
-            <th>ФИО</th>
-            <th>Специализация</th>
-            <th>Телефон</th>
-            <th>Email</th>
-            <th>Статус</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for doctor in doctors %}
-        <tr style="border-bottom:1px solid #f0f0f0;">
-            <td>{{ doctor.full_name }}</td>
-            <td>{{ doctor.specialization }}</td>
-            <td>{{ doctor.phone }}</td>
-            <td>{{ doctor.email }}</td>
-            <td>{{ doctor.status or 'активен' }}</td>
-            <td>
-                <a href="/doctor/{{ doctor['_id'] }}">Подробнее</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6" style="text-align:center;color:#aaa;padding:30px;">Врачей нет</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let input = document.getElementById('searchDoctor');
-    let table = document.getElementById('doctorsTable');
-    input.addEventListener('keyup', function() {
-        let filter = input.value.toLowerCase();
-        let rows = table.getElementsByTagName('tr');
-        for(let i=1; i<rows.length; i++) {
-            let row = rows[i];
-            let text = row.textContent.toLowerCase();
-            row.style.display = (text.indexOf(filter) > -1) ? "" : "none";
-        }
-    });
-});
-function filterSpec(type) {
-    let table = document.getElementById('doctorsTable');
-    let rows = table.getElementsByTagName('tr');
-    for(let i=1; i<rows.length; i++) {
-        let row = rows[i];
-        let spec = (row.cells[1]?.innerText || '').toLowerCase();
-        if (type === 'all' || !type) row.style.display = '';
-        else if (spec.indexOf(type) > -1) row.style.display = '';
-        else row.style.display = 'none';
-    }
-}
-</script>
-
-<!-- Модалка добавления врача -->
-<div class="modal fade" id="addDoctorModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="/add_doctor">
-        <div class="modal-header">
-          <h5 class="modal-title">Добавить врача</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<form method="get" class="doctors-filters" style="margin-bottom: 18px;">
+  <select name="specialization" onchange="this.form.submit()" class="filter-select">
+    <option value="">Все специальности</option>
+    {% set all_specs = doctors | map(attribute='specialization') | list %}
+    {% for spec in all_specs|unique %}
+      {% if spec %}
+        <option value="{{ spec }}" {% if request.args.get('specialization') == spec %}selected{% endif %}>{{ spec }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+  <a href="{{ url_for('add_doctor') }}" class="btn-add-doc">
+    <i class="fa fa-user-plus"></i> Добавить врача
+  </a>
+</form>
+<div class="doctors-list">
+  {% for doc in doctors %}
+    <div class="doctor-card-row">
+      <div class="avatar-zone">
+        <img src="{{ doc.avatar_url or '/static/avatars/demo-doctor.png' }}" alt="avatar" class="avatar-doctor">
+      </div>
+      <div class="info-zone">
+        <div class="doctor-name">{{ doc.full_name }}</div>
+        <div class="doctor-meta">
+          <span class="special">{{ doc.specialization }}</span>
+          <span class="email"><i class="fa fa-envelope"></i> {{ doc.email }}</span>
+          <span class="phone"><i class="fa fa-phone"></i> {{ doc.phone }}</span>
         </div>
-        <div class="modal-body">
-          <input class="form-control" name="full_name" placeholder="ФИО" required><br>
-          <input class="form-control" name="specialization" placeholder="Специализация" required><br>
-          <input class="form-control" name="phone" placeholder="Телефон" required><br>
-          <input class="form-control" name="email" placeholder="Email"><br>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-          <button type="submit" class="btn btn-success">Сохранить</button>
-        </div>
-      </form>
+        {% if doc.schedule %}
+          <div class="doctor-schedule-mini">
+            <b>Расписание:</b>
+            <ul>
+              {% for wd in range(1, 7) %}
+                {% if doc.schedule[wd|string] %}
+                  <li>
+                    {{ ['Пн','Вт','Ср','Чт','Пт','Сб'][wd-1] }}: 
+                    {{ doc.schedule[wd|string].start }}–{{ doc.schedule[wd|string].end }}
+                  </li>
+                {% endif %}
+              {% endfor %}
+              {% if not (doc.schedule['1'] or doc.schedule['2'] or doc.schedule['3'] or doc.schedule['4'] or doc.schedule['5'] or doc.schedule['6']) %}
+                <li style="color:#db2828;">Выходные</li>
+              {% endif %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+      <div class="status-zone">
+        <span class="doc-status {{ 'active' if doc.status == 'активен' else 'inactive' }}">{{ doc.status }}</span>
+      </div>
+      <div class="actions-zone">
+        <a href="{{ url_for('doctor_card', doctor_id=doc._id) }}" class="btn-main">Подробнее</a>
+      </div>
     </div>
-  </div>
+  {% endfor %}
 </div>
+{% endblock %}
+
+{% block head %}
+<style>
+.doctors-list {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.doctor-card-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px #0001;
+  padding: 16px 28px;
+  font-family: 'Montserrat', sans-serif;
+  min-height: 84px;
+  transition: box-shadow 0.2s;
+}
+.doctor-card-row:hover {
+  box-shadow: 0 8px 18px #0002;
+}
+.avatar-zone {
+  flex: none;
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-doctor {
+  width: 60px; height: 60px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  background: #fafaff;
+}
+.info-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.doctor-name {
+  font-size: 1.18em;
+  font-weight: 600;
+  color: #222;
+}
+.doctor-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 0.98em;
+  color: #6d7892;
+  margin-top: 2px;
+  align-items: center;
+}
+.special {
+  color: #3887f6;
+  font-weight: 500;
+}
+.doctor-schedule-mini {
+  margin-top: 7px;
+  font-size: 0.97em;
+  color: #4867ae;
+  background: #f4f8ff;
+  border-radius: 6px;
+  padding: 6px 13px 6px 13px;
+  display: inline-block;
+  box-shadow: 0 1px 3px #e8edfa;
+}
+.doctor-schedule-mini ul {
+  margin: 4px 0 0 0;
+  padding-left: 18px;
+}
+.doctor-schedule-mini li {
+  margin-bottom: 1px;
+  list-style: disc;
+}
+.status-zone {
+  min-width: 78px;
+  text-align: center;
+  font-size: 1.12em;
+  font-weight: 600;
+}
+.doc-status.active {
+  color: #21c400;
+}
+.doc-status.inactive {
+  color: #f54040;
+}
+.actions-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+  align-items: flex-end;
+}
+.btn-main {
+  padding: 6px 18px;
+  background: #2196f3;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  font-size: 0.97em;
+  margin-bottom: 3px;
+  transition: background 0.2s;
+}
+.btn-main:hover {
+  background: #1767a2;
+}
+</style>
 {% endblock %}

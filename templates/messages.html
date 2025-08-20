@@ -1,8 +1,55 @@
-{% extends 'base.html' %}
-{% block title %}Сообщения{% endblock %}
+{% extends "base.html" %}
 {% block content %}
-<div style="max-width:900px; margin:0 auto; background:#fff; border-radius:24px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:36px 40px;">
-    <h2 style="font-size:2.1rem; font-weight:700; margin-bottom:24px;">Сообщения</h2>
-    <div style="color:#aaa;">Внутренний чат и оповещения (раздел для расширения — будет позже)</div>
+<div class="chat-container">
+  <div class="chat-sidebar">
+    <div class="chat-sidebar-title">Чаты</div>
+    {% for chat in chats %}
+      <div class="chat-sidebar-row {% if loop.first %}active{% endif %}">
+        <img src="{{ chat.avatar or '/static/avatars/demo-user.png' }}" class="chat-avatar">
+        <div class="chat-info">
+          <div class="chat-title">{{ chat.title or chat.participants|join(', ') }}</div>
+          <div class="chat-last">
+            <span style="color:#8697b6;">
+              {{ chat.messages[-1].sender }}:
+              {{ chat.messages[-1].text[:26] }}{% if chat.messages[-1].text|length > 26 %}...{% endif %}
+            </span>
+            {% if not chat.messages[-1].read %}
+              <span class="chat-badge">NEW</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="chat-time">{{ chat.messages[-1].timestamp[-5:] }}</div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="chat-main">
+    <div class="chat-header">
+      <img src="{{ chats[0].avatar or '/static/avatars/demo-user.png' }}" class="chat-header-avatar">
+      <div>
+        <div class="chat-header-title">{{ chats[0].title or chats[0].participants|join(', ') }}</div>
+        <div class="chat-header-members">Участники: {{ chats[0].participants|join(', ') }}</div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      {% for msg in chats[0].messages %}
+        <div class="msg-bubble {% if msg.sender == user_name %}own{% endif %}">
+          <img src="{{ msg.avatar or '/static/avatars/demo-user.png' }}" class="msg-avatar">
+          <div class="msg-body">
+            <div class="msg-meta">
+              <span class="msg-author">{{ msg.sender }}</span>
+              <span class="msg-role">{{ msg.role }}</span>
+              <span class="msg-time">{{ msg.timestamp[-5:] }}</span>
+            </div>
+            <div class="msg-text">{{ msg.text }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <form id="send-form" class="chat-input-wrap" onsubmit="return false;">
+      <input type="text" class="chat-input" placeholder="Введите сообщение..." autocomplete="off" disabled>
+      <button class="btn-send" disabled><i class="fa fa-paper-plane"></i> Отправить</button>
+    </form>
+    <div class="chat-demo-note">* Демо: отправка сообщений пока неактивна</div>
+  </div>
 </div>
 {% endblock %}

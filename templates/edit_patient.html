@@ -1,61 +1,59 @@
-{% extends 'base.html' %}
-{% block title %}Редактировать пациента{% endblock %}
+{% extends "base.html" %}
 {% block content %}
-<div style="max-width:520px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:40px;">
-    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:24px;">Редактировать пациента</h2>
-    <form method="POST">
-        <label>ФИО *</label>
-        <input name="full_name" value="{{ patient.full_name }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Дата рождения *</label>
-        <input name="dob" type="date" value="{{ patient.dob }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Телефон *</label>
-        <input name="phone" value="{{ patient.phone }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Паспортные данные *</label>
-        <input name="passport" value="{{ patient.passport }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Партнёр / Кто пригласил *</label>
-        <input name="referral" value="{{ patient.referral }}" required style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Адрес регистрации</label>
-        <input name="reg_address" value="{{ patient.reg_address }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Адрес места жительства</label>
-        <input name="live_address" value="{{ patient.live_address }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Эл. почта</label>
-        <input name="email" type="email" value="{{ patient.email }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Бизнес</label>
-        <input name="business" value="{{ patient.business }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Хобби</label>
-        <input name="hobby" value="{{ patient.hobby }}" style="width:100%;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid #ccd;">
-        
-        <label>Примечания</label>
-        <textarea name="notes" rows="3" style="width:100%;padding:10px;margin-bottom:22px;border-radius:8px;border:1px solid #ccd;">{{ patient.notes }}</textarea>
-        
-        <button type="submit" style="background:#445be2;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-weight:700;font-size:1.09rem;cursor:pointer;">Сохранить</button>
-    </form>
-    
-    <script>
-document.getElementById('same_address').addEventListener('change', function() {
-    if (this.checked) {
-        document.getElementById('live_address').value = document.getElementById('reg_address').value;
-        document.getElementById('live_address').setAttribute('readonly', true);
-    } else {
-        document.getElementById('live_address').removeAttribute('readonly');
-    }
-});
+<h2>Редактировать пациента</h2>
 
-document.getElementById('reg_address').addEventListener('input', function() {
-    if (document.getElementById('same_address').checked) {
-        document.getElementById('live_address').value = this.value;
-    }
-});
-</script>
+<form method="post" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;max-width:860px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <label>ФИО
+      <input type="text" name="full_name" value="{{ item.full_name }}" required>
+    </label>
+    <label>Дата рождения
+      <input type="date" name="birthday" value="{{ item.birthday.strftime('%Y-%m-%d') if item.birthday else '' }}">
+    </label>
 
-</div>
+    <label>Пол
+      <select name="gender">
+        <option value="male"   {% if item.gender=='male' %}selected{% endif %}>Мужской</option>
+        <option value="female" {% if item.gender=='female' %}selected{% endif %}>Женский</option>
+        <option value="other"  {% if item.gender=='other' %}selected{% endif %}>Другое</option>
+      </select>
+    </label>
+    <label>Аватар (путь)
+      <input type="text" name="avatar" value="{{ item.avatar or '' }}" placeholder="/static/avatars/patients/p1.jpg">
+    </label>
+
+    <label>Телефон
+      <input type="text" name="phone" value="{{ item.contacts.phone }}">
+    </label>
+    <label>Email
+      <input type="email" name="email" value="{{ item.contacts.email }}">
+    </label>
+
+    <label>WhatsApp
+      <input type="text" name="whatsapp" value="{{ item.contacts.whatsapp }}">
+    </label>
+    <label>Telegram
+      <input type="text" name="telegram" value="{{ item.contacts.telegram }}">
+    </label>
+
+    <label>Город
+      <input type="text" name="city" value="{{ item.address.city }}">
+    </label>
+    <label>Улица/дом
+      <input type="text" name="street" value="{{ item.address.street }}">
+    </label>
+    <label>Индекс
+      <input type="text" name="zip" value="{{ item.address.zip }}">
+    </label>
+
+    <label style="grid-column:1/-1;">Заметки
+      <textarea name="notes" rows="4">{{ item.notes or '' }}</textarea>
+    </label>
+  </div>
+
+  <div style="margin-top:14px;display:flex;gap:10px;">
+    <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;">Сохранить</button>
+    <a href="{{ url_for('patients_list') }}">Отмена</a>
+  </div>
+</form>
 {% endblock %}

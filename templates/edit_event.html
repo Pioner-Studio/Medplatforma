@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="padding:20px;max-width:720px;margin:0 auto;">
+  <h2>Редактировать запись</h2>
+  <form method="post">
+    <label>Врач</label>
+    <select name="doctor_id" required>
+      {% for d in doctors %}
+        <option value="{{ d._id }}" {% if event.doctor_id == d._id %}selected{% endif %}>{{ d.full_name }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Пациент</label>
+    <select name="patient_id" required>
+      {% for p in patients %}
+        <option value="{{ p._id }}" {% if event.patient_id == p._id %}selected{% endif %}>{{ p.full_name }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Кабинет</label>
+    <select name="cabinet" required>
+      {% for name in cabinets %}
+        <option value="{{ name }}" {% if current_room_name == name %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Услуга</label>
+    <select name="service_id">
+      <option value="">Без услуги</option>
+      {% for s in services %}
+        <option value="{{ s._id }}" {% if event.service_id == s._id %}selected{% endif %}>
+          {{ s.name }} ({{ s.duration_min }} мин)
+        </option>
+      {% endfor %}
+    </select>
+
+    <label>Дата и время</label>
+    <input type="datetime-local" name="datetime" value="{{ start_local }}" required>
+
+    <label>Статус</label>
+    <select name="status_key">
+      <option value="scheduled"  {% if event.status_key=='scheduled' %}selected{% endif %}>Запланировано</option>
+      <option value="checked_in" {% if event.status_key=='checked_in' %}selected{% endif %}>Пришёл</option>
+      <option value="done"       {% if event.status_key=='done' %}selected{% endif %}>Выполнено</option>
+      <option value="canceled"   {% if event.status_key=='canceled' %}selected{% endif %}>Отменено</option>
+    </select>
+
+    <label>Сумма</label>
+    <input type="number" name="sum" value="{{ event.sum or 0 }}">
+
+    <label>Комментарий</label>
+    <textarea name="comment" rows="3">{{ event.comment or '' }}</textarea>
+
+    <div style="margin-top:16px;">
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+      <a href="{{ url_for('calendar_view') }}" class="btn">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

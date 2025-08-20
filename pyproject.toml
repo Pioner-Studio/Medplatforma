@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+exclude = "migrations|.venv"
+
+[tool.isort]
+profile = "black"
+line_length = 100
+src_paths = ["."]
+skip = [".venv","migrations"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E","F","I","UP"]  # ошибки, формат импорта и апгрейды синтаксиса
+ignore = ["E203","E501"]     # совместимость с black

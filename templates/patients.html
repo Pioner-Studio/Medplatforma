@@ -1,100 +1,68 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-<h2>Список пациентов</h2>
-<div style="margin-bottom:20px;">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPatientModal">+ Добавить пациента</button>
-    <button class="btn btn-outline-primary" onclick="filterDebt('all')">Все</button>
-    <button class="btn btn-outline-danger" onclick="filterDebt('debt')">Только должники</button>
-    <button class="btn btn-outline-success" onclick="filterDebt('deposit')">Только с депозитом</button>
-    <input type="text" id="searchInput" class="form-control" placeholder="Поиск по ФИО, телефону, email..." style="max-width:360px;display:inline-block;margin-left:10px;">
-</div>
-<table id="patientsTable" style="width:100%;background:#fff;border-radius:22px;box-shadow:0 2px 12px rgba(20,40,80,.07);">
-    <thead>
-        <tr>
-            <th>ФИО</th>
-            <th>Телефон</th>
-            <th>Дата рождения</th>
-            <th>Долг</th>
-            <th>Депозит</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for patient in patients %}
-        <tr style="border-bottom:1px solid #f0f0f0;">
-            <td>{{ patient.full_name }}</td>
-            <td>{{ patient.phone }}</td>
-            <td>{{ patient.dob }}</td>
-            <td style="color:{% if patient.debt and patient.debt > 0 %}#d91f3c{% else %}#222{% endif %};font-weight:600;">{{ patient.debt or 0 }}</td>
-            <td style="color:#209a3a;font-weight:600;">{{ patient.deposit or 0 }}</td>
-            <td>
-                <a href="/patient/{{ patient['_id'] }}">Подробнее</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6" style="text-align:center;color:#aaa;padding:30px;">Пациентов нет</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let input = document.getElementById('searchInput');
-    let table = document.getElementById('patientsTable');
-    input.addEventListener('keyup', function() {
-        let filter = input.value.toLowerCase();
-        let rows = table.getElementsByTagName('tr');
-        for(let i=1; i<rows.length; i++) {
-            let row = rows[i];
-            let text = row.textContent.toLowerCase();
-            row.style.display = (text.indexOf(filter) > -1) ? "" : "none";
-        }
-    });
-});
-function filterDebt(type) {
-    let table = document.getElementById('patientsTable');
-    let rows = table.getElementsByTagName('tr');
-    for(let i=1; i<rows.length; i++) {
-        let row = rows[i];
-        let debt = parseFloat(row.cells[3]?.innerText.replace(',', '.') || 0);
-        let deposit = parseFloat(row.cells[4]?.innerText.replace(',', '.') || 0);
-        if (type === 'debt' && debt <= 0) row.style.display = 'none';
-        else if (type === 'deposit' && deposit <= 0) row.style.display = 'none';
-        else row.style.display = '';
-    }
-}
-</script>
-
-<!-- Модалка добавления пациента -->
-<div class="modal fade" id="addPatientModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="/add_patient">
-        <div class="modal-header">
-          <h5 class="modal-title">Добавить пациента</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input class="form-control" name="full_name" placeholder="ФИО" required><br>
-          <input class="form-control" name="dob" type="date" placeholder="Дата рождения" required><br>
-          <input class="form-control" name="phone" placeholder="Телефон" required><br>
-          <input class="form-control" name="email" placeholder="Email"><br>
-          <input class="form-control" name="passport" placeholder="Паспорт"><br>
-          <input class="form-control" name="referral" placeholder="Партнер/реферал"><br>
-          <input class="form-control" name="reg_address" placeholder="Адрес регистрации"><br>
-          <input class="form-control" name="live_address" placeholder="Адрес проживания"><br>
-          <input class="form-control" name="business" placeholder="Бизнес"><br>
-          <input class="form-control" name="hobby" placeholder="Хобби"><br>
-          <input class="form-control" name="notes" placeholder="Примечания"><br>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-          <button type="submit" class="btn btn-success">Сохранить</button>
-        </div>
-      </form>
-    </div>
+<div class="page-header">
+  <h2>Пациенты</h2>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <form method="get" action="{{ url_for('patients_list') }}" style="display:flex;gap:5px;">
+      <input type="text" name="q" value="{{ search or '' }}" placeholder="Поиск по ФИО, телефону, email">
+      <button type="submit">Поиск</button>
+    </form>
+    <a href="{{ url_for('add_patient') }}" class="btn btn-primary">Добавить пациента</a>
   </div>
 </div>
+
+{% if items %}
+  <table class="table" style="margin-top:15px;">
+    <thead>
+      <tr>
+        <th>Аватар</th>
+        <th>ФИО</th>
+        <th>Контакты</th>
+        <th>Адрес</th>
+        <th>Визитов</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in items %}
+        {% set contacts = p.get('contacts', {}) %}
+        {% set phone = contacts.get('phone', '') %}
+        {% set email = contacts.get('email', '') %}
+        {% set wa = contacts.get('whatsapp', '') %}
+        {% set tg = contacts.get('telegram', '') %}
+        {% set addr = p.get('address', {}) %}
+        {% set city = addr.get('city', '') %}
+        {% set street = addr.get('street', '') %}
+        {% set zipc = addr.get('zip', '') %}
+        {% set avatar = p.get('avatar', '/static/avatars/patients/default.jpg') %}
+
+        <tr>
+          <td>
+            <img src="{{ avatar }}" alt="avatar" style="width:40px;height:40px;border-radius:50%;">
+          </td>
+          <td>{{ p.get('full_name', '—') }}</td>
+          <td>
+            <div>📞 {{ phone or '—' }}</div>
+            <div>✉️ {{ email or '—' }}</div>
+            <div>🟢 WA: {{ wa or '—' }}</div>
+            <div>💬 TG: {{ tg or '—' }}</div>
+          </td>
+          <td>
+            {{ city }}{% if city and street %}, {% endif %}{{ street }}{% if zipc %}, {{ zipc }}{% endif %}
+          </td>
+          <td>{{ appts_count.get(p['_id'], 0) }}</td>
+          <td>
+            <a href="{{ url_for('patient_card', id=p['_id']) }}">Карточка</a> |
+            <a href="{{ url_for('edit_patient', id=p['_id']) }}">Редактировать</a> |
+            <form method="post" action="{{ url_for('delete_patient', id=p['_id']) }}" style="display:inline;">
+              <button type="submit" onclick="return confirm('Удалить пациента?')">Удалить</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Пациенты не найдены.</p>
+{% endif %}
 {% endblock %}

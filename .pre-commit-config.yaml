@@ -1,0 +1,10 @@
+-   repo: local
+    hooks:
+    -   id: generate-docs
+        name: Generate Docs before commit
+        entry: python tools/generate_docs.py --zip
+        language: system
+        pass_filenames: false
+        additional_dependencies: []
+        # Подстраховка для Windows-консолей:
+        stages: [commit]

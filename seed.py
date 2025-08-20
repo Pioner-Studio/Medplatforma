@@ -1,56 +1,116 @@
+import random
+from datetime import datetime, timedelta
+
 from pymongo import MongoClient
-from werkzeug.security import generate_password_hash  # Только если хочешь хешировать пароли
 
 client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
-db = client['medplatforma']
+db = client["medplatforma"]
 
-staff_list = [
-    # Инвесторы
-    {"full_name": "Наконечный Алексей", "role": "investor", "position": "Инвестор", "status": "активен", "email": "alexey@clinic.ru", "phone": "", "password": "password"},
-    {"full_name": "Наконечная Елена",     "role": "investor", "position": "Инвестор", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Гогуева Алина",        "role": "investor", "position": "Инвестор", "status": "активен", "email": "", "phone": "", "password": "password"},
+# ЧИСТИМ коллекции:
+db.doctors.delete_many({})
+db.patients.delete_many({})
+db.events.delete_many({})
 
-    # Администраторы
-    {"full_name": "Администратор (вакансия 1)", "role": "admin", "position": "Администратор", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Администратор (вакансия 2)", "role": "admin", "position": "Администратор", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-
-    # Главный врач
-    {"full_name": "Гогуева Алина",        "role": "chief_doctor", "position": "Главный врач", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Главный врач (вакансия)", "role": "chief_doctor", "position": "Главный врач", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-
-    # Врачи
-    {"full_name": "Гогуева Алина",        "role": "doctor", "position": "Врач", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Роман Роман",          "role": "doctor", "position": "Врач", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Айвазян Альберт",      "role": "doctor", "position": "Врач", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Юрьева Анна",          "role": "doctor", "position": "Врач", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Миргатия Ольга",       "role": "doctor", "position": "Врач", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Калачев Алексей",      "role": "doctor", "position": "Врач", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Врач (вакансия 1)", "role": "doctor", "position": "Врач", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Врач (вакансия 2)", "role": "doctor", "position": "Врач", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Врач (вакансия 3)", "role": "doctor", "position": "Врач", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Врач (вакансия 4)", "role": "doctor", "position": "Врач", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Врач (вакансия 5)", "role": "doctor", "position": "Врач", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-
-    # Кураторы
-    {"full_name": "Куратор (вакансия 1)", "role": "curator", "position": "Куратор", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Куратор (вакансия 2)", "role": "curator", "position": "Куратор", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-
-    # Управляющий директор
-    {"full_name": "Управляющий директор (вакансия)", "role": "manager", "position": "Управляющий директор", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-
-    # Старшая медсестра
-    {"full_name": "Старшая медсестра (вакансия)", "role": "nurse", "position": "Старшая медсестра", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-
-    # Ассистенты
-    {"full_name": "Ульяна Аксенова", "role": "assistant", "position": "Ассистент", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Мусаева Айшат",   "role": "assistant", "position": "Ассистент", "status": "активен", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Ассистент (вакансия 1)", "role": "assistant", "position": "Ассистент", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Ассистент (вакансия 2)", "role": "assistant", "position": "Ассистент", "status": "вакансия", "email": "", "phone": "", "password": "password"},
-    {"full_name": "Ассистент (вакансия 3)", "role": "assistant", "position": "Ассистент", "status": "вакансия", "email": "", "phone": "", "password": "password"},
+# 1. Демо-врачи
+doctor_names = [
+    "Смирнов Павел",
+    "Иванова Анна",
+    "Кузнецов Дмитрий",
+    "Попова Мария",
+    "Волков Артём",
+    "Соколова Екатерина",
+    "Лебедев Сергей",
+    "Козлова Юлия",
+    "Новиков Андрей",
+    "Федорова Елена",
 ]
+specializations = [
+    "Терапевт",
+    "Хирург",
+    "Ортопед",
+    "Детский стоматолог",
+    "Пародонтолог",
+    "Рентгенолог",
+    "Ортодонт",
+    "Гигиенист",
+    "Имплантолог",
+    "Стоматолог общей практики",
+]
+doctor_ids = []
+for i, name in enumerate(doctor_names):
+    doc = {
+        "full_name": name,
+        "specialization": specializations[i],
+        "email": f"doctor{i+1}@mail.ru",
+        "phone": f"+79990000{str(100+i)}",
+        "avatar_url": f"/static/avatars/doctor_{i%6+1}.png",
+        "status": "активен",
+    }
+    res = db.doctors.insert_one(doc)
+    doctor_ids.append(str(res.inserted_id))
 
-# (Не забудь — если staff уже есть, можно сначала очистить коллекцию:)
-db.staff.delete_many({})
-db.staff.insert_many(staff_list)
+# 2. Демо-пациенты
+patient_names = [
+    "Петров Иван",
+    "Сидорова Ольга",
+    "Михайлов Сергей",
+    "Егорова Татьяна",
+    "Орлов Дмитрий",
+    "Семенова Мария",
+    "Васильев Антон",
+    "Громова Наталья",
+    "Зайцев Алексей",
+    "Тихонова Ирина",
+]
+patient_ids = []
+for i, name in enumerate(patient_names):
+    pat = {
+        "full_name": name,
+        "dob": f"198{random.randint(0,9)}-0{random.randint(1,9)}-{random.randint(10,28)}",
+        "phone": f"+79990000{str(200+i)}",
+        "email": f"patient{i+1}@mail.ru",
+        "avatar_url": f"/static/avatars/patient_{i%6+1}.png",
+    }
+    res = db.patients.insert_one(pat)
+    patient_ids.append(str(res.inserted_id))
 
-print("Сотрудники добавлены!")
+# 3. Демо-записи (20 штук в разные даты месяца)
+cabinets = [
+    "Терапевтический",
+    "Хирургический",
+    "Ортопедический",
+    "Детский",
+    "Пародонтологический",
+    "Рентген",
+]
+services = ["Пломба", "Имплантация", "Лечение", "Гигиена"]
+statuses = ["Первичный", "Повторный", "Оплачен", "Отказ"]
+
+for i in range(20):
+    # Генерируем даты строго внутри текущего месяца
+    now = datetime.now()
+    year, month = now.year, now.month
+    day = 1 + (i % 28)  # дни с 1 по 28
+    hour = 9 + (i % 8)  # время 9:00 - 16:00
+    try:
+        start_dt = datetime(year, month, day, hour, 0)
+    except ValueError:
+        start_dt = now  # fallback, если вдруг выйдет за границы месяца
+
+    ev = {
+        "doctor_id": random.choice(doctor_ids),
+        "patient_id": random.choice(patient_ids),
+        "cabinet": random.choice(cabinets),
+        "start": start_dt.strftime("%Y-%m-%dT%H:%M"),
+        "service": random.choice(services),
+        "sum": random.choice([2000, 3500, 4000, 4500, 5000, 6000]),
+        "status": random.choice(statuses),
+        "status_color": "",
+        "comment": f"Автосгенерированная запись №{i+1}",
+        "phone": f"+79990000{str(200 + random.randint(0,9))}",
+        "whatsapp": f"79990000{str(200 + random.randint(0,9))}",
+        "telegram": f"patient{i%10+1}",
+    }
+    db.events.insert_one(ev)
+
+print("Демо-данные успешно добавлены!")

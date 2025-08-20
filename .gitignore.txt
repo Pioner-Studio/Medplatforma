@@ -1,6 +1,35 @@
-# .gitignore
-venv/
+# Python
 __pycache__/
 *.pyc
-.env
+*.pyo
+*.pyd
+*.log
+
+# Virtual envs
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Builds/archives
+dist/
+build/
+*.zip
+*.7z
+*.rar
+
+# Local data / secrets
+.env
+.env.local
+.env.*.local
+*.secret.json
+
+# Node (если когда-то добавим фронт)
+node_modules/
+

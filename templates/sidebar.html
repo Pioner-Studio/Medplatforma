@@ -1,25 +1,78 @@
-<div style="width:220px; min-height:100vh; background:#f6f7fa; box-shadow:0 0 22px rgba(20,40,80,0.05); padding:34px 22px 22px 22px; position:fixed; left:0; top:0;">
-    <img src="/static/logo.png" alt="Логотип" style="width:62px; margin-bottom:36px;">
-    <div style="margin-bottom:28px;">
-        <a href="/calendar" style="display:block;margin-bottom:13px;">Календарь</a>
-        <a href="/patients" style="display:block;margin-bottom:13px;">Пациенты</a>
-        <a href="/doctors" style="display:block;margin-bottom:13px;">Врачи</a>
-        <a href="/tasks" style="display:block;margin-bottom:13px;">Задачи</a>
-        <a href="/reports" style="display:block;margin-bottom:13px;">Общий отчёт</a>
-        <a href="/staff" style="display:block;margin-bottom:13px;">Сотрудники</a>
-    </div>
-    {% if session['user_role'] == 'investor' %}
-    <div style="border-top:1px solid #dde3ed; padding-top:20px;">
-        <a href="/finance_report" style="display:block;margin-bottom:13px; color:#245be2;"><b>Финансовый отчёт</b></a>
-        <a href="/partners" style="display:block;margin-bottom:13px; color:#245be2;"><b>Партнёрская программа</b></a>
-        <a href="/expenses" style="display:block;margin-bottom:13px; color:#245be2;"><b>Расходы</b></a>
-        <a href="/debtors" style="display:block;margin-bottom:13px; color:#245be2;"><b>Должники/Депозиты</b></a>
-        <a href="/export/patients">Выгрузить пациентов (CSV)</a>
-        <a href="/export/doctors">Выгрузить врачей (CSV)</a>
-        <a href="/logs">История изменений</a>
-    </div>
-    {% endif %}
-    <div style="position:absolute;bottom:20px;left:22px;">
-        <a href="/logout" style="color:#a13f2f;">Выйти</a>
-    </div>
+<aside class="sidebar">
+  <div class="sidebar-header" style="padding: 24px 0 50px 0; display: flex; justify-content: center;">
+  <img src="{{ url_for('static', filename='logo_test123.png') }}" alt="ClubStom" class="sidebar-logo-img">
 </div>
+  <nav>
+    <ul>
+      <li>
+        <a href="{{ url_for('calendar_view') }}"
+           class="{% if '/calendar' in request.path or request.path == '/' %}active{% endif %}">
+          <i class="fa-solid fa-calendar-days"></i> Расписание
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('patients_list') }}"
+           class="{% if '/patients' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-user-injured"></i> Пациенты
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('doctors') }}"
+           class="{% if '/doctors' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-user-md"></i> Врачи
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('tasks') }}"
+           class="{% if '/tasks' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-list-check"></i> Задачи
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('messages') }}"
+           class="{% if '/messages' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-comments"></i> Сообщения
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('xray_room') }}"
+           class="{% if '/xray_room' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-x-ray"></i> Рентген кабинет
+        </a>
+      </li>
+      <li><a href="{{ url_for('rooms_list') }}"><i class="fa-solid fa-door-open"></i> Кабинеты</a></li>
+      <li><a href="{{ url_for('services_list') }}"><i class="fa-solid fa-list-check"></i> Услуги</a></li>
+      <li><a href="{{ url_for('patients_list') }}"><i class="fa-solid fa-user-injured"></i> Пациенты</a></li>
+      <li>  
+        <a href="{{ url_for('ztl') }}"
+           class="{% if '/ztl' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-flask"></i> ЗТЛ
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('partners') }}"
+           class="{% if '/partners' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-handshake"></i> Партнерская программа
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('finance_report') }}"
+           class="{% if '/finance_report' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-file-invoice-dollar"></i> Финансовый отчёт
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('logs') }}"
+           class="{% if '/logs' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-book"></i> Журнал действий
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('data_tools') }}"
+           class="{% if '/data_tools' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-cloud-arrow-down"></i> Экспорт / Импорт
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>
