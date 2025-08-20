@@ -32,4 +32,3 @@ build/
 
 # Node (если когда-то добавим фронт)
 node_modules/
-

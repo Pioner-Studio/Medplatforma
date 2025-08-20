@@ -43,7 +43,7 @@
       <li><a href="{{ url_for('rooms_list') }}"><i class="fa-solid fa-door-open"></i> Кабинеты</a></li>
       <li><a href="{{ url_for('services_list') }}"><i class="fa-solid fa-list-check"></i> Услуги</a></li>
       <li><a href="{{ url_for('patients_list') }}"><i class="fa-solid fa-user-injured"></i> Пациенты</a></li>
-      <li>  
+      <li>
         <a href="{{ url_for('ztl') }}"
            class="{% if '/ztl' in request.path %}active{% endif %}">
           <i class="fa-solid fa-flask"></i> ЗТЛ
