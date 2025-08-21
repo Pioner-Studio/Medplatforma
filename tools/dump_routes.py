@@ -1,36 +1,38 @@
 # tools/dump_routes.py
-from __future__ import annotations
-import sys
-from pathlib import Path
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from datetime import datetime
 
-# гарантируем, что корень репозитория в sys.path
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+# --- импортируем приложение ---
+# если твой входной модуль называется "main.py" и в нём создан app = Flask(__name__)
+from main import app
 
-from main import app  # noqa: E402
+OUT_DIR = os.path.join("docs")
+os.makedirs(OUT_DIR, exist_ok=True)
+out_md = os.path.join(OUT_DIR, "ROUTES.md")
 
-def iter_route_lines():
+with app.app_context():
     rules = sorted(app.url_map.iter_rules(), key=lambda r: r.rule)
-    for r in rules:
-        methods = ",".join(sorted(m for m in r.methods if m not in {"HEAD", "OPTIONS"}))
-        yield f"{r.rule:<50}  endpoint={r.endpoint:<30}  methods={methods}"
 
-def main():
-    lines = list(iter_route_lines())
+lines = []
+lines.append(f"# Flask routes map\n")
+lines.append(f"_generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_\n")
+lines.append("| Rule | Endpoint | Methods |")
+lines.append("|------|----------|---------|")
 
-    md_path  = ROOT / "docs" / "ROUTES.md"
-    txt_path = ROOT / "docs" / "ai_export" / "routes.txt"
+for r in rules:
+    methods = ",".join(sorted(m for m in r.methods if m not in {"HEAD", "OPTIONS"}))
+    lines.append(f"| `{r.rule}` | `{r.endpoint}` | `{methods}` |")
 
-    md_path.parent.mkdir(parents=True, exist_ok=True)
-    txt_path.parent.mkdir(parents=True, exist_ok=True)
+# детальный блок с одним правилом на абзац (удобно глазами искать)
+lines.append("\n---\n")
+for r in rules:
+    methods = ",".join(sorted(m for m in r.methods if m not in {"HEAD", "OPTIONS"}))
+    lines.append(f"### `{r.rule}`")
+    lines.append(f"- endpoint: `{r.endpoint}`")
+    lines.append(f"- methods: `{methods}`\n")
 
-    md = "# ROUTES\n\n```\n" + "\n".join(lines) + "\n```\n"
-    md_path.write_text(md, encoding="utf-8")
-    txt_path.write_text("\n".join(lines), encoding="utf-8")
+with open(out_md, "w", encoding="utf-8") as f:
+    f.write("\n".join(lines))
 
-    print(f"[routes] {len(lines)} routes -> {md_path}")
-    print(f"[routes] {len(lines)} routes -> {txt_path}")
-
-if __name__ == "__main__":
-    main()
+print(f"[OK] routes dumped to {out_md}")
