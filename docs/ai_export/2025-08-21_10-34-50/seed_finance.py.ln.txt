@@ -1,0 +1,31 @@
+    1: from datetime import datetime, timedelta
+    2: from pymongo import MongoClient
+    3: 
+    4: client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
+    5: db = client['medplatforma']
+    6: 
+    7: ops = []
+    8: start_date = datetime(2025, 1, 1)
+    9: doctors = ['Д-р Иванов Александр', 'Д-р Сидоров Алексей']
+   10: patients = ['Смирнова Елена', 'Петров Сергей', 'Васильева Мария', 'Козлова Ольга']
+   11: services = ['Консультация', 'Чистка зубов', 'Рентген', 'Лечение', 'Удаление зуба']
+   12: types = ['Доход', 'Расход']
+   13: status = ['оплачен', 'отменён', 'новый']
+   14: 
+   15: for i in range(1, 50):
+   16:     dt = start_date + timedelta(days=i*3)
+   17:     op = {
+   18:         'date': dt.strftime('%d.%m.%Y'),
+   19:         'doctor': doctors[i % 2],
+   20:         'patient': patients[i % 4],
+   21:         'service': services[i % 5],
+   22:         'type': types[i % 2],
+   23:         'amount': 1000 * (i % 5 + 2),
+   24:         'status': status[i % 3],
+   25:         'comment': f"Комментарий к операции {i}"
+   26:     }
+   27:     ops.append(op)
+   28: 
+   29: db.finance.delete_many({})
+   30: db.finance.insert_many(ops)
+   31: print("Демо-операции для финотчёта добавлены!")

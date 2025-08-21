@@ -1,0 +1,60 @@
+    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: <div class="card" style="padding:20px;max-width:720px;margin:0 auto;">
+    4:   <h2>Редактировать запись</h2>
+    5:   <form method="post">
+    6:     <label>Врач</label>
+    7:     <select name="doctor_id" required>
+    8:       {% for d in doctors %}
+    9:         <option value="{{ d._id }}" {% if event.doctor_id == d._id %}selected{% endif %}>{{ d.full_name }}</option>
+   10:       {% endfor %}
+   11:     </select>
+   12: 
+   13:     <label>Пациент</label>
+   14:     <select name="patient_id" required>
+   15:       {% for p in patients %}
+   16:         <option value="{{ p._id }}" {% if event.patient_id == p._id %}selected{% endif %}>{{ p.full_name }}</option>
+   17:       {% endfor %}
+   18:     </select>
+   19: 
+   20:     <label>Кабинет</label>
+   21:     <select name="cabinet" required>
+   22:       {% for name in cabinets %}
+   23:         <option value="{{ name }}" {% if current_room_name == name %}selected{% endif %}>{{ name }}</option>
+   24:       {% endfor %}
+   25:     </select>
+   26: 
+   27:     <label>Услуга</label>
+   28:     <select name="service_id">
+   29:       <option value="">Без услуги</option>
+   30:       {% for s in services %}
+   31:         <option value="{{ s._id }}" {% if event.service_id == s._id %}selected{% endif %}>
+   32:           {{ s.name }} ({{ s.duration_min }} мин)
+   33:         </option>
+   34:       {% endfor %}
+   35:     </select>
+   36: 
+   37:     <label>Дата и время</label>
+   38:     <input type="datetime-local" name="datetime" value="{{ start_local }}" required>
+   39: 
+   40:     <label>Статус</label>
+   41:     <select name="status_key">
+   42:       <option value="scheduled"  {% if event.status_key=='scheduled' %}selected{% endif %}>Запланировано</option>
+   43:       <option value="checked_in" {% if event.status_key=='checked_in' %}selected{% endif %}>Пришёл</option>
+   44:       <option value="done"       {% if event.status_key=='done' %}selected{% endif %}>Выполнено</option>
+   45:       <option value="canceled"   {% if event.status_key=='canceled' %}selected{% endif %}>Отменено</option>
+   46:     </select>
+   47: 
+   48:     <label>Сумма</label>
+   49:     <input type="number" name="sum" value="{{ event.sum or 0 }}">
+   50: 
+   51:     <label>Комментарий</label>
+   52:     <textarea name="comment" rows="3">{{ event.comment or '' }}</textarea>
+   53: 
+   54:     <div style="margin-top:16px;">
+   55:       <button type="submit" class="btn btn-primary">Сохранить</button>
+   56:       <a href="{{ url_for('calendar_view') }}" class="btn">Отмена</a>
+   57:     </div>
+   58:   </form>
+   59: </div>
+   60: {% endblock %}

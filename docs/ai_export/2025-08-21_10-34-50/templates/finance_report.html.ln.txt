@@ -1,0 +1,224 @@
+    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: 
+    4: <div class="finance-dashboard">
+    5: 
+    6:   <!-- --- Карточки-индикаторы --- -->
+    7:   <div class="finance-indicators-row">
+    8:     <div class="finance-card income">
+    9:       <div class="finance-label">Доходы</div>
+   10:       <div class="finance-value">{{ summary.income | int }} ₽</div>
+   11:       <div class="finance-detail">за {{ summary.month_name }}</div>
+   12:     </div>
+   13:     <div class="finance-card expense">
+   14:       <div class="finance-label">Расходы</div>
+   15:       <div class="finance-value">{{ summary.expenses | int }} ₽</div>
+   16:       <div class="finance-detail">за {{ summary.month_name }}</div>
+   17:     </div>
+   18:     <div class="finance-card deposit">
+   19:       <div class="finance-label">Должники / Депозиты</div>
+   20:       <div class="finance-value">{{ summary.debtors_count }} чел / {{ summary.debtors_sum | int }} ₽</div>
+   21:       <div class="finance-detail">на сегодня</div>
+   22:     </div>
+   23:     <div class="finance-card avg">
+   24:       <div class="finance-label">Средний чек</div>
+   25:       <div class="finance-value">{{ summary.avg_check | int }} ₽</div>
+   26:       <div class="finance-detail">по {{ summary.month_name }}</div>
+   27:     </div>
+   28:     <div class="finance-export">
+   29:       <a href="/export_excel" class="btn btn-success">Выгрузить в Excel</a>
+   30:       <a href="/export_csv" class="btn btn-outline-primary">CSV</a>
+   31:       <button class="btn btn-outline-secondary" disabled style="opacity:0.7;">PDF (скоро)</button>
+   32:     </div>
+   33:   </div>
+   34: 
+   35:   <!-- --- Фильтр по периоду (можно позже сделать активным) --- -->
+   36:   <div class="finance-period-controls">
+   37:     <select class="filter-select" style="font-size:1.09em;">
+   38:       <option>Месяц</option>
+   39:       <option>Квартал</option>
+   40:       <option>Год</option>
+   41:     </select>
+   42:   </div>
+   43: 
+   44:   <!-- --- Компактный график --- -->
+   45:   <div class="finance-graph-card">
+   46:     <canvas id="financeChart" height="110"></canvas>
+   47:   </div>
+   48: 
+   49:   <!-- --- Сводная статистика --- -->
+   50:   <div class="finance-summary-row">
+   51:     <div>Операций за период: <b>{{ summary.operations_count }}</b></div>
+   52:     <div>Оплачено: <b>{{ summary.paid_count }}</b></div>
+   53:     <div>Процент оплат: <b>{{ summary.paid_percent }}%</b></div>
+   54:     <div>Топ врач: <b>{{ summary.top_doctor }}</b></div>
+   55:     <div>Топ услуга: <b>{{ summary.top_service }}</b></div>
+   56:   </div>
+   57: 
+   58:   <!-- --- Фильтры для таблицы --- -->
+   59:   <form method="get" class="finance-table-filters">
+   60:     <input type="text" name="search" placeholder="Поиск по пациенту, врачу, услуге..." value="{{ request.args.get('search','') }}">
+   61:     <select name="type" class="filter-select">
+   62:       <option value="">Тип</option>
+   63:       <option value="Доход">Доход</option>
+   64:       <option value="Расход">Расход</option>
+   65:     </select>
+   66:     <select name="status" class="filter-select">
+   67:       <option value="">Статус</option>
+   68:       <option value="новый">Новый</option>
+   69:       <option value="оплачен">Оплачен</option>
+   70:       <option value="отменён">Отменён</option>
+   71:       <option value="депозит">Депозит</option>
+   72:     </select>
+   73:     <button class="btn btn-outline-primary" type="submit">Фильтр</button>
+   74:   </form>
+   75: 
+   76:   <!-- --- Таблица операций --- -->
+   77:   <div class="finance-table-card">
+   78:     <table class="finance-table">
+   79:       <thead>
+   80:         <tr>
+   81:           <th>Дата</th>
+   82:           <th>Врач</th>
+   83:           <th>Пациент</th>
+   84:           <th>Услуга</th>
+   85:           <th>Тип</th>
+   86:           <th>Сумма</th>
+   87:           <th>Статус</th>
+   88:           <th>Комментарий</th>
+   89:         </tr>
+   90:       </thead>
+   91:       <tbody>
+   92:         {% for op in operations %}
+   93:         <tr>
+   94:           <td>{{ op.date }}</td>
+   95:           <td>
+   96:             <img src="{{ op.doctor_avatar_url or '/static/avatars/doctor.png' }}" class="mini-avatar"> {{ op.doctor }}
+   97:           </td>
+   98:           <td>
+   99:             <img src="{{ op.patient_avatar_url or '/static/avatars/patient.png' }}" class="mini-avatar"> {{ op.patient }}
+  100:           </td>
+  101:           <td>{{ op.service }}</td>
+  102:           <td>
+  103:             <span class="badge badge-{{ 'income' if op.type == 'Доход' else 'expense' }}">{{ op.type }}</span>
+  104:           </td>
+  105:           <td style="color:{{ '#24bb2a' if op.type == 'Доход' else '#e24343' }};"><b>{{ op.amount }} ₽</b></td>
+  106:           <td>
+  107:             <span class="badge badge-status badge-{{ op.status|lower }}">{{ op.status }}</span>
+  108:           </td>
+  109:           <td>{{ op.comment }}</td>
+  110:         </tr>
+  111:         {% endfor %}
+  112:       </tbody>
+  113:     </table>
+  114:   </div>
+  115: 
+  116: </div>
+  117: 
+  118: <!-- --- Chart.js --- -->
+  119: <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  120: <script>
+  121: document.addEventListener('DOMContentLoaded', function() {
+  122:   var ctx = document.getElementById('financeChart').getContext('2d');
+  123:   var data = {{ chart_data | safe }};
+  124:   new Chart(ctx, {
+  125:     type: 'line',
+  126:     data: data,
+  127:     options: {
+  128:       responsive: true,
+  129:       plugins: { legend: { display: true } },
+  130:       scales: { y: { beginAtZero: false } }
+  131:     }
+  132:   });
+  133: });
+  134: </script>
+  135: 
+  136: <style>
+  137: .finance-dashboard { padding: 20px 0; }
+  138: .finance-indicators-row {
+  139:   display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;
+  140:   margin-bottom: 28px;
+  141: }
+  142: .finance-card {
+  143:   background: #fff;
+  144:   border-radius: 19px;
+  145:   box-shadow: 0 2px 22px #e3eaf93a;
+  146:   padding: 30px 38px 23px 32px;
+  147:   min-width: 220px;
+  148:   max-width: 270px;
+  149:   flex: 1;
+  150:   margin: 0 10px 0 0;
+  151:   display: flex; flex-direction: column; align-items: flex-start;
+  152: }
+  153: .finance-card.income { border-left: 6px solid #2ce148;}
+  154: .finance-card.expense { border-left: 6px solid #f6494c;}
+  155: .finance-card.deposit { border-left: 6px solid #2176bd;}
+  156: .finance-card.avg { border-left: 6px solid #ffbb23;}
+  157: .finance-label { color: #b3b8c3; font-size: 1em; font-weight: 600; margin-bottom: 8px;}
+  158: .finance-value { font-size: 2.12em; font-weight: 900; color: #233a59; letter-spacing: 1px; }
+  159: .finance-detail { font-size: 1.03em; color: #6d7892; margin-top: 7px; }
+  160: .finance-export {
+  161:   display: flex; flex-direction: column; gap: 8px; margin-left: 24px; align-items: flex-end; justify-content: center;
+  162: }
+  163: .finance-export .btn { min-width: 170px; }
+  164: .finance-graph-card {
+  165:   margin: 16px auto 0 auto;
+  166:   padding: 12px 12px 18px 12px;
+  167:   background: #fff;
+  168:   border-radius: 18px;
+  169:   max-width: 880px;
+  170:   min-width: 350px;
+  171:   box-shadow: 0 2px 20px #e8eef95c;
+  172: }
+  173: .finance-summary-row {
+  174:   display: flex;
+  175:   gap: 36px;
+  176:   padding: 18px 0 14px 4px;
+  177:   font-size: 1.09em;
+  178:   color: #7d8899;
+  179:   font-weight: 600;
+  180: }
+  181: .finance-period-controls {
+  182:   margin: 18px 0 12px 0;
+  183:   display: flex; justify-content: flex-end; align-items: center;
+  184: }
+  185: .finance-table-filters {
+  186:   display: flex; gap: 16px; margin-bottom: 14px; align-items: center;
+  187: }
+  188: .finance-table-card {
+  189:   background: #fff; border-radius: 18px;
+  190:   box-shadow: 0 2px 22px #e3eaf92a;
+  191:   padding: 22px 10px;
+  192:   margin-top: 18px;
+  193: }
+  194: .finance-table {
+  195:   width: 100%; border-collapse: separate; border-spacing: 0;
+  196:   font-size: 1.13em;
+  197: }
+  198: .finance-table th, .finance-table td { padding: 12px 10px; text-align: left; vertical-align: middle;}
+  199: .finance-table thead th { background: #f6fbff; position: sticky; top: 0; z-index: 1;}
+  200: .finance-table tbody tr { border-bottom: 1px solid #f2f6fd; transition: background .13s; }
+  201: .finance-table tbody tr:hover { background: #f3faff; }
+  202: .badge {
+  203:   display: inline-block; font-weight: 600;
+  204:   font-size: .99em; padding: 5px 15px; border-radius: 7px;
+  205: }
+  206: .badge-income { background: #c9ffe6; color: #1aa957; }
+  207: .badge-expense { background: #ffe1e1; color: #e64a4a; }
+  208: .badge-status { margin-left: 0; }
+  209: .badge-новый    { background: #fff7d6; color: #b49a25;}
+  210: .badge-оплачен  { background: #dafbe5; color: #18954e;}
+  211: .badge-отменён  { background: #ffdbdb; color: #e24343;}
+  212: .badge-депозит  { background: #e7f2fd; color: #2176bd;}
+  213: .mini-avatar {
+  214:   width: 28px; height: 28px;
+  215:   border-radius: 50%; object-fit: cover; margin-right: 7px;
+  216:   background: #f7fafd; box-shadow: 0 1px 6px #e3eaf9;
+  217:   vertical-align: middle;
+  218: }
+  219: @media (max-width: 1080px) {
+  220:   .finance-indicators-row { flex-direction: column; gap: 12px; }
+  221:   .finance-card { max-width: 100%; min-width: 140px; }
+  222: }
+  223: </style>
+  224: {% endblock %}
