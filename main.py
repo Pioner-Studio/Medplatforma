@@ -65,11 +65,15 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-me")
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB  = os.getenv("MONGO_DB",  "medplatforma")
 
-password = urllib.parse.quote_plus("medpass123")  # если пароль с особыми символами
-uri = "mongodb+srv://medadmin:Med12345!@medplatforma.cnv7fbo.mongodb.net/medplatforma?retryWrites=true&w=majority"
-client = MongoClient(uri)
-db = client["medplatforma"]
+client = MongoClient(MONGO_URI)
+db = client[MONGO_DB]
 
+# --- Register finance blueprint ---
+try:
+    from routes_finance import bp_finance
+    app.register_blueprint(bp_finance, url_prefix="/finance")
+except Exception as e:
+    print(f"[WARN] routes_finance не подключён: {e}")
 def parse_iso(dt_str):
     # FullCalendar шлет ISO, иногда без миллисекунд
     # Пример: '2025-08-10T00:00:00Z' или '2025-08-10'
