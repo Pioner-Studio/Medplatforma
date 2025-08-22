@@ -1,70 +1,70 @@
-﻿    1: {% extends 'base.html' %}
+    1: {% extends 'base.html' %}
     2: {% block content %}
     3: <div class="doctor-card">
-    4:   <!-- Р’РµСЂС… -->
+    4:   <!-- Верх -->
     5:   <div class="doctor-card-header">
     6:     <div class="doctor-avatar">
     7:       <img src="{{ doctor.avatar_url or '/static/avatars/doctor_default.png' }}" alt="avatar">
     8:     </div>
     9:     <div class="doctor-main-info">
    10:       <h2>{{ doctor.full_name }}</h2>
-   11:       <div class="doctor-status">{{ doctor.position or 'Р’СЂР°С‡' }}</div>
+   11:       <div class="doctor-status">{{ doctor.position or 'Врач' }}</div>
    12:       <div class="doctor-actions">
-   13:         <a href="/edit_doctor/{{ doctor._id }}" class="btn-main btn-edit"><i class="fa fa-edit"></i> Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</a>
-   14:         <a href="tel:{{ doctor.phone }}" class="btn-main btn-call"><i class="fa fa-phone"></i> РџРѕР·РІРѕРЅРёС‚СЊ</a>
+   13:         <a href="/edit_doctor/{{ doctor._id }}" class="btn-main btn-edit"><i class="fa fa-edit"></i> Редактировать</a>
+   14:         <a href="tel:{{ doctor.phone }}" class="btn-main btn-call"><i class="fa fa-phone"></i> Позвонить</a>
    15:         <a href="mailto:{{ doctor.email }}" class="btn-main btn-email"><i class="fa fa-envelope"></i> Email</a>
-   16:         <a href="/add_file/{{ doctor._id }}" class="btn-main btn-file"><i class="fa fa-upload"></i> Р”РѕРєСѓРјРµРЅС‚С‹</a>
-   17:         <a href="/add_appointment/{{ doctor._id }}" class="btn-main btn-appt"><i class="fa fa-calendar-plus"></i> Р—Р°РїРёСЃР°С‚СЊ РїР°С†РёРµРЅС‚Р°</a>
+   16:         <a href="/add_file/{{ doctor._id }}" class="btn-main btn-file"><i class="fa fa-upload"></i> Документы</a>
+   17:         <a href="/add_appointment/{{ doctor._id }}" class="btn-main btn-appt"><i class="fa fa-calendar-plus"></i> Записать пациента</a>
    18:       </div>
    19:     </div>
    20:   </div>
    21: 
-   22:   <!-- Р’РєР»Р°РґРєРё -->
+   22:   <!-- Вкладки -->
    23:   <div class="tabs">
-   24:     <button class="tab-btn active" data-tab="info">РРЅС„Рѕ</button>
-   25:     <button class="tab-btn" data-tab="schedule">Р Р°СЃРїРёСЃР°РЅРёРµ</button>
-   26:     <button class="tab-btn" data-tab="reviews">РћС‚Р·С‹РІС‹</button>
-   27:     <button class="tab-btn" data-tab="docs">Р”РѕРєСѓРјРµРЅС‚С‹</button>
-   28:     <button class="tab-btn" data-tab="gallery">Р”Рѕ/РџРѕСЃР»Рµ</button>
+   24:     <button class="tab-btn active" data-tab="info">Инфо</button>
+   25:     <button class="tab-btn" data-tab="schedule">Расписание</button>
+   26:     <button class="tab-btn" data-tab="reviews">Отзывы</button>
+   27:     <button class="tab-btn" data-tab="docs">Документы</button>
+   28:     <button class="tab-btn" data-tab="gallery">До/После</button>
    29:   </div>
    30: 
-   31:   <!-- РљРѕРЅС‚РµРЅС‚ РІРєР»Р°РґРѕРє -->
+   31:   <!-- Контент вкладок -->
    32:   <div class="tab-content active" id="tab-info">
    33:     <div class="doctor-info-sections">
    34:       <div class="doctor-block">
-   35:         <h3>РћСЃРЅРѕРІРЅРѕРµ</h3>
-   36:         <p><b>РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ:</b> {{ doctor.specialization }}</p>
-   37:         <p><b>РўРµР»РµС„РѕРЅ:</b> {{ doctor.phone }}</p>
+   35:         <h3>Основное</h3>
+   36:         <p><b>Специализация:</b> {{ doctor.specialization }}</p>
+   37:         <p><b>Телефон:</b> {{ doctor.phone }}</p>
    38:         <p><b>Email:</b> {{ doctor.email }}</p>
-   39:         <p><b>РћРїС‹С‚ СЂР°Р±РѕС‚С‹:</b> {{ doctor.experience }} Р»РµС‚</p>
-   40:         <p><b>Р’ РєР»РёРЅРёРєРµ СЃ:</b> {{ doctor.since }}</p>
+   39:         <p><b>Опыт работы:</b> {{ doctor.experience }} лет</p>
+   40:         <p><b>В клинике с:</b> {{ doctor.since }}</p>
    41:       </div>
    42:       <div class="doctor-block">
-   43:         <h3>РћР±СЂР°Р·РѕРІР°РЅРёРµ Рё РєРІР°Р»РёС„РёРєР°С†РёСЏ</h3>
-   44:         <p>{{ doctor.education or "вЂ”" }}</p>
+   43:         <h3>Образование и квалификация</h3>
+   44:         <p>{{ doctor.education or "—" }}</p>
    45:         <p>{{ doctor.certificates or "" }}</p>
    46:       </div>
    47:       <div class="doctor-block">
-   48:         <h3>Р‘РёРѕРіСЂР°С„РёСЏ</h3>
-   49:         <p>{{ doctor.bio or "вЂ”" }}</p>
+   48:         <h3>Биография</h3>
+   49:         <p>{{ doctor.bio or "—" }}</p>
    50:       </div>
    51:     </div>
    52:   </div>
    53: 
    54:   <div class="tab-content" id="tab-schedule">
    55:     <div class="doctor-schedule-section">
-   56:       <h3>Р Р°СЃРїРёСЃР°РЅРёРµ РІСЂР°С‡Р°</h3>
+   56:       <h3>Расписание врача</h3>
    57:       <div id="doctor-calendar"></div>
    58:     </div>
    59:   </div>
    60: 
    61:   <div class="tab-content" id="tab-reviews">
    62:     <div class="doctor-history-section">
-   63:       <h3>РћС‚Р·С‹РІС‹ РїР°С†РёРµРЅС‚РѕРІ</h3>
+   63:       <h3>Отзывы пациентов</h3>
    64:       <div class="doctor-reviews">
    65:         {% for review in doctor.reviews %}
    66:           <div class="review-block">
-   67:             <div class="review-rating">{% for i in range(review.stars) %}в…{% endfor %}</div>
+   67:             <div class="review-rating">{% for i in range(review.stars) %}★{% endfor %}</div>
    68:             <div class="review-text">"{{ review.text }}"</div>
    69:             <div class="review-date">{{ review.date }}</div>
    70:           </div>
@@ -75,32 +75,32 @@
    75: 
    76:   <div class="tab-content" id="tab-docs">
    77:     <div class="doctor-files-section">
-   78:       <h3>Р”РѕРєСѓРјРµРЅС‚С‹ Рё СЃРµСЂС‚РёС„РёРєР°С‚С‹</h3>
+   78:       <h3>Документы и сертификаты</h3>
    79:       <div class="doctor-files">
    80:         {% for file in doctor.files %}
    81:           <div class="file-preview">
    82:             {% if file.type == 'image' %}
    83:               <img src="{{ file.url }}" alt="file" />
    84:             {% elif file.type == 'pdf' %}
-   85:               <a href="{{ file.url }}" target="_blank"><i class="fa fa-file-pdf"></i> PDF С„Р°Р№Р»</a>
+   85:               <a href="{{ file.url }}" target="_blank"><i class="fa fa-file-pdf"></i> PDF файл</a>
    86:             {% endif %}
    87:             <div class="file-name">{{ file.name }}</div>
    88:           </div>
    89:         {% endfor %}
-   90:         <a href="/add_file/{{ doctor._id }}" class="btn-main btn-file-upload"><i class="fa fa-upload"></i> Р—Р°РіСЂСѓР·РёС‚СЊ</a>
+   90:         <a href="/add_file/{{ doctor._id }}" class="btn-main btn-file-upload"><i class="fa fa-upload"></i> Загрузить</a>
    91:       </div>
    92:     </div>
    93:   </div>
    94: 
    95:   <div class="tab-content" id="tab-gallery">
    96:     <div class="doctor-gallery-section">
-   97:       <h3>Р“Р°Р»РµСЂРµСЏ СЂР°Р±РѕС‚ вЂњР”Рѕ / РџРѕСЃР»РµвЂќ</h3>
+   97:       <h3>Галерея работ “До / После”</h3>
    98:       <div class="gallery-row">
    99:         {% for case in doctor.cases %}
   100:         <div class="gallery-case">
-  101:           <div class="gallery-label">Р”Рѕ</div>
+  101:           <div class="gallery-label">До</div>
   102:           <img src="{{ case.before }}" alt="before">
-  103:           <div class="gallery-label">РџРѕСЃР»Рµ</div>
+  103:           <div class="gallery-label">После</div>
   104:           <img src="{{ case.after }}" alt="after">
   105:         </div>
   106:         {% endfor %}
@@ -113,7 +113,7 @@
   113: <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   114: <script>
   115: document.addEventListener('DOMContentLoaded', function() {
-  116:   // РўР°Р±С‹
+  116:   // Табы
   117:   const tabBtns = document.querySelectorAll('.tab-btn');
   118:   const tabContents = document.querySelectorAll('.tab-content');
   119:   tabBtns.forEach(btn => {
@@ -122,7 +122,7 @@
   122:       tabContents.forEach(tc => tc.classList.remove('active'));
   123:       this.classList.add('active');
   124:       document.getElementById('tab-' + this.dataset.tab).classList.add('active');
-  125:       // РџСЂРё РїРѕРєР°Р·Рµ СЂР°СЃРїРёСЃР°РЅРёСЏ вЂ” СЂРµРЅРґРµСЂ РєР°Р»РµРЅРґР°СЂСЏ
+  125:       // При показе расписания — рендер календаря
   126:       if (this.dataset.tab === "schedule" && !window.doctorCalRendered) {
   127:         renderDoctorCalendar();
   128:         window.doctorCalRendered = true;
@@ -130,7 +130,7 @@
   130:     });
   131:   });
   132: 
-  133:   // FullCalendar РґР»СЏ СЂР°СЃРїРёСЃР°РЅРёСЏ РІСЂР°С‡Р°
+  133:   // FullCalendar для расписания врача
   134:   window.renderDoctorCalendar = function() {
   135:     var calendarEl = document.getElementById('doctor-calendar');
   136:     var events = [
@@ -141,7 +141,7 @@
   141:         end: "{{ ev.end }}",
   142:         backgroundColor: "{{ ev.color|default('#A2C6FA') }}",
   143:         borderColor: "{{ ev.color|default('#A2C6FA') }}",
-  144:         // ... РґСЂСѓРіРёРµ РїРѕР»СЏ
+  144:         // ... другие поля
   145:       },
   146:       {% endfor %}
   147:     ];
@@ -150,7 +150,7 @@
   150:       locale: 'ru',
   151:       slotMinTime: "08:00:00",
   152:       slotMaxTime: "20:00:00",
-  153:       allDayText: 'Р’РµСЃСЊ РґРµРЅСЊ',
+  153:       allDayText: 'Весь день',
   154:       headerToolbar: { left: '', center: 'title', right: '' },
   155:       events: events,
   156:       height: 370,

@@ -1,8 +1,8 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
     3: <div class="chat-container">
     4:   <div class="chat-sidebar">
-    5:     <div class="chat-sidebar-title">Р§Р°С‚С‹</div>
+    5:     <div class="chat-sidebar-title">Чаты</div>
     6:     {% for chat in chats %}
     7:       <div class="chat-sidebar-row {% if loop.first %}active{% endif %}">
     8:         <img src="{{ chat.avatar or '/static/avatars/demo-user.png' }}" class="chat-avatar">
@@ -27,7 +27,7 @@
    27:       <img src="{{ chats[0].avatar or '/static/avatars/demo-user.png' }}" class="chat-header-avatar">
    28:       <div>
    29:         <div class="chat-header-title">{{ chats[0].title or chats[0].participants|join(', ') }}</div>
-   30:         <div class="chat-header-members">РЈС‡Р°СЃС‚РЅРёРєРё: {{ chats[0].participants|join(', ') }}</div>
+   30:         <div class="chat-header-members">Участники: {{ chats[0].participants|join(', ') }}</div>
    31:       </div>
    32:     </div>
    33:     <div class="chat-messages" id="chat-messages">
@@ -46,10 +46,10 @@
    46:       {% endfor %}
    47:     </div>
    48:     <form id="send-form" class="chat-input-wrap" onsubmit="return false;">
-   49:       <input type="text" class="chat-input" placeholder="Р’РІРµРґРёС‚Рµ СЃРѕРѕР±С‰РµРЅРёРµ..." autocomplete="off" disabled>
-   50:       <button class="btn-send" disabled><i class="fa fa-paper-plane"></i> РћС‚РїСЂР°РІРёС‚СЊ</button>
+   49:       <input type="text" class="chat-input" placeholder="Введите сообщение..." autocomplete="off" disabled>
+   50:       <button class="btn-send" disabled><i class="fa fa-paper-plane"></i> Отправить</button>
    51:     </form>
-   52:     <div class="chat-demo-note">* Р”РµРјРѕ: РѕС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёР№ РїРѕРєР° РЅРµР°РєС‚РёРІРЅР°</div>
+   52:     <div class="chat-demo-note">* Демо: отправка сообщений пока неактивна</div>
    53:   </div>
    54: </div>
    55: {% endblock %}

@@ -1,4 +1,4 @@
-﻿    1: import os, zipfile
+    1: import os, zipfile
     2: base = r"D:\Projects\medplatforma"
     3: docs = os.path.join(base, "docs")
     4: out  = os.path.join(base, "docs.zip")

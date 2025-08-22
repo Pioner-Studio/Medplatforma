@@ -1,16 +1,16 @@
-﻿    1: {% extends 'base.html' %}
-    2: {% block title %}Р”РѕР±Р°РІРёС‚СЊ РѕРїР»Р°С‚Сѓ{% endblock %}
+    1: {% extends 'base.html' %}
+    2: {% block title %}Добавить оплату{% endblock %}
     3: {% block content %}
     4: <div style="max-width:450px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:38px 42px;">
-    5:     <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:28px;">Р”РѕР±Р°РІРёС‚СЊ РѕРїР»Р°С‚Сѓ</h2>
+    5:     <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:28px;">Добавить оплату</h2>
     6:     <form method="POST">
-    7:         <div style="font-weight:600; margin-bottom:9px;">Р¤РРћ РїР°С†РёРµРЅС‚Р°:</div>
+    7:         <div style="font-weight:600; margin-bottom:9px;">ФИО пациента:</div>
     8:         <div style="margin-bottom:18px;">{{ patient.full_name }}</div>
-    9:         <div style="font-weight:600; margin-bottom:6px;">РЎСѓРјРјР° РѕРїР»Р°С‚С‹ (в‚Ѕ):</div>
+    9:         <div style="font-weight:600; margin-bottom:6px;">Сумма оплаты (₽):</div>
    10:         <input name="amount" type="number" min="0" step="0.01" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px; font-size:1.1rem;">
-   11:         <div style="font-weight:600; margin-bottom:6px;">РљРѕРјРјРµРЅС‚Р°СЂРёР№ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ):</div>
+   11:         <div style="font-weight:600; margin-bottom:6px;">Комментарий (необязательно):</div>
    12:         <textarea name="comment" rows="2" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccd; margin-bottom:18px; font-size:1.05rem;"></textarea>
-   13:         <button type="submit" style="background:#13b949; color:#fff; border:none; border-radius:10px; padding:11px 32px; font-weight:700; font-size:1.09rem; cursor:pointer;">Р”РѕР±Р°РІРёС‚СЊ РѕРїР»Р°С‚Сѓ</button>
+   13:         <button type="submit" style="background:#13b949; color:#fff; border:none; border-radius:10px; padding:11px 32px; font-weight:700; font-size:1.09rem; cursor:pointer;">Добавить оплату</button>
    14:     </form>
    15: </div>
    16: {% endblock %}

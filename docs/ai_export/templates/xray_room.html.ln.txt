@@ -1,46 +1,46 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
     3: <div class="xray-cabinet-wrap">
     4:     <div class="xray-header-row">
-    5:         <h2>Р РµРЅС‚РіРµРЅ-РєР°Р±РёРЅРµС‚</h2>
+    5:         <h2>Рентген-кабинет</h2>
     6:         <a href="{{ url_for('add_xray') }}" class="btn-main">
-    7:             <i class="fa fa-plus"></i> Р”РѕР±Р°РІРёС‚СЊ СЃРЅРёРјРѕРє
+    7:             <i class="fa fa-plus"></i> Добавить снимок
     8:         </a>
     9:     </div>
    10:     <form method="get" class="xray-filters">
    11:         <select name="patient" class="filter-select">
-   12:             <option value="">Р’СЃРµ РїР°С†РёРµРЅС‚С‹</option>
+   12:             <option value="">Все пациенты</option>
    13:             {% for p in patients.values() %}
    14:             <option value="{{ p['_id'] }}">{{ p['full_name'] }}</option>
    15:             {% endfor %}
    16:         </select>
    17:         <select name="doctor" class="filter-select">
-   18:             <option value="">Р’СЃРµ РІСЂР°С‡Рё</option>
+   18:             <option value="">Все врачи</option>
    19:             {% for d in doctors.values() %}
    20:             <option value="{{ d['_id'] }}">{{ d['full_name'] }}</option>
    21:             {% endfor %}
    22:         </select>
    23:         <select name="type" class="filter-select">
-   24:             <option value="">Р’СЃРµ С‚РёРїС‹</option>
-   25:             <option>РџР°РЅРѕСЂР°РјР°</option>
-   26:             <option>РџСЂРёС†РµР»СЊРЅС‹Р№</option>
-   27:             <option>РљРў</option>
+   24:             <option value="">Все типы</option>
+   25:             <option>Панорама</option>
+   26:             <option>Прицельный</option>
+   27:             <option>КТ</option>
    28:         </select>
    29:         <input type="date" name="date" class="filter-select">
-   30:         <button type="submit" class="btn btn-secondary">Р¤РёР»СЊС‚СЂ</button>
+   30:         <button type="submit" class="btn btn-secondary">Фильтр</button>
    31:     </form>
    32: 
    33:     <div class="xray-table-zone">
    34:         <table class="xray-table">
    35:             <thead>
    36:                 <tr>
-   37:                     <th>Р”Р°С‚Р°</th>
-   38:                     <th>РџР°С†РёРµРЅС‚</th>
-   39:                     <th>Р’СЂР°С‡</th>
-   40:                     <th>РўРёРї</th>
-   41:                     <th>РџСЂРµРІСЊСЋ</th>
-   42:                     <th>Р—Р°РєР»СЋС‡РµРЅРёРµ</th>
-   43:                     <th>Р”РµР№СЃС‚РІРёСЏ</th>
+   37:                     <th>Дата</th>
+   38:                     <th>Пациент</th>
+   39:                     <th>Врач</th>
+   40:                     <th>Тип</th>
+   41:                     <th>Превью</th>
+   42:                     <th>Заключение</th>
+   43:                     <th>Действия</th>
    44:                 </tr>
    45:             </thead>
    46:             <tbody>
@@ -51,7 +51,7 @@
    51:                         <div class="xray-cell">
    52:                             <img src="{{ patients[x.patient_id]['avatar_url'] if x.patient_id in patients else '/static/avatars/demo-patient.png' }}" class="xray-avatar">
    53:                             <div>
-   54:                                 <b>{{ patients[x.patient_id]['full_name'] if x.patient_id in patients else "вЂ”" }}</b>
+   54:                                 <b>{{ patients[x.patient_id]['full_name'] if x.patient_id in patients else "—" }}</b>
    55:                                 <div class="xray-meta">{{ patients[x.patient_id]['phone'] if x.patient_id in patients else "" }}</div>
    56:                             </div>
    57:                         </div>
@@ -60,7 +60,7 @@
    60:                         <div class="xray-cell">
    61:                             <img src="{{ doctors[x.doctor_id]['avatar_url'] if x.doctor_id in doctors else '/static/avatars/demo-doctor.png' }}" class="xray-avatar">
    62:                             <div>
-   63:                                 <b>{{ doctors[x.doctor_id]['full_name'] if x.doctor_id in doctors else "вЂ”" }}</b>
+   63:                                 <b>{{ doctors[x.doctor_id]['full_name'] if x.doctor_id in doctors else "—" }}</b>
    64:                                 <div class="xray-meta">{{ doctors[x.doctor_id]['specialty'] if x.doctor_id in doctors else "" }}</div>
    65:                             </div>
    66:                         </div>
@@ -77,7 +77,7 @@
    77:                     </td>
    78:                     <td>
    79:                         <a href="{{ x.image_url }}" download class="btn-download">
-   80:                             <i class="fa fa-download"></i> РЎРєР°С‡Р°С‚СЊ
+   80:                             <i class="fa fa-download"></i> Скачать
    81:                         </a>
    82:                     </td>
    83:                 </tr>
@@ -87,7 +87,7 @@
    87:     </div>
    88: </div>
    89: 
-   90: <!-- РњРѕРґР°Р»РєР° РґР»СЏ СѓРІРµР»РёС‡РµРЅРёСЏ СЃРЅРёРјРєР° -->
+   90: <!-- Модалка для увеличения снимка -->
    91: <div class="modal" id="xrayModal" style="display:none;">
    92:     <div class="modal-content" style="max-width:670px;">
    93:         <span class="close" onclick="document.getElementById('xrayModal').style.display='none'">&times;</span>
@@ -132,9 +132,9 @@
   132: .xray-cell { display: flex; align-items: center; gap: 8px; text-align: left; }
   133: .xray-meta { font-size: 0.98em; color: #8493b5; }
   134: .xray-badge { display: inline-block; padding: 6px 15px; border-radius: 8px; font-size: 0.97em; font-weight: 600; color: #fff; margin-bottom: 2px;}
-  135: .xray-badge.РџР°РЅРѕСЂР°РјР° { background: #2196f3; }
-  136: .xray-badge.РљРў { background: #21b445; }
-  137: .xray-badge.РџСЂРёС†РµР»СЊРЅС‹Р№ { background: #ffa600; color: #222;}
+  135: .xray-badge.Панорама { background: #2196f3; }
+  136: .xray-badge.КТ { background: #21b445; }
+  137: .xray-badge.Прицельный { background: #ffa600; color: #222;}
   138: .xray-img-preview {
   139:     width: 62px; height: 62px; object-fit: cover; border-radius: 11px;
   140:     box-shadow: 0 2px 10px #a7d4fd33; transition: transform .17s, box-shadow .17s;

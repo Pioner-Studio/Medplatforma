@@ -1,9 +1,9 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
-    3: <h2>РЎРїРёСЃРѕРє РІСЂР°С‡РµР№</h2>
+    3: <h2>Список врачей</h2>
     4: <form method="get" class="doctors-filters" style="margin-bottom: 18px;">
     5:   <select name="specialization" onchange="this.form.submit()" class="filter-select">
-    6:     <option value="">Р’СЃРµ СЃРїРµС†РёР°Р»СЊРЅРѕСЃС‚Рё</option>
+    6:     <option value="">Все специальности</option>
     7:     {% set all_specs = doctors | map(attribute='specialization') | list %}
     8:     {% for spec in all_specs|unique %}
     9:       {% if spec %}
@@ -12,7 +12,7 @@
    12:     {% endfor %}
    13:   </select>
    14:   <a href="{{ url_for('add_doctor') }}" class="btn-add-doc">
-   15:     <i class="fa fa-user-plus"></i> Р”РѕР±Р°РІРёС‚СЊ РІСЂР°С‡Р°
+   15:     <i class="fa fa-user-plus"></i> Добавить врача
    16:   </a>
    17: </form>
    18: <div class="doctors-list">
@@ -30,28 +30,28 @@
    30:         </div>
    31:         {% if doc.schedule %}
    32:           <div class="doctor-schedule-mini">
-   33:             <b>Р Р°СЃРїРёСЃР°РЅРёРµ:</b>
+   33:             <b>Расписание:</b>
    34:             <ul>
    35:               {% for wd in range(1, 7) %}
    36:                 {% if doc.schedule[wd|string] %}
    37:                   <li>
-   38:                     {{ ['РџРЅ','Р’С‚','РЎСЂ','Р§С‚','РџС‚','РЎР±'][wd-1] }}:
-   39:                     {{ doc.schedule[wd|string].start }}вЂ“{{ doc.schedule[wd|string].end }}
+   38:                     {{ ['Пн','Вт','Ср','Чт','Пт','Сб'][wd-1] }}:
+   39:                     {{ doc.schedule[wd|string].start }}–{{ doc.schedule[wd|string].end }}
    40:                   </li>
    41:                 {% endif %}
    42:               {% endfor %}
    43:               {% if not (doc.schedule['1'] or doc.schedule['2'] or doc.schedule['3'] or doc.schedule['4'] or doc.schedule['5'] or doc.schedule['6']) %}
-   44:                 <li style="color:#db2828;">Р’С‹С…РѕРґРЅС‹Рµ</li>
+   44:                 <li style="color:#db2828;">Выходные</li>
    45:               {% endif %}
    46:             </ul>
    47:           </div>
    48:         {% endif %}
    49:       </div>
    50:       <div class="status-zone">
-   51:         <span class="doc-status {{ 'active' if doc.status == 'Р°РєС‚РёРІРµРЅ' else 'inactive' }}">{{ doc.status }}</span>
+   51:         <span class="doc-status {{ 'active' if doc.status == 'активен' else 'inactive' }}">{{ doc.status }}</span>
    52:       </div>
    53:       <div class="actions-zone">
-   54:         <a href="{{ url_for('doctor_card', doctor_id=doc._id) }}" class="btn-main">РџРѕРґСЂРѕР±РЅРµРµ</a>
+   54:         <a href="{{ url_for('doctor_card', doctor_id=doc._id) }}" class="btn-main">Подробнее</a>
    55:       </div>
    56:     </div>
    57:   {% endfor %}

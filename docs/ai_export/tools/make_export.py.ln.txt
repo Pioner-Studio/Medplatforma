@@ -1,0 +1,76 @@
+    1: # tools/make_export.py
+    2: import os
+    3: import io
+    4: import zipfile
+    5: from pathlib import Path
+    6: from datetime import datetime
+    7: 
+    8: ROOT = Path(".").resolve()
+    9: EXPORT_DIR = ROOT / "docs" / "ai_export"
+   10: EXPORT_DIR.mkdir(parents=True, exist_ok=True)
+   11: 
+   12: # какие расширения выгружать с нумерацией строк
+   13: GLOB_PATTERNS = ["**/*.py", "**/*.html", "**/*.css", "**/*.js"]
+   14: 
+   15: # что исключать
+   16: EXCLUDE_DIRS = {".git", ".venv", "venv", "__pycache__", "node_modules", "docs/ai_export"}
+   17: EXCLUDE_FILES = set()
+   18: 
+   19: def is_excluded(path: Path) -> bool:
+   20:     parts = set([p.name for p in path.parents] | {path.name})
+   21:     if any(d in EXCLUDE_DIRS for d in parts):
+   22:         return True
+   23:     if path.name in EXCLUDE_FILES:
+   24:         return True
+   25:     return False
+   26: 
+   27: def rel(p: Path) -> str:
+   28:     return str(p.relative_to(ROOT)).replace("\\", "/")
+   29: 
+   30: # 1) список файлов проекта (отдельный список)
+   31: filelist = []
+   32: for pattern in GLOB_PATTERNS:
+   33:     for p in ROOT.glob(pattern):
+   34:         if p.is_file() and not is_excluded(p):
+   35:             filelist.append(p)
+   36: 
+   37: # 2) выгрузка с номерами строк
+   38: for p in filelist:
+   39:     dest = EXPORT_DIR / (rel(p) + ".ln.txt")
+   40:     dest.parent.mkdir(parents=True, exist_ok=True)
+   41:     with p.open("r", encoding="utf-8", errors="replace") as f:
+   42:         lines = f.readlines()
+   43:     with dest.open("w", encoding="utf-8") as out:
+   44:         for i, line in enumerate(lines, 1):
+   45:             out.write(f"{i:5}: {line.rstrip()}\n")
+   46: 
+   47: # 3) сохраняем filelist.txt
+   48: with (EXPORT_DIR / "filelist.txt").open("w", encoding="utf-8") as f:
+   49:     for p in sorted(filelist, key=lambda x: rel(x)):
+   50:         f.write(rel(p) + "\n")
+   51: 
+   52: print(f"[OK] numbered sources -> {EXPORT_DIR}")
+   53: 
+   54: # 4) общий ZIP проекта (исключая тяжёлые/временные директории)
+   55: STAMP = datetime.now().strftime("%Y%m%d_%H%M")
+   56: ZIP_DIR = ROOT / "docs" / "exports"
+   57: ZIP_DIR.mkdir(parents=True, exist_ok=True)
+   58: zip_path = ZIP_DIR / f"medplatforma_{STAMP}.zip"
+   59: 
+   60: INCLUDE_TOP = ["."]  # всё из репозитория
+   61: EXCLUDE_ZIP_DIRS = {".git", ".venv", "venv", "__pycache__", "node_modules", ".mypy_cache", ".pytest_cache"}
+   62: 
+   63: def zip_filter(p: Path) -> bool:
+   64:     # исключаем служебное
+   65:     parts = set([pp.name for pp in p.parents] | {p.name})
+   66:     if any(d in EXCLUDE_ZIP_DIRS for d in parts):
+   67:         return False
+   68:     return True
+   69: 
+   70: with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as z:
+   71:     for base in INCLUDE_TOP:
+   72:         for p in Path(base).rglob("*"):
+   73:             if p.is_file() and zip_filter(p):
+   74:                 z.write(p, arcname=rel(p))
+   75: 
+   76: print(f"[OK] project zip -> {zip_path}")

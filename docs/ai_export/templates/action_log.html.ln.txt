@@ -1,16 +1,16 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
-    3: <h2>Р–СѓСЂРЅР°Р» РґРµР№СЃС‚РІРёР№</h2>
+    3: <h2>Журнал действий</h2>
     4: <div class="card shadow" style="max-width:1250px;margin:32px auto 0 auto;padding:34px 24px;">
     5:   <table class="action-log-table" style="width:100%;border-radius:20px;overflow:hidden;">
     6:     <thead>
     7:       <tr>
-    8:         <th>Р”Р°С‚Р°/Р’СЂРµРјСЏ</th>
-    9:         <th>РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ</th>
-   10:         <th>Р РѕР»СЊ</th>
-   11:         <th>Р”РµР№СЃС‚РІРёРµ</th>
-   12:         <th>РћР±СЉРµРєС‚</th>
-   13:         <th>РљРѕРјРјРµРЅС‚Р°СЂРёР№</th>
+    8:         <th>Дата/Время</th>
+    9:         <th>Пользователь</th>
+   10:         <th>Роль</th>
+   11:         <th>Действие</th>
+   12:         <th>Объект</th>
+   13:         <th>Комментарий</th>
    14:       </tr>
    15:     </thead>
    16:     <tbody>
@@ -26,11 +26,11 @@
    26:         </td>
    27:         <td>
    28:           {% if log.action == 'created' %}
-   29:             <span class="badge bg-light" style="color:#22c55e;"><b>РЎРѕР·РґР°РЅРёРµ</b></span>
+   29:             <span class="badge bg-light" style="color:#22c55e;"><b>Создание</b></span>
    30:           {% elif log.action == 'edited' %}
-   31:             <span class="badge bg-light" style="color:#eab308;"><b>РР·РјРµРЅРµРЅРёРµ</b></span>
+   31:             <span class="badge bg-light" style="color:#eab308;"><b>Изменение</b></span>
    32:           {% elif log.action == 'deleted' %}
-   33:             <span class="badge bg-light" style="color:#ef4444;"><b>РЈРґР°Р»РµРЅРёРµ</b></span>
+   33:             <span class="badge bg-light" style="color:#ef4444;"><b>Удаление</b></span>
    34:           {% else %}
    35:             <span class="badge bg-light">{{ log.action|capitalize }}</span>
    36:           {% endif %}

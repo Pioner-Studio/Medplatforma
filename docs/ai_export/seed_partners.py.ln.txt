@@ -1,4 +1,4 @@
-﻿    1: from datetime import datetime
+    1: from datetime import datetime
     2: from bson import ObjectId
     3: from pymongo import MongoClient
     4: 
@@ -8,7 +8,7 @@
     8: patients = [
     9:     {
    10:         "_id": ObjectId("66bbf001fe3f2a1c11111111"),
-   11:         "full_name": "РРІР°РЅРѕРІ РџР°РІРµР»",
+   11:         "full_name": "Иванов Павел",
    12:         "avatar_url": "/static/avatars/patient_1.png",
    13:         "invited_by": None,
    14:         "referrals": [
@@ -19,7 +19,7 @@
    19:     },
    20:     {
    21:         "_id": ObjectId("66bbf001fe3f2a1c22222222"),
-   22:         "full_name": "РЎРёРґРѕСЂРѕРІР° РћР»СЊРіР°",
+   22:         "full_name": "Сидорова Ольга",
    23:         "avatar_url": "/static/avatars/patient_2.png",
    24:         "invited_by": ObjectId("66bbf001fe3f2a1c11111111"),
    25:         "referrals": [],
@@ -27,7 +27,7 @@
    27:     },
    28:     {
    29:         "_id": ObjectId("66bbf001fe3f2a1c33333333"),
-   30:         "full_name": "РџРµС‚СЂРѕРІ РЎРµСЂРіРµР№",
+   30:         "full_name": "Петров Сергей",
    31:         "avatar_url": "/static/avatars/patient_3.png",
    32:         "invited_by": ObjectId("66bbf001fe3f2a1c11111111"),
    33:         "referrals": [ObjectId("66bbf001fe3f2a1c44444444")],
@@ -35,7 +35,7 @@
    35:     },
    36:     {
    37:         "_id": ObjectId("66bbf001fe3f2a1c44444444"),
-   38:         "full_name": "РњРёС…Р°Р№Р»РѕРІР° РђРЅРЅР°",
+   38:         "full_name": "Михайлова Анна",
    39:         "avatar_url": "/static/avatars/patient_4.png",
    40:         "invited_by": ObjectId("66bbf001fe3f2a1c33333333"),
    41:         "referrals": [],
@@ -46,4 +46,4 @@
    46: db.patients.delete_many({})
    47: db.patients.insert_many(patients)
    48: 
-   49: print("вњ… Р”РµРјРѕ-РїР°СЂС‚РЅС‘СЂСЃРєРёРµ СЃРІСЏР·Рё СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅС‹")
+   49: print("✅ Демо-партнёрские связи успешно добавлены")

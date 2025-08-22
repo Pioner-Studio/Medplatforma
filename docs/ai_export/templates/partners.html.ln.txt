@@ -1,29 +1,29 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
     3: <div class="partners-wrap">
-    4:   <h2 class="partners-title">РџР°СЂС‚РЅС‘СЂСЃРєР°СЏ РїСЂРѕРіСЂР°РјРјР°</h2>
+    4:   <h2 class="partners-title">Партнёрская программа</h2>
     5:   <div class="partners-table-zone">
     6:     <table class="partners-table">
     7:       <thead>
     8:         <tr>
-    9:           <th>РџР°С†РёРµРЅС‚</th>
-   10:           <th>РџСЂРёРіР»Р°СЃРёР»</th>
-   11:           <th>Р РµС„РµСЂР°Р»С‹</th>
+    9:           <th>Пациент</th>
+   10:           <th>Пригласил</th>
+   11:           <th>Рефералы</th>
    12:         </tr>
    13:       </thead>
    14:       <tbody>
    15:       {% for patient in patients %}
    16:         <tr>
-   17:           <!-- РџР°С†РёРµРЅС‚ (РєР»РёРєР°Р±РµР»СЊРЅРѕ) -->
+   17:           <!-- Пациент (кликабельно) -->
    18:           <td>
    19:             <a href="{{ url_for('patient_card', id=patient._id) }}" class="partner-link">
    20:               <img src="{{ patient.avatar_url }}" class="mini-avatar avatar-shadow">
    21:               <span>{{ patient.full_name }}</span>
    22:             </a>
    23:           </td>
-   24:           <!-- РџСЂРёРіР»Р°СЃРёР» -->
+   24:           <!-- Пригласил -->
    25:           <td>
-   26:             {# РќР°Р№РґС‘Рј РїСЂРёРіР»Р°СЃРёС‚РµР»СЏ РїРѕ patients_map #}
+   26:             {# Найдём пригласителя по patients_map #}
    27:             {% set inviter = patient.invited_by and patients_map.get(patient.invited_by|string) %}
    28:             {% if inviter %}
    29:               <a href="{{ url_for('patient_card', id=inviter._id) }}" class="partner-link" style="color:#3797bc;">
@@ -31,10 +31,10 @@
    31:                 <span>{{ inviter.full_name }}</span>
    32:               </a>
    33:             {% else %}
-   34:               <span class="badge-none">вЂ” РЅРµС‚</span>
+   34:               <span class="badge-none">— нет</span>
    35:             {% endif %}
    36:           </td>
-   37:           <!-- Р РµС„РµСЂР°Р»С‹ -->
+   37:           <!-- Рефералы -->
    38:           <td>
    39:             {% set refs = referrals[patient._id|string] if patient._id|string in referrals else [] %}
    40:             {% if refs and refs|length > 0 %}
@@ -46,7 +46,7 @@
    46:                 {% if not loop.last %}<span style="margin:0 5px;color:#b2b6c3;">,</span>{% endif %}
    47:               {% endfor %}
    48:             {% else %}
-   49:               <span class="badge-none">вЂ” РЅРµС‚</span>
+   49:               <span class="badge-none">— нет</span>
    50:             {% endif %}
    51:           </td>
    52:         </tr>

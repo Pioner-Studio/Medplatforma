@@ -1,22 +1,22 @@
-﻿    1: {% extends 'base.html' %}
-    2: {% block title %}Р”РѕР±Р°РІРёС‚СЊ СЂР°СЃС…РѕРґ{% endblock %}
+    1: {% extends 'base.html' %}
+    2: {% block title %}Добавить расход{% endblock %}
     3: {% block content %}
     4: <div style="max-width:500px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:38px;">
-    5:     <h2>Р”РѕР±Р°РІРёС‚СЊ СЂР°СЃС…РѕРґ</h2>
+    5:     <h2>Добавить расход</h2>
     6:     <form method="POST">
-    7:         <label>Р”Р°С‚Р°:<br>
+    7:         <label>Дата:<br>
     8:             <input type="date" name="date" required style="width:180px;margin-bottom:14px;">
     9:         </label><br>
-   10:         <label>РљР°С‚РµРіРѕСЂРёСЏ:<br>
-   11:             <input type="text" name="category" required placeholder="РђСЂРµРЅРґР° / Р—Рџ / РњР°С‚РµСЂРёР°Р»С‹ Рё С‚.Рґ." style="width:220px;margin-bottom:14px;">
+   10:         <label>Категория:<br>
+   11:             <input type="text" name="category" required placeholder="Аренда / ЗП / Материалы и т.д." style="width:220px;margin-bottom:14px;">
    12:         </label><br>
-   13:         <label>РЎСѓРјРјР°:<br>
+   13:         <label>Сумма:<br>
    14:             <input type="number" name="amount" required style="width:120px;margin-bottom:14px;">
    15:         </label><br>
-   16:         <label>РљРѕРјРјРµРЅС‚Р°СЂРёР№:<br>
+   16:         <label>Комментарий:<br>
    17:             <input type="text" name="comment" style="width:300px;margin-bottom:16px;">
    18:         </label><br>
-   19:         <button type="submit" style="background:#445be2;color:#fff;border:none;border-radius:8px;padding:9px 19px;font-weight:700;cursor:pointer;">Р”РѕР±Р°РІРёС‚СЊ</button>
+   19:         <button type="submit" style="background:#445be2;color:#fff;border:none;border-radius:8px;padding:9px 19px;font-weight:700;cursor:pointer;">Добавить</button>
    20:     </form>
    21: </div>
    22: {% endblock %}

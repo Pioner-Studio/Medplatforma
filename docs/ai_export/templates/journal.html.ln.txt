@@ -1,16 +1,16 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
-    3: <h2>Р–СѓСЂРЅР°Р» РґРµР№СЃС‚РІРёР№</h2>
+    3: <h2>Журнал действий</h2>
     4: <div class="card shadow p-4" style="max-width:1100px;margin:0 auto;">
     5:   <table class="table action-table" style="width:100%;">
     6:     <thead>
     7:       <tr>
-    8:         <th>Р”Р°С‚Р°/Р’СЂРµРјСЏ</th>
-    9:         <th>РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ</th>
-   10:         <th>Р РѕР»СЊ</th>
-   11:         <th>Р”РµР№СЃС‚РІРёРµ</th>
-   12:         <th>РћР±СЉРµРєС‚</th>
-   13:         <th>РљРѕРјРјРµРЅС‚Р°СЂРёР№</th>
+    8:         <th>Дата/Время</th>
+    9:         <th>Пользователь</th>
+   10:         <th>Роль</th>
+   11:         <th>Действие</th>
+   12:         <th>Объект</th>
+   13:         <th>Комментарий</th>
    14:       </tr>
    15:     </thead>
    16:     <tbody>

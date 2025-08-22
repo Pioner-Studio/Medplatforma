@@ -1,4 +1,4 @@
-﻿    1: <!DOCTYPE html>
+    1: <!DOCTYPE html>
     2: <html lang="ru">
     3: <head>
     4:     <meta charset="UTF-8">
@@ -24,7 +24,7 @@
    24: 
    25:   {% block scripts %}
    26:   <script>
-   27:     // РћС‚РєСЂС‹С‚РёРµ РјРµРЅСЋ РїСЂРѕС„РёР»СЏ
+   27:     // Открытие меню профиля
    28:     function toggleProfileMenu() {
    29:       let menu = document.getElementById('profileMenu');
    30:       menu.style.display = (menu.style.display === 'flex' ? 'none' : 'flex');
@@ -36,7 +36,7 @@
    36:       }
    37:     };
    38: 
-   39:     // --- РџРµСЂРµРєР»СЋС‡Р°С‚РµР»СЊ С‚РµРјС‹ ---
+   39:     // --- Переключатель темы ---
    40:     document.addEventListener("DOMContentLoaded", function() {
    41:       const themeBtn = document.getElementById('themeToggleBtn');
    42:       if (themeBtn) {
@@ -56,7 +56,7 @@
    56:         };
    57:       }
    58:     });
-   59:     // РњРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ РІС‹Р±РѕСЂР° С‚РµРјС‹ РІ localStorage, РµСЃР»Рё РЅР°РґРѕ.
+   59:     // Можно добавить сохранение выбора темы в localStorage, если надо.
    60:   </script>
    61:   {% endblock %}
    62:   <script>
@@ -71,12 +71,12 @@
    71:   }
    72: }
    73: 
-   74: // РџРµСЂРµРєР»СЋС‡РµРЅРёРµ С‚РµРјС‹
+   74: // Переключение темы
    75: document.addEventListener('DOMContentLoaded', function() {
    76:   const themeBtn = document.getElementById('themeToggleBtn');
    77:   const sunIcon = document.querySelector('.theme-sun');
    78:   const moonIcon = document.querySelector('.theme-moon');
-   79:   // РЎРѕС…СЂР°РЅСЏРµРј С‚РµРјСѓ РјРµР¶РґСѓ СЃРµСЃСЃРёСЏРјРё
+   79:   // Сохраняем тему между сессиями
    80:   if (localStorage.getItem('theme') === 'dark') {
    81:     document.body.classList.add('dark-theme');
    82:     sunIcon.style.display = 'none';

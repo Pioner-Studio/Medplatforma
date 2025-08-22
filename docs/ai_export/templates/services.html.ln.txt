@@ -1,18 +1,18 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
     3: 
     4: <div class="card" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;">
     5:   <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
-    6:     <h2 style="margin:0;">РЈСЃР»СѓРіРё</h2>
+    6:     <h2 style="margin:0;">Услуги</h2>
     7:     <div style="display:flex;gap:8px;align-items:center;">
-    8:       <a href="{{ url_for('add_service') }}" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;">Р”РѕР±Р°РІРёС‚СЊ СѓСЃР»СѓРіСѓ</a>
+    8:       <a href="{{ url_for('add_service') }}" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;">Добавить услугу</a>
     9:       <form method="get" action="{{ url_for('services_list') }}" style="display:flex;gap:8px;align-items:center;">
    10:         <select name="status" class="filter-select">
-   11:           <option value="">Р’СЃРµ</option>
-   12:           <option value="active" {{ 'selected' if request.args.get('status')=='active' else '' }}>РђРєС‚РёРІРЅС‹Рµ</option>
-   13:           <option value="archived" {{ 'selected' if request.args.get('status')=='archived' else '' }}>РђСЂС…РёРІ</option>
+   11:           <option value="">Все</option>
+   12:           <option value="active" {{ 'selected' if request.args.get('status')=='active' else '' }}>Активные</option>
+   13:           <option value="archived" {{ 'selected' if request.args.get('status')=='archived' else '' }}>Архив</option>
    14:         </select>
-   15:         <button type="submit">Р¤РёР»СЊС‚СЂ</button>
+   15:         <button type="submit">Фильтр</button>
    16:       </form>
    17:     </div>
    18:   </div>
@@ -21,13 +21,13 @@
    21:     <table style="width:100%;border-collapse:collapse;">
    22:       <thead>
    23:         <tr style="background:#f6f9ff;">
-   24:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">РќР°Р·РІР°РЅРёРµ</th>
-   25:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">РљРѕРґ</th>
-   26:           <th style="text-align:right;padding:10px;border-bottom:1px solid #eef2fb;">Р¦РµРЅР°, в‚Ѕ</th>
-   27:           <th style="text-align:right;padding:10px;border-bottom:1px solid #eef2fb;">Р”Р»РёС‚., РјРёРЅ</th>
-   28:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">Р¦РІРµС‚</th>
-   29:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">РЎС‚Р°С‚СѓСЃ</th>
-   30:           <th style="width:180px;padding:10px;border-bottom:1px solid #eef2fb;">Р”РµР№СЃС‚РІРёСЏ</th>
+   24:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">Название</th>
+   25:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">Код</th>
+   26:           <th style="text-align:right;padding:10px;border-bottom:1px solid #eef2fb;">Цена, ₽</th>
+   27:           <th style="text-align:right;padding:10px;border-bottom:1px solid #eef2fb;">Длит., мин</th>
+   28:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">Цвет</th>
+   29:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">Статус</th>
+   30:           <th style="width:180px;padding:10px;border-bottom:1px solid #eef2fb;">Действия</th>
    31:         </tr>
    32:       </thead>
    33:       <tbody>
@@ -41,17 +41,17 @@
    41:             <span style="display:inline-block;width:22px;height:22px;border-radius:6px;border:1px solid #e3eaf9;background:{{ s.color }}"></span>
    42:           </td>
    43:           <td style="padding:10px;border-bottom:1px solid #f1f4fb;text-align:center;">
-   44:             {% if s.is_active %}<span style="color:#27ae60;">РђРєС‚РёРІРЅР°</span>{% else %}<span style="color:#c0392b;">РђСЂС…РёРІ</span>{% endif %}
+   44:             {% if s.is_active %}<span style="color:#27ae60;">Активна</span>{% else %}<span style="color:#c0392b;">Архив</span>{% endif %}
    45:           </td>
    46:           <td style="padding:10px;border-bottom:1px solid #f1f4fb;">
-   47:             <a href="{{ url_for('edit_service', id=s._id) }}" style="margin-right:8px;">Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</a>
-   48:             <form action="{{ url_for('delete_service', id=s._id) }}" method="post" style="display:inline;" onsubmit="return confirm('РЈРґР°Р»РёС‚СЊ СѓСЃР»СѓРіСѓ В«{{ s.name }}В»?');">
-   49:               <button type="submit" style="color:#c0392b;background:#fff;border:1px solid #f1d6d6;border-radius:6px;padding:4px 8px;">РЈРґР°Р»РёС‚СЊ</button>
+   47:             <a href="{{ url_for('edit_service', id=s._id) }}" style="margin-right:8px;">Редактировать</a>
+   48:             <form action="{{ url_for('delete_service', id=s._id) }}" method="post" style="display:inline;" onsubmit="return confirm('Удалить услугу «{{ s.name }}»?');">
+   49:               <button type="submit" style="color:#c0392b;background:#fff;border:1px solid #f1d6d6;border-radius:6px;padding:4px 8px;">Удалить</button>
    50:             </form>
    51:           </td>
    52:         </tr>
    53:         {% else %}
-   54:         <tr><td colspan="7" style="padding:18px;text-align:center;color:#8592a6;">РџРѕРєР° РЅРµС‚ СѓСЃР»СѓРі</td></tr>
+   54:         <tr><td colspan="7" style="padding:18px;text-align:center;color:#8592a6;">Пока нет услуг</td></tr>
    55:         {% endfor %}
    56:       </tbody>
    57:     </table>

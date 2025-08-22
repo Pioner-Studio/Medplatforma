@@ -1,4 +1,4 @@
-﻿    1: import argparse, inspect, pathlib, re, sys
+    1: import argparse, inspect, pathlib, re, sys
     2: from textwrap import indent
     3: 
     4: ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -8,7 +8,7 @@
     8: 
     9: def find_app():
    10:     sys.path.insert(0, str(ROOT))
-   11:     # РїРѕРґСЃС‚СЂРѕР№ РїРѕРґ СЃРІРѕР№ РІС…РѕРґ: main.py СЃ app
+   11:     # подстрой под свой вход: main.py с app
    12:     from main import app  # noqa: E402
    13:     return app
    14: 
@@ -17,7 +17,7 @@
    17:     rows = []
    18:     for r in sorted(app.url_map.iter_rules(), key=lambda x: x.rule):
    19:         methods = ",".join(sorted(m for m in r.methods if m not in {"HEAD","OPTIONS"}))
-   20:         rows.append(f"- `{r.rule}`  в†’ **{r.endpoint}**  [{methods}]")
+   20:         rows.append(f"- `{r.rule}`  → **{r.endpoint}**  [{methods}]")
    21:     print("# ROUTES\n")
    22:     print("\n".join(rows))
    23: 
@@ -31,10 +31,10 @@
    31:     print(f"=== BEGIN ENDPOINT: {name} ({file}) ===")
    32:     print(src.rstrip())
    33:     print("=== END ENDPOINT ===")
-   34:     # РїРѕРїСЂРѕР±СѓРµРј РїРѕРєР°Р·Р°С‚СЊ РґРµРєРѕСЂР°С‚РѕСЂС‹ РјР°СЂС€СЂСѓС‚РѕРІ РёР· РёСЃС…РѕРґРЅРёРєР° С„Р°Р№Р»Р°
+   34:     # попробуем показать декораторы маршрутов из исходника файла
    35:     if file:
    36:         text = read(pathlib.Path(file))
-   37:         # РіСЂСѓР±Рѕ: РёС‰РµРј РІСЃРµ @app.route(...) РїСЂСЏРјРѕ РЅР°Рґ С„СѓРЅРєС†РёРµР№
+   37:         # грубо: ищем все @app.route(...) прямо над функцией
    38:         pat = re.compile(rf"(@app\.route\([^)]+\)\s*\n)+def\s+{view.__name__}\b", re.M)
    39:         m = pat.search(text)
    40:         if m:

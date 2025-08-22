@@ -1,21 +1,21 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
-    3: <h2>Р—Р°РґР°С‡Рё</h2>
+    3: <h2>Задачи</h2>
     4: <div style="display:flex;gap:14px;align-items:center;margin-bottom:24px;">
     5:   <select class="filter-select">
-    6:     <option>Р’СЃРµ РёСЃРїРѕР»РЅРёС‚РµР»Рё</option>
+    6:     <option>Все исполнители</option>
     7:     <!-- ... -->
     8:   </select>
     9:   <select class="filter-select">
-   10:     <option>Р’СЃРµ РїСЂРёРѕСЂРёС‚РµС‚С‹</option>
+   10:     <option>Все приоритеты</option>
    11:     <!-- ... -->
    12:   </select>
    13:   <select class="filter-select">
-   14:     <option>Р’СЃРµ СЃС‚Р°С‚СѓСЃС‹</option>
+   14:     <option>Все статусы</option>
    15:     <!-- ... -->
    16:   </select>
    17:   <a href="{{ url_for('add_task') }}" class="btn-add-task">
-   18:     <i class="fa fa-plus"></i> Р”РѕР±Р°РІРёС‚СЊ Р·Р°РґР°С‡Сѓ
+   18:     <i class="fa fa-plus"></i> Добавить задачу
    19:   </a>
    20: </div>
    21: 
@@ -23,13 +23,13 @@
    23:   <table class="tasks-table">
    24:     <thead>
    25:       <tr>
-   26:         <th>Р—Р°РґР°С‡Р°</th>
-   27:         <th>РћРїРёСЃР°РЅРёРµ</th>
-   28:         <th>РСЃРїРѕР»РЅРёС‚РµР»СЊ</th>
-   29:         <th>РљСЂР°Р№РЅРёР№ СЃСЂРѕРє</th>
-   30:         <th>РЎС‚Р°С‚СѓСЃ</th>
-   31:         <th>РџСЂРёРѕСЂРёС‚РµС‚</th>
-   32:         <th>Р”РµР№СЃС‚РІРёСЏ</th>
+   26:         <th>Задача</th>
+   27:         <th>Описание</th>
+   28:         <th>Исполнитель</th>
+   29:         <th>Крайний срок</th>
+   30:         <th>Статус</th>
+   31:         <th>Приоритет</th>
+   32:         <th>Действия</th>
    33:       </tr>
    34:     </thead>
    35:     <tbody>
@@ -45,34 +45,34 @@
    45:               ?
    46:             {% endif %}
    47:           </span>
-   48:           {{ task.assigned_name or 'Р‘РµР· РёСЃРїРѕР»РЅРёС‚РµР»СЏ' }}
+   48:           {{ task.assigned_name or 'Без исполнителя' }}
    49:         </td>
    50:         <td>{{ task.due_date or task.deadline or '-' }}</td>
    51:         <td>
    52:           {% if task.status == 'done' %}
-   53:             <span class="badge badge-done">Р’С‹РїРѕР»РЅРµРЅР°</span>
+   53:             <span class="badge badge-done">Выполнена</span>
    54:           {% elif task.status == 'active' %}
-   55:             <span class="badge badge-open">РћС‚РєСЂС‹С‚Р°</span>
+   55:             <span class="badge badge-open">Открыта</span>
    56:           {% elif task.status == 'overdue' %}
-   57:             <span class="badge badge-overdue">РџСЂРѕСЃСЂРѕС‡РµРЅР°</span>
+   57:             <span class="badge badge-overdue">Просрочена</span>
    58:           {% else %}
    59:             <span class="badge badge-other">{{ task.status or '-' }}</span>
    60:           {% endif %}
    61:         </td>
    62:         <td>
    63:           {% if task.priority == 'high' %}
-   64:             <span class="badge badge-high">Р’С‹СЃРѕРєРёР№</span>
+   64:             <span class="badge badge-high">Высокий</span>
    65:           {% elif task.priority == 'low' %}
-   66:             <span class="badge badge-low">РќРёР·РєРёР№</span>
+   66:             <span class="badge badge-low">Низкий</span>
    67:           {% elif task.priority == 'normal' %}
-   68:             <span class="badge badge-norm">РќРѕСЂРјР°Р»СЊРЅС‹Р№</span>
+   68:             <span class="badge badge-norm">Нормальный</span>
    69:           {% else %}
    70:             <span class="badge badge-norm">{{ task.priority or '-' }}</span>
    71:           {% endif %}
    72:         </td>
    73:         <td>
    74:           <a href="{{ url_for('task_card', task_id=task._id) }}" class="btn-more">
-   75:             РџРѕРґСЂРѕР±РЅРµРµ <i class="fa fa-angle-right"></i>
+   75:             Подробнее <i class="fa fa-angle-right"></i>
    76:           </a>
    77:         </td>
    78:       </tr>

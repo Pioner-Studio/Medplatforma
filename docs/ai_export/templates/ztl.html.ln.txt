@@ -1,42 +1,42 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
     3: <div class="ztl-cabinet-wrap">
     4:     <div class="ztl-header-row">
-    5:         <h2>Р—СѓР±РѕС‚РµС…РЅРёС‡РµСЃРєР°СЏ Р»Р°Р±РѕСЂР°С‚РѕСЂРёСЏ (ZTL)</h2>
+    5:         <h2>Зуботехническая лаборатория (ZTL)</h2>
     6:         <a href="{{ url_for('add_ztl') }}" class="btn-add-ztl">
-    7:             <i class="fa fa-plus"></i> Р”РѕР±Р°РІРёС‚СЊ СЂР°Р±РѕС‚Сѓ
+    7:             <i class="fa fa-plus"></i> Добавить работу
     8:         </a>
     9:     </div>
    10: 
    11:     <form method="get" class="ztl-filters">
    12:         <select name="patient" class="filter-select">
-   13:             <option value="">Р’СЃРµ РїР°С†РёРµРЅС‚С‹</option>
+   13:             <option value="">Все пациенты</option>
    14:             {% for p in patients.values() %}
    15:             <option value="{{ p['_id'] }}">{{ p['full_name'] }}</option>
    16:             {% endfor %}
    17:         </select>
    18:         <select name="doctor" class="filter-select">
-   19:             <option value="">Р’СЃРµ РІСЂР°С‡Рё</option>
+   19:             <option value="">Все врачи</option>
    20:             {% for d in doctors.values() %}
    21:             <option value="{{ d['_id'] }}">{{ d['full_name'] }}</option>
    22:             {% endfor %}
    23:         </select>
    24:         <select name="type" class="filter-select">
-   25:             <option value="">Р’СЃРµ С‚РёРїС‹</option>
-   26:             <option>РљРѕСЂРѕРЅРєР°</option>
-   27:             <option>Р’РёРЅРёСЂ</option>
-   28:             <option>Р‘СЂРµРєРµС‚С‹</option>
-   29:             <option>РџСЂРѕС‚РµР·</option>
-   30:             <option>РљР°РїРїР°</option>
+   25:             <option value="">Все типы</option>
+   26:             <option>Коронка</option>
+   27:             <option>Винир</option>
+   28:             <option>Брекеты</option>
+   29:             <option>Протез</option>
+   30:             <option>Каппа</option>
    31:         </select>
    32:         <select name="status" class="filter-select">
-   33:             <option value="">Р’СЃРµ СЃС‚Р°С‚СѓСЃС‹</option>
-   34:             <option>Р’ СЂР°Р±РѕС‚Рµ</option>
-   35:             <option>Р“РѕС‚РѕРІРѕ</option>
-   36:             <option>Р’С‹РґР°РЅРѕ</option>
-   37:             <option>РћР¶РёРґР°РµС‚ РѕРїР»Р°С‚С‹</option>
+   33:             <option value="">Все статусы</option>
+   34:             <option>В работе</option>
+   35:             <option>Готово</option>
+   36:             <option>Выдано</option>
+   37:             <option>Ожидает оплаты</option>
    38:         </select>
-   39:         <button type="submit" class="btn btn-secondary">Р¤РёР»СЊС‚СЂ</button>
+   39:         <button type="submit" class="btn btn-secondary">Фильтр</button>
    40:     </form>
    41: 
    42:     <div class="ztl-cards-row">
@@ -45,15 +45,15 @@
    45:             <div class="ztl-card-img">
    46:                 <img src="{{ w.file_url }}" alt="labwork">
    47:             </div>
-   48:             <div class="ztl-card-title">{{ patients[w.patient_id].full_name if w.patient_id in patients else 'вЂ”' }}</div>
-   49:             <div class="ztl-card-doctor">Р’СЂР°С‡: {{ doctors[w.doctor_id].full_name if w.doctor_id in doctors else 'вЂ”' }}</div>
+   48:             <div class="ztl-card-title">{{ patients[w.patient_id].full_name if w.patient_id in patients else '—' }}</div>
+   49:             <div class="ztl-card-doctor">Врач: {{ doctors[w.doctor_id].full_name if w.doctor_id in doctors else '—' }}</div>
    50:             <div class="ztl-card-type">
    51:                 <span class="ztl-badge-type">{{ w.type }}</span>
    52:                 <span class="ztl-badge-status {{ w.status|lower|replace(' ', '_') }}">{{ w.status }}</span>
    53:             </div>
    54:             <div class="ztl-card-dates">
-   55:                 <span>Р”Р°С‚Р° Р·Р°РєР°Р·Р°: {{ w.order_date }}</span>
-   56:                 <span>РЎСЂРѕРє: {{ w.due_date }}</span>
+   55:                 <span>Дата заказа: {{ w.order_date }}</span>
+   56:                 <span>Срок: {{ w.due_date }}</span>
    57:             </div>
    58:             <div class="ztl-card-comment">{{ w.comment }}</div>
    59:         </div>
@@ -61,7 +61,7 @@
    61:     </div>
    62: </div>
    63: 
-   64: <!-- РњРѕРґР°Р»РєР° РґРµС‚Р°Р»РµР№ СЂР°Р±РѕС‚С‹ -->
+   64: <!-- Модалка деталей работы -->
    65: <div class="modal" id="ztlModal" style="display:none;">
    66:   <div class="modal-content" style="max-width:520px;">
    67:     <span class="close" onclick="document.getElementById('ztlModal').style.display='none'">&times;</span>
@@ -74,9 +74,9 @@
    74: function showZtlModal(w, patient, doctor) {
    75:     document.getElementById('modalZtlImg').src = w.file_url;
    76:     document.getElementById('modalZtlInfo').innerHTML =
-   77:       `<b>РџР°С†РёРµРЅС‚:</b> ${patient}<br><b>Р’СЂР°С‡:</b> ${doctor}<br>
-   78:        <b>РўРёРї:</b> ${w.type}<br><b>РЎС‚Р°С‚СѓСЃ:</b> ${w.status}<br>
-   79:        <b>Р”Р°С‚Р° Р·Р°РєР°Р·Р°:</b> ${w.order_date} <br><b>РЎСЂРѕРє:</b> ${w.due_date}`;
+   77:       `<b>Пациент:</b> ${patient}<br><b>Врач:</b> ${doctor}<br>
+   78:        <b>Тип:</b> ${w.type}<br><b>Статус:</b> ${w.status}<br>
+   79:        <b>Дата заказа:</b> ${w.order_date} <br><b>Срок:</b> ${w.due_date}`;
    80:     document.getElementById('modalZtlComment').innerText = w.comment || '';
    81:     document.getElementById('ztlModal').style.display = 'flex';
    82: }
@@ -134,10 +134,10 @@
   134:     background: #e2ebfa; color: #6c6c98; font-weight: 600; font-size: .97em;
   135:     border-radius: 7px; padding: 4px 13px;
   136: }
-  137: .ztl-badge-status.РІ_СЂР°Р±РѕС‚Рµ { background: #f4e4ff; color: #a44de0;}
-  138: .ztl-badge-status.РіРѕС‚РѕРІРѕ { background: #e6fbe6; color: #21ba45;}
-  139: .ztl-badge-status.РІС‹РґР°РЅРѕ { background: #e7f1fd; color: #2176bd;}
-  140: .ztl-badge-status.РѕР¶РёРґР°РµС‚_РѕРїР»Р°С‚С‹ { background: #fff6e3; color: #e39a1a;}
+  137: .ztl-badge-status.в_работе { background: #f4e4ff; color: #a44de0;}
+  138: .ztl-badge-status.готово { background: #e6fbe6; color: #21ba45;}
+  139: .ztl-badge-status.выдано { background: #e7f1fd; color: #2176bd;}
+  140: .ztl-badge-status.ожидает_оплаты { background: #fff6e3; color: #e39a1a;}
   141: .ztl-card-dates { color: #8c8fa5; font-size: .95em; margin-bottom: 1px;}
   142: .ztl-card-dates span { margin-right: 9px;}
   143: .ztl-card-comment { font-size: .97em; color: #2563eb; margin-top: 1px;}

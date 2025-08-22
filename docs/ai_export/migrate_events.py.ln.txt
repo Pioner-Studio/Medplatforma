@@ -1,4 +1,4 @@
-﻿    1: from pymongo import MongoClient
+    1: from pymongo import MongoClient
     2: from bson import ObjectId
     3: from datetime import datetime, timedelta
     4: 
@@ -22,15 +22,15 @@
    22: 
    23: def migrate():
    24:     src = list(db.events.find())
-   25:     print(f"РќР°Р№РґРµРЅРѕ РІ events: {len(src)}")
+   25:     print(f"Найдено в events: {len(src)}")
    26:     inserted = 0
    27:     for e in src:
    28:         start_dt = to_dt(e.get("start") or e.get("datetime"))
    29:         if not start_dt:
    30:             continue
-   31:         # РєР°Р±РёРЅРµС‚ РїРѕ РёРјРµРЅРё -> room_id
+   31:         # кабинет по имени -> room_id
    32:         room = db.rooms.find_one({"name": e.get("cabinet")}) if e.get("cabinet") else None
-   33:         # РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 30 РјРёРЅ
+   33:         # длительность по умолчанию 30 мин
    34:         end_dt = add_minutes(start_dt, 30)
    35: 
    36:         doc = {
@@ -46,7 +46,7 @@
    46:         }
    47:         db.appointments.insert_one(doc)
    48:         inserted += 1
-   49:     print(f"РџРµСЂРµРЅРµСЃРµРЅРѕ РІ appointments: {inserted}")
+   49:     print(f"Перенесено в appointments: {inserted}")
    50: 
    51: if __name__ == "__main__":
    52:     migrate()

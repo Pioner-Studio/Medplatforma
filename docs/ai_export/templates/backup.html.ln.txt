@@ -1,8 +1,8 @@
-﻿    1: <h2>Р‘СЌРєР°Рї РґР°РЅРЅС‹С… (СЌРєСЃРїРѕСЂС‚ РєРѕР»Р»РµРєС†РёР№)</h2>
+    1: <h2>Бэкап данных (экспорт коллекций)</h2>
     2: <ul>
-    3:   <li><a href="{{ url_for('backup_collection', collection='patients') }}">РЎРєР°С‡Р°С‚СЊ РїР°С†РёРµРЅС‚РѕРІ (CSV)</a></li>
-    4:   <li><a href="{{ url_for('backup_collection', collection='doctors') }}">РЎРєР°С‡Р°С‚СЊ РІСЂР°С‡РµР№ (CSV)</a></li>
-    5:   <li><a href="{{ url_for('backup_collection', collection='events') }}">РЎРєР°С‡Р°С‚СЊ СЃРѕР±С‹С‚РёСЏ (CSV)</a></li>
-    6:   <li><a href="{{ url_for('backup_collection', collection='payments') }}">РЎРєР°С‡Р°С‚СЊ РѕРїР»Р°С‚С‹ (CSV)</a></li>
-    7:   <li><a href="{{ url_for('backup_collection', collection='logs') }}">РЎРєР°С‡Р°С‚СЊ Р»РѕРіРё (CSV)</a></li>
+    3:   <li><a href="{{ url_for('backup_collection', collection='patients') }}">Скачать пациентов (CSV)</a></li>
+    4:   <li><a href="{{ url_for('backup_collection', collection='doctors') }}">Скачать врачей (CSV)</a></li>
+    5:   <li><a href="{{ url_for('backup_collection', collection='events') }}">Скачать события (CSV)</a></li>
+    6:   <li><a href="{{ url_for('backup_collection', collection='payments') }}">Скачать оплаты (CSV)</a></li>
+    7:   <li><a href="{{ url_for('backup_collection', collection='logs') }}">Скачать логи (CSV)</a></li>
     8: </ul>

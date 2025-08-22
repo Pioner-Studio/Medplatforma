@@ -1,4 +1,4 @@
-﻿    1: html, body {
+    1: html, body {
     2:   margin: 0;
     3:   padding: 0;
     4:   font-family: 'Montserrat', Arial, sans-serif;
@@ -144,7 +144,7 @@
   144:   display: flex;
   145:   align-items: center;
   146:   justify-content: flex-end;
-  147:   padding: 0 60px 0 40px; /* в†ђ Р·РґРµСЃСЊ СЂРµРіСѓР»РёСЂСѓРµС€СЊ РѕС‚СЃС‚СѓРї СЃРїСЂР°РІР° (60px, РјРѕР¶РЅРѕ 50px) */
+  147:   padding: 0 60px 0 40px; /* ← здесь регулируешь отступ справа (60px, можно 50px) */
   148:   z-index: 10;
   149:   position: sticky;
   150:   top: 0;
@@ -200,7 +200,7 @@
   200:   border-radius: 16px;
   201:   padding: 3px 16px;
   202:   box-shadow: 0 1px 4px #e4eaff55;
-  203:    min-width: 440px;  /* РёР»Рё 480px РµСЃР»Рё РЅСѓР¶РЅРѕ РµС‰С‘ С€РёСЂРµ */
+  203:    min-width: 440px;  /* или 480px если нужно ещё шире */
   204:   max-width: 650px;
   205:   width: 100%;
   206: }
@@ -304,8 +304,8 @@
   304:   display: flex;
   305:   align-items: center;
   306:   gap: 28px;
-  307:   /* Р”РѕР±Р°РІСЊ Р»РµРІС‹Р№ margin, РµСЃР»Рё РЅР°РґРѕ РµС‰Рµ СЃРёР»СЊРЅРµРµ СЃРґРІРёРЅСѓС‚СЊ */
-  308:   margin-right: 50px; /* в†ђ РІРѕС‚ СЌС‚РѕС‚ РїР°СЂР°РјРµС‚СЂ СЂРµРіСѓР»РёСЂСѓРµС‚ СЃРјРµС‰РµРЅРёРµ РІР»РµРІРѕ */
+  307:   /* Добавь левый margin, если надо еще сильнее сдвинуть */
+  308:   margin-right: 50px; /* ← вот этот параметр регулирует смещение влево */
   309: }
   310: 
   311: /* --- CONTENT (calendar, main screen) --- */
@@ -316,12 +316,12 @@
   316:   padding: 24px 18px 24px 18px;
   317:   background: #f7f8fa;
   318:   overflow-y: auto;
-  319:   height: calc(100vh - 64px); /* 64px вЂ” РІС‹СЃРѕС‚Р° topbar */
+  319:   height: calc(100vh - 64px); /* 64px — высота topbar */
   320:   box-sizing: border-box;
-  321:   margin-top: 64px; /* РґРѕР±Р°РІСЊ РµСЃР»Рё padding-top РЅРµ СЃСЂР°Р±Р°С‚С‹РІР°РµС‚ */
+  321:   margin-top: 64px; /* добавь если padding-top не срабатывает */
   322: }
   323: 
-  324: /* --- PROFILE & UI (РѕСЃС‚Р°РІР»СЏСЋ С‚РѕР»СЊРєРѕ СЂР°Р±РѕС‡РµРµ) --- */
+  324: /* --- PROFILE & UI (оставляю только рабочее) --- */
   325: .profile-block {
   326:   display: flex;
   327:   align-items: center;
@@ -428,7 +428,7 @@
   428:   background: #333b55 !important;
   429:   color: #ffe082 !important;
   430: }
-  431: /* РњРѕР¶РµС€СЊ РґРѕР±Р°РІРёС‚СЊ РєР°СЃС‚РѕРј РґР»СЏ РґСЂСѓРіРёС… Р±Р»РѕРєРѕРІ (РєРЅРѕРїРєРё, РјРµРЅСЋ Рё С‚.Рґ.) */
+  431: /* Можешь добавить кастом для других блоков (кнопки, меню и т.д.) */
   432: .profile-menu {
   433:   position: absolute;
   434:   top: 48px;
@@ -591,7 +591,7 @@
   591:   color: #1767ae;
   592: }
   593: .fc-button-active, .fc-button-primary:not(:disabled).fc-button-active {
-  594:     background: #c6ffe0 !important; /* СЃР°Р»Р°С‚РѕРІС‹Р№ РёР»Рё Р»СЋР±РѕР№ РґСЂСѓРіРѕР№ */
+  594:     background: #c6ffe0 !important; /* салатовый или любой другой */
   595:     color: #174f2d !important;
   596:     border: 1.5px solid #18c277;
   597: }
@@ -637,7 +637,7 @@
   637: .event-card { min-width: 170px; }
   638: .fc-event-title,
   639: .fc-event-time, .fc-event-main {
-  640:   color: #232628 !important; /* РЅР°СЃС‹С‰РµРЅРЅС‹Р№ С‡С‘СЂРЅС‹Р№ */
+  640:   color: #232628 !important; /* насыщенный чёрный */
   641:   font-weight: 500;
   642: }
   643: .fc-event {
@@ -655,15 +655,15 @@
   655: .sidebar .menu-item {
   656:   display: flex;
   657:   align-items: center;
-  658:   gap: 16px; /* СЃРґРµР»Р°Р№ 12-16px РґР»СЏ Р±Р°Р»Р°РЅСЃР° */
+  658:   gap: 16px; /* сделай 12-16px для баланса */
   659: }
   660: .sidebar-menu svg {
-  661:   margin-right: 12px; /* РёР»Рё Р±РѕР»СЊС€Рµ/РјРµРЅСЊС€Рµ РїРѕ РІРєСѓСЃСѓ */
+  661:   margin-right: 12px; /* или больше/меньше по вкусу */
   662:   vertical-align: middle;
   663: }
   664: .sidebar nav ul li i {
-  665:     margin-right: 12px; /* РјРѕР¶РЅРѕ 12-16px, РїРѕРґР±РµСЂРё РІРёР·СѓР°Р»СЊРЅРѕ */
-  666:     font-size: 20px;    /* РјРѕР¶РЅРѕ С‡СѓС‚СЊ РєСЂСѓРїРЅРµРµ РґР»СЏ Р°РєС†РµРЅС‚Р° */
+  665:     margin-right: 12px; /* можно 12-16px, подбери визуально */
+  666:     font-size: 20px;    /* можно чуть крупнее для акцента */
   667:     vertical-align: middle;
   668: }
   669: .add-event-form-wrapper {
@@ -740,7 +740,7 @@
   740:   background: #1d75d9;
   741: }
   742: .add-event-form-wrapper {
-  743:     max-width: 700px; /* РёР»Рё 800px, РµСЃР»Рё С…РѕС‡РµС‚СЃСЏ! */
+  743:     max-width: 700px; /* или 800px, если хочется! */
   744:     margin: 38px auto;
   745:     background: #fff;
   746:     border-radius: 20px;

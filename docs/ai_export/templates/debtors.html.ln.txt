@@ -1,8 +1,8 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
-    3: <h2>Р”РѕР»Р¶РЅРёРєРё/Р”РµРїРѕР·РёС‚С‹</h2>
+    3: <h2>Должники/Депозиты</h2>
     4: <table>
-    5:   <tr><th>РџР°С†РёРµРЅС‚</th><th>Р”РѕР»Рі</th></tr>
+    5:   <tr><th>Пациент</th><th>Долг</th></tr>
     6:   {% for d in debtors %}
     7:     <tr>
     8:       <td>{{ d.full_name }}</td>

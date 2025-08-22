@@ -1,4 +1,4 @@
-﻿    1: # tools/generate_docs.py
+    1: # tools/generate_docs.py
     2: # ClubStom docs + zip generator
     3: import argparse
     4: import datetime as dt
@@ -23,13 +23,13 @@
    23: 
    24: def _load_flask_app():
    25:     """
-   26:     РРјРїРѕСЂС‚РёСЂСѓРµС‚ app РёР· main.py (РёР»Рё РёР· С„Р°Р№Р»Р°, РїРµСЂРµРґР°РЅРЅРѕРіРѕ С‡РµСЂРµР· --app).
-   27:     Р’РѕР·РІСЂР°С‰Р°РµС‚ (app, error_text|None)
+   26:     Импортирует app из main.py (или из файла, переданного через --app).
+   27:     Возвращает (app, error_text|None)
    28:     """
-   29:     # РёС‰РµРј main.py РІ РєРѕСЂРЅРµ
+   29:     # ищем main.py в корне
    30:     main_py = ROOT / "main.py"
    31:     if not main_py.exists():
-   32:         return None, f"main.py РЅРµ РЅР°Р№РґРµРЅ РїРѕ РїСѓС‚Рё: {main_py}"
+   32:         return None, f"main.py не найден по пути: {main_py}"
    33: 
    34:     spec = importlib.util.spec_from_file_location("clubstom_main", main_py)
    35:     mod = importlib.util.module_from_spec(spec)
@@ -37,7 +37,7 @@
    37:         spec.loader.exec_module(mod)  # type: ignore
    38:         app = getattr(mod, "app", None)
    39:         if app is None:
-   40:             return None, "Р’ main.py РЅРµ РЅР°Р№РґРµРЅ РѕР±СЉРµРєС‚ Flask 'app'."
+   40:             return None, "В main.py не найден объект Flask 'app'."
    41:         return app, None
    42:     except Exception:
    43:         tb = traceback.format_exc()
@@ -62,13 +62,13 @@
    62:     for route, endpoint, methods in rows:
    63:         lines.append(f"| `{route}` | **{endpoint}** | {methods} |")
    64: 
-   65:     # РґСѓР±Р»РёРєР°С‚С‹ endpoint'РѕРІ (РѕРґРёРЅ endpoint РЅР° СЂР°Р·РЅС‹Рµ РїСЂР°РІРёР»Р° вЂ” СЌС‚Рѕ РѕРє,
-   66:     # РЅРѕ РµСЃР»Рё РёС… РѕС‡РµРЅСЊ РјРЅРѕРіРѕ вЂ” Р±СѓРґРµРј РІРёРґРµС‚СЊ РІРЅРёР·Сѓ)
+   65:     # дубликаты endpoint'ов (один endpoint на разные правила — это ок,
+   66:     # но если их очень много — будем видеть внизу)
    67:     dups = {k: v for k, v in dup_by_endpoint.items() if len(v) > 1}
    68:     if dups:
    69:         lines += ["", "## Endpoint duplicates (review)", ""]
    70:         for ep, rules in sorted(dups.items()):
-   71:             lines.append(f"- **{ep}** в†’ {', '.join(f'`{x}`' for x in sorted(rules))}")
+   71:             lines.append(f"- **{ep}** → {', '.join(f'`{x}`' for x in sorted(rules))}")
    72: 
    73:     return "\n".join(lines) + "\n"
    74: 
@@ -76,7 +76,7 @@
    76: def _dump_templates_md() -> str:
    77:     lines = ["# TEMPLATES", ""]
    78:     if not TEMPLATES_DIR.exists():
-   79:         lines.append("_templates/ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚_")
+   79:         lines.append("_templates/ отсутствует_")
    80:         return "\n".join(lines) + "\n"
    81: 
    82:     def rel(p: Path) -> str:
@@ -96,7 +96,7 @@
    96:     def tree(base: Path, title: str):
    97:         lines.append(f"## {title}")
    98:         if not base.exists():
-   99:             lines.append(f"_{base.name} РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚_")
+   99:             lines.append(f"_{base.name} отсутствует_")
   100:             lines.append("")
   101:             return
   102:         for p in sorted(base.rglob("*")):
@@ -117,10 +117,10 @@
   117:     ts = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
   118:     block = [
   119:         f"### {ts}",
-  120:         "- Р­РєСЃРїРѕСЂС‚ РјР°СЂС€СЂСѓС‚РѕРІ/СЃС‚СЂСѓРєС‚СѓСЂС‹ РІС‹РїРѕР»РЅРµРЅ.",
+  120:         "- Экспорт маршрутов/структуры выполнен.",
   121:     ]
   122:     if note:
-  123:         block.append(f"- Р—Р°РјРµС‚РєР°: {note}")
+  123:         block.append(f"- Заметка: {note}")
   124:     block.append("")
   125:     previous = status.read_text(encoding="utf-8") if status.exists() else "# STATUS\n\n"
   126:     status.write_text(previous + "\n".join(block), encoding="utf-8")
@@ -130,7 +130,7 @@
   130:     ts = dt.datetime.now().strftime("%Y-%m-%d_%H-%M")
   131:     zip_path = EXPORTS / f"clubstom_{ts}.zip"
   132: 
-  133:     # С‡С‚Рѕ РєР»Р°РґС‘Рј
+  133:     # что кладём
   134:     include = [
   135:         "main.py",
   136:         "requirements.txt",
@@ -166,7 +166,7 @@
   166:                 for f in src.rglob("*"):
   167:                     if f.is_file() and allowed(f):
   168:                         zf.write(f, arcname=str(f.relative_to(ROOT)))
-  169:         # manifest.json РІРЅСѓС‚СЂСЊ Р°СЂС…РёРІР°
+  169:         # manifest.json внутрь архива
   170:         manifest = {
   171:             "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
   172:             "note": note or "",
@@ -175,13 +175,13 @@
   175:         zf.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
   176:     return zip_path
   177: 
-  178: # ---- LINT: РїСЂРѕСЃС‚С‹Рµ РїСЂРѕРІРµСЂРєРё РґСѓР±Р»РµР№ ----
+  178: # ---- LINT: простые проверки дублей ----
   179: 
   180: def _lint_project(app) -> tuple[list[str], int]:
   181:     problems = []
   182: 
-  183:     # 1) РґСѓР±Р»Рё endpoint-РѕРІ -> СЂР°Р·РЅС‹Рµ С„СѓРЅРєС†РёРё СЃ РѕРґРёРЅР°РєРѕРІС‹Рј РёРјРµРЅРµРј РІ url_map РЅРµ РїРѕР№РјР°РµРј,
-  184:     #   РЅРѕ СѓРІРёРґРёРј РјРЅРѕРіРѕ РїСЂР°РІРёР» РЅР° РѕРґРёРЅ endpoint
+  183:     # 1) дубли endpoint-ов -> разные функции с одинаковым именем в url_map не поймаем,
+  184:     #   но увидим много правил на один endpoint
   185:     endpoint_to_rules = {}
   186:     rule_to_methods = {}
   187:     for r in app.url_map.iter_rules():
@@ -192,15 +192,15 @@
   192: 
   193:     for ep, rules in endpoint_to_rules.items():
   194:         if len(rules) > 1:
-  195:             problems.append(f"[routes] endpoint '{ep}' РѕР±СЃР»СѓР¶РёРІР°РµС‚ РЅРµСЃРєРѕР»СЊРєРѕ РїСЂР°РІРёР»: {sorted(rules)}")
+  195:             problems.append(f"[routes] endpoint '{ep}' обслуживает несколько правил: {sorted(rules)}")
   196: 
-  197:     # 2) РґСѓР±Р»Рё РїСѓС‚РµР№ (РѕРґРЅРѕ Рё С‚Рѕ Р¶Рµ РїСЂР°РІРёР»Рѕ РґРѕР±Р°РІР»РµРЅРѕ РјРЅРѕРіРѕ СЂР°Р·)
+  197:     # 2) дубли путей (одно и то же правило добавлено много раз)
   198:     for rule, methods in rule_to_methods.items():
-  199:         # СЌС‚Рѕ РЅРµ СЃС‚СЂРѕРіРёР№ РґСѓР±Р»СЊ, РЅРѕ РµСЃР»Рё Сѓ РЅР°СЃ РѕРґРЅРѕ Рё С‚Рѕ Р¶Рµ РїСЂР°РІРёР»Рѕ РѕР±СЉСЏРІР»РµРЅРѕ РЅРµСЃРєРѕР»СЊРєРѕ СЂР°Р·,
-  200:         # РѕР±С‹С‡РЅРѕ СЌС‚Рѕ РїСЂРёР·РЅР°Рє РєРѕРїРёРїР°СЃС‚С‹. РћС‚РјРµС‚РёРј, РµСЃР»Рё >3 РјРµС‚РѕРґРѕРІ (GET/POST/PUT/DELETE) СЃС‚СЂР°РЅРЅРѕ.
+  199:         # это не строгий дубль, но если у нас одно и то же правило объявлено несколько раз,
+  200:         # обычно это признак копипасты. Отметим, если >3 методов (GET/POST/PUT/DELETE) странно.
   201:         pass
   202: 
-  203:     # 3) РґСѓР±Р»Рё С„СѓРЅРєС†РёР№ РІ main.py
+  203:     # 3) дубли функций в main.py
   204:     main_py = ROOT / "main.py"
   205:     if main_py.exists():
   206:         tree = ast.parse(main_py.read_text(encoding="utf-8"))
@@ -211,31 +211,31 @@
   211:                 fnames[node.name] += 1
   212:         dups = [name for name, cnt in fnames.items() if cnt > 1]
   213:         for name in sorted(dups):
-  214:             problems.append(f"[code] С„СѓРЅРєС†РёСЏ '{name}' РѕРїСЂРµРґРµР»РµРЅР° РЅРµСЃРєРѕР»СЊРєРѕ СЂР°Р·")
+  214:             problems.append(f"[code] функция '{name}' определена несколько раз")
   215: 
   216:     return problems, len(problems)
   217: 
   218: def main():
   219:     parser = argparse.ArgumentParser(description="ClubStom docs/zip generator")
-  220:     parser.add_argument("--zip", action="store_true", help="СЃРґРµР»Р°С‚СЊ Р°СЂС…РёРІ РїСЂРѕРµРєС‚Р° РІ /exports")
-  221:     parser.add_argument("--note", type=str, default="", help="Р·Р°РјРµС‚РєР°/РєРѕРјРјРµРЅС‚Р°СЂРёР№ РІ STATUS.md Рё manifest.json")
+  220:     parser.add_argument("--zip", action="store_true", help="сделать архив проекта в /exports")
+  221:     parser.add_argument("--note", type=str, default="", help="заметка/комментарий в STATUS.md и manifest.json")
   222:     args = parser.parse_args()
   223: 
   224:     app, err = _load_flask_app()
   225:     if err:
-  226:         # РїРёС€РµРј РѕС€РёР±РєСѓ РІ ROUTES.md Рё РІС‹С…РѕРґРёРј В«РјСЏРіРєРѕВ»
+  226:         # пишем ошибку в ROUTES.md и выходим «мягко»
   227:         (DOCS / "ROUTES.md").write_text(
   228:             "# ROUTES\n\n"
-  229:             "РќРµ СѓРґР°Р»РѕСЃСЊ РёРјРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ:\n\n```\n"
+  229:             "Не удалось импортировать приложение:\n\n```\n"
   230:             + err +
   231:             "\n```\n",
   232:             encoding="utf-8",
   233:         )
-  234:         print("[WARN] РћС€РёР±РєР° РёРјРїРѕСЂС‚Р° app. РџРѕРґСЂРѕР±РЅРѕСЃС‚Рё РІ docs/ROUTES.md")
+  234:         print("[WARN] Ошибка импорта app. Подробности в docs/ROUTES.md")
   235:     else:
   236:         routes_md = _dump_routes_md(app)
   237:         (DOCS / "ROUTES.md").write_text(routes_md, encoding="utf-8")
-  238:         print("[OK] docs/ROUTES.md РѕР±РЅРѕРІР»С‘РЅ")
+  238:         print("[OK] docs/ROUTES.md обновлён")
   239: 
   240:     (DOCS / "TEMPLATES.md").write_text(_dump_templates_md(), encoding="utf-8")
   241:     (DOCS / "INVENTORY.md").write_text(_dump_inventory_md(), encoding="utf-8")
@@ -243,7 +243,7 @@
   243: 
   244:     if args.zip:
   245:         path = _make_zip(args.note)
-  246:         print(f"[OK] РђСЂС…РёРІ СЃРѕР·РґР°РЅ: {path}")
+  246:         print(f"[OK] Архив создан: {path}")
   247: 
   248: if __name__ == "__main__":
   249:     main()

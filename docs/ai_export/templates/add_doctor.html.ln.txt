@@ -1,8 +1,8 @@
-﻿    1: <!DOCTYPE html>
+    1: <!DOCTYPE html>
     2: <html lang="ru">
     3: <head>
     4:     <meta charset="UTF-8">
-    5:     <title>Р”РѕР±Р°РІРёС‚СЊ РІСЂР°С‡Р°</title>
+    5:     <title>Добавить врача</title>
     6:     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
     7:     <style>
     8:         body { font-family: 'Montserrat', sans-serif; background: #f7f8fa;}
@@ -15,17 +15,17 @@
    15: </head>
    16: <body>
    17:     <form class="form-card" method="POST">
-   18:         <label class="form-label">Р¤РРћ</label>
+   18:         <label class="form-label">ФИО</label>
    19:         <input class="form-input" type="text" name="full_name" required>
-   20:         <label class="form-label">РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ</label>
+   20:         <label class="form-label">Специализация</label>
    21:         <input class="form-input" type="text" name="specialization" required>
    22:         <label class="form-label">E-mail</label>
    23:         <input class="form-input" type="email" name="email">
-   24:         <label class="form-label">РўРµР»РµС„РѕРЅ</label>
+   24:         <label class="form-label">Телефон</label>
    25:         <input class="form-input" type="text" name="phone">
-   26:         <label class="form-label">РЎСЃС‹Р»РєР° РЅР° Р°РІР°С‚Р°СЂ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)</label>
+   26:         <label class="form-label">Ссылка на аватар (необязательно)</label>
    27:         <input class="form-input" type="text" name="avatar_url">
-   28:         <button class="submit-btn" type="submit">Р”РѕР±Р°РІРёС‚СЊ РІСЂР°С‡Р°</button>
+   28:         <button class="submit-btn" type="submit">Добавить врача</button>
    29:     </form>
    30: </body>
    31: </html>

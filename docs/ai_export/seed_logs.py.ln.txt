@@ -1,4 +1,4 @@
-﻿    1: # seed_logs.py
+    1: # seed_logs.py
     2: from pymongo import MongoClient
     3: from datetime import datetime, timedelta
     4: import random
@@ -7,23 +7,23 @@
     7: db = client['medplatforma']
     8: 
     9: users = [
-   10:     {"name": "РРІР°РЅРѕРІР° РўР°С‚СЊСЏРЅР°", "role": "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ", "avatar_url": "/static/avatars/u1.png"},
-   11:     {"name": "РџРµС‚СЂРѕРІ РРІР°РЅ", "role": "Р’СЂР°С‡", "avatar_url": "/static/avatars/u2.png"},
-   12:     {"name": "РЎРёРґРѕСЂРѕРІР° РњР°СЂРёСЏ", "role": "РђСЃСЃРёСЃС‚РµРЅС‚", "avatar_url": "/static/avatars/u3.png"},
-   13:     {"name": "Р›РµР±РµРґРµРІ РЎРµСЂРіРµР№", "role": "Р РµРіРёСЃС‚СЂР°С‚РѕСЂ", "avatar_url": "/static/avatars/u4.png"},
-   14:     {"name": "Р’Р°СЃРёР»СЊРµРІР° РњР°СЂРёСЏ", "role": "Р’СЂР°С‡", "avatar_url": "/static/avatars/u5.png"},
+   10:     {"name": "Иванова Татьяна", "role": "Администратор", "avatar_url": "/static/avatars/u1.png"},
+   11:     {"name": "Петров Иван", "role": "Врач", "avatar_url": "/static/avatars/u2.png"},
+   12:     {"name": "Сидорова Мария", "role": "Ассистент", "avatar_url": "/static/avatars/u3.png"},
+   13:     {"name": "Лебедев Сергей", "role": "Регистратор", "avatar_url": "/static/avatars/u4.png"},
+   14:     {"name": "Васильева Мария", "role": "Врач", "avatar_url": "/static/avatars/u5.png"},
    15: ]
    16: 
    17: actions = [
-   18:     ("login", "Р’С…РѕРґ РІ СЃРёСЃС‚РµРјСѓ"),
-   19:     ("logout", "Р’С‹С…РѕРґ РёР· СЃРёСЃС‚РµРјС‹"),
-   20:     ("add_patient", "Р”РѕР±Р°РІР»РµРЅ РїР°С†РёРµРЅС‚"),
-   21:     ("edit_patient", "РР·РјРµРЅРµРЅС‹ РґР°РЅРЅС‹Рµ РїР°С†РёРµРЅС‚Р°"),
-   22:     ("delete_patient", "РЈРґР°Р»С‘РЅ РїР°С†РёРµРЅС‚"),
-   23:     ("add_event", "Р”РѕР±Р°РІР»РµРЅР° Р·Р°РїРёСЃСЊ"),
-   24:     ("export", "Р­РєСЃРїРѕСЂС‚ РґР°РЅРЅС‹С…"),
-   25:     ("view_report", "РџСЂРѕСЃРјРѕС‚СЂ РѕС‚С‡С‘С‚Р°"),
-   26:     ("error", "РћС€РёР±РєР° Р°РІС‚РѕСЂРёР·Р°С†РёРё"),
+   18:     ("login", "Вход в систему"),
+   19:     ("logout", "Выход из системы"),
+   20:     ("add_patient", "Добавлен пациент"),
+   21:     ("edit_patient", "Изменены данные пациента"),
+   22:     ("delete_patient", "Удалён пациент"),
+   23:     ("add_event", "Добавлена запись"),
+   24:     ("export", "Экспорт данных"),
+   25:     ("view_report", "Просмотр отчёта"),
+   26:     ("error", "Ошибка авторизации"),
    27: ]
    28: 
    29: def rand_ip():
@@ -41,7 +41,7 @@
    41:         "avatar_url": user["avatar_url"],
    42:         "ip": rand_ip(),
    43:         "action": action,
-   44:         "object": random.choice(["", "РџР°С†РёРµРЅС‚", "Р’СЂР°С‡", "Р—Р°РґР°С‡Р°", "Р¤РёРЅР°РЅСЃС‹"]),
+   44:         "object": random.choice(["", "Пациент", "Врач", "Задача", "Финансы"]),
    45:         "comment": comment
    46:     }
    47:     demo.append(log)

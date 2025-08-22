@@ -1,58 +1,58 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
     3: <div class="data-tools-container">
     4: 
-    5:   <h2>Р­РєСЃРїРѕСЂС‚ / РРјРїРѕСЂС‚ РґР°РЅРЅС‹С…</h2>
+    5:   <h2>Экспорт / Импорт данных</h2>
     6:   <div class="export-import-section">
     7: 
-    8:     <!-- Р­РєСЃРїРѕСЂС‚ -->
+    8:     <!-- Экспорт -->
     9:     <div class="export-block">
-   10:       <h3>Р­РєСЃРїРѕСЂС‚</h3>
+   10:       <h3>Экспорт</h3>
    11:       <form method="get" action="{{ url_for('export_data') }}">
-   12:         <label>Р§С‚Рѕ РІС‹РіСЂСѓР·РёС‚СЊ:</label>
+   12:         <label>Что выгрузить:</label>
    13:         <select name="collection" class="filter-select">
-   14:           <option value="patients">РџР°С†РёРµРЅС‚С‹</option>
-   15:           <option value="doctors">Р’СЂР°С‡Рё</option>
-   16:           <option value="events">РЎРѕР±С‹С‚РёСЏ</option>
-   17:           <option value="finance">Р¤РёРЅР°РЅСЃС‹</option>
+   14:           <option value="patients">Пациенты</option>
+   15:           <option value="doctors">Врачи</option>
+   16:           <option value="events">События</option>
+   17:           <option value="finance">Финансы</option>
    18:         </select>
    19:         <button type="submit" name="format" value="xlsx" class="btn btn-success">Excel</button>
    20:         <button type="submit" name="format" value="csv" class="btn btn-outline-primary">CSV</button>
    21:       </form>
-   22:       <small>Р¤Р°Р№Р» Р±СѓРґРµС‚ РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРѕРІРјРµСЃС‚РёРј СЃ Google РўР°Р±Р»РёС†Р°РјРё Рё Excel. РЎС‚СЂСѓРєС‚СѓСЂР° РґР°РЅРЅС‹С… вЂ” РіРѕС‚РѕРІР° Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РёРјРїРѕСЂС‚Сѓ.</small>
+   22:       <small>Файл будет полностью совместим с Google Таблицами и Excel. Структура данных — готова к повторному импорту.</small>
    23:     </div>
    24: 
-   25:     <!-- РРјРїРѕСЂС‚ -->
+   25:     <!-- Импорт -->
    26:     <div class="import-block">
-   27:       <h3>РРјРїРѕСЂС‚</h3>
+   27:       <h3>Импорт</h3>
    28:       <form method="post" action="{{ url_for('import_data') }}" enctype="multipart/form-data">
-   29:         <label>Р§С‚Рѕ Р·Р°РіСЂСѓР¶Р°С‚СЊ:</label>
+   29:         <label>Что загружать:</label>
    30:         <select name="collection" class="filter-select">
-   31:           <option value="patients">РџР°С†РёРµРЅС‚С‹</option>
-   32:           <option value="doctors">Р’СЂР°С‡Рё</option>
-   33:           <option value="events">РЎРѕР±С‹С‚РёСЏ</option>
-   34:           <option value="finance">Р¤РёРЅР°РЅСЃС‹</option>
+   31:           <option value="patients">Пациенты</option>
+   32:           <option value="doctors">Врачи</option>
+   33:           <option value="events">События</option>
+   34:           <option value="finance">Финансы</option>
    35:         </select>
    36:         <input type="file" name="file" accept=".xlsx,.csv">
-   37:         <button type="submit" class="btn btn-primary">РРјРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ</button>
-   38:         <a href="/static/templates/patients_template.xlsx" class="btn btn-link" download>РЎРєР°С‡Р°С‚СЊ С€Р°Р±Р»РѕРЅ Excel РџР°С†РёРµРЅС‚С‹</a>
+   37:         <button type="submit" class="btn btn-primary">Импортировать</button>
+   38:         <a href="/static/templates/patients_template.xlsx" class="btn btn-link" download>Скачать шаблон Excel Пациенты</a>
    39:       </form>
-   40:       <small>РЎС‚СЂСѓРєС‚СѓСЂР° С„Р°Р№Р»Р°: РїРµСЂРІР°СЏ СЃС‚СЂРѕРєР° вЂ” РЅР°Р·РІР°РЅРёСЏ СЃС‚РѕР»Р±С†РѕРІ (name, phone, email, ...). Р’СЃРµ РїРѕР»СЏ вЂ” РІ РєРѕРґРёСЂРѕРІРєРµ UTF-8.</small>
+   40:       <small>Структура файла: первая строка — названия столбцов (name, phone, email, ...). Все поля — в кодировке UTF-8.</small>
    41:     </div>
    42:   </div>
    43: 
-   44:   <!-- РСЃС‚РѕСЂРёСЏ Р·Р°РіСЂСѓР·РѕРє/РІС‹РіСЂСѓР·РѕРє -->
+   44:   <!-- История загрузок/выгрузок -->
    45:   <div class="import-export-history">
-   46:     <h4>РСЃС‚РѕСЂРёСЏ Р·Р°РіСЂСѓР·РѕРє Рё РІС‹РіСЂСѓР·РѕРє</h4>
+   46:     <h4>История загрузок и выгрузок</h4>
    47:     <table class="table table-history">
    48:       <thead>
    49:         <tr>
-   50:           <th>Р”Р°С‚Р°/Р’СЂРµРјСЏ</th>
-   51:           <th>РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ</th>
-   52:           <th>РћРїРµСЂР°С†РёСЏ</th>
-   53:           <th>РљРѕР»Р»РµРєС†РёСЏ</th>
-   54:           <th>Р¤Р°Р№Р»</th>
-   55:           <th>Р РµР·СѓР»СЊС‚Р°С‚</th>
+   50:           <th>Дата/Время</th>
+   51:           <th>Пользователь</th>
+   52:           <th>Операция</th>
+   53:           <th>Коллекция</th>
+   54:           <th>Файл</th>
+   55:           <th>Результат</th>
    56:         </tr>
    57:       </thead>
    58:       <tbody>
@@ -66,7 +66,7 @@
    66:           <td>{{ h.result }}</td>
    67:         </tr>
    68:         {% else %}
-   69:         <tr><td colspan="6" style="text-align:center;color:#bbb;">РќРµС‚ РёСЃС‚РѕСЂРёРё</td></tr>
+   69:         <tr><td colspan="6" style="text-align:center;color:#bbb;">Нет истории</td></tr>
    70:         {% endfor %}
    71:       </tbody>
    72:     </table>

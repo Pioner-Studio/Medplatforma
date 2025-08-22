@@ -1,21 +1,21 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
     3: 
     4: <div class="card" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;">
     5:   <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
-    6:     <h2 style="margin:0;">РљР°Р±РёРЅРµС‚С‹</h2>
-    7:     <a href="{{ url_for('add_room') }}" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;">Р”РѕР±Р°РІРёС‚СЊ РєР°Р±РёРЅРµС‚</a>
+    6:     <h2 style="margin:0;">Кабинеты</h2>
+    7:     <a href="{{ url_for('add_room') }}" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;">Добавить кабинет</a>
     8:   </div>
     9: 
    10:   <div style="overflow:auto;margin-top:12px;">
    11:     <table style="width:100%;border-collapse:collapse;">
    12:       <thead>
    13:         <tr style="background:#f6f9ff;">
-   14:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">РќР°Р·РІР°РЅРёРµ</th>
-   15:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">РўРёРї</th>
-   16:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">РЎС‚Р°С‚СѓСЃ</th>
-   17:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">Р¦РІРµС‚</th>
-   18:           <th style="width:180px;padding:10px;border-bottom:1px solid #eef2fb;">Р”РµР№СЃС‚РІРёСЏ</th>
+   14:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">Название</th>
+   15:           <th style="text-align:left;padding:10px;border-bottom:1px solid #eef2fb;">Тип</th>
+   16:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">Статус</th>
+   17:           <th style="text-align:center;padding:10px;border-bottom:1px solid #eef2fb;">Цвет</th>
+   18:           <th style="width:180px;padding:10px;border-bottom:1px solid #eef2fb;">Действия</th>
    19:         </tr>
    20:       </thead>
    21:       <tbody>
@@ -34,14 +34,14 @@
    34:             <span style="display:inline-block;width:22px;height:22px;border-radius:6px;border:1px solid #e3eaf9;background:{{ r.color }}"></span>
    35:           </td>
    36:           <td style="padding:10px;border-bottom:1px solid #f1f4fb;">
-   37:             <a href="{{ url_for('edit_room', id=r._id) }}" style="margin-right:8px;">Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</a>
-   38:             <form action="{{ url_for('delete_room', id=r._id) }}" method="post" style="display:inline;" onsubmit="return confirm('РЈРґР°Р»РёС‚СЊ РєР°Р±РёРЅРµС‚ В«{{ r.name }}В»?');">
-   39:               <button type="submit" style="color:#c0392b;background:#fff;border:1px solid #f1d6d6;border-radius:6px;padding:4px 8px;">РЈРґР°Р»РёС‚СЊ</button>
+   37:             <a href="{{ url_for('edit_room', id=r._id) }}" style="margin-right:8px;">Редактировать</a>
+   38:             <form action="{{ url_for('delete_room', id=r._id) }}" method="post" style="display:inline;" onsubmit="return confirm('Удалить кабинет «{{ r.name }}»?');">
+   39:               <button type="submit" style="color:#c0392b;background:#fff;border:1px solid #f1d6d6;border-radius:6px;padding:4px 8px;">Удалить</button>
    40:             </form>
    41:           </td>
    42:         </tr>
    43:         {% else %}
-   44:         <tr><td colspan="5" style="padding:18px;text-align:center;color:#8592a6;">РљР°Р±РёРЅРµС‚РѕРІ РїРѕРєР° РЅРµС‚</td></tr>
+   44:         <tr><td colspan="5" style="padding:18px;text-align:center;color:#8592a6;">Кабинетов пока нет</td></tr>
    45:         {% endfor %}
    46:       </tbody>
    47:     </table>

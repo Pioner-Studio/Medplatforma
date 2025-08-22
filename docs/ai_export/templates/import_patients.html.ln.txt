@@ -1,28 +1,28 @@
-﻿    1: <h2>РРјРїРѕСЂС‚ РїР°С†РёРµРЅС‚РѕРІ</h2>
+    1: <h2>Импорт пациентов</h2>
     2: 
     3: <a href="{{ url_for('import_template_patients') }}" class="btn" style="margin-bottom:15px;display:inline-block;">
-    4:   РЎРєР°С‡Р°С‚СЊ С€Р°Р±Р»РѕРЅ CSV РґР»СЏ РёРјРїРѕСЂС‚Р° РїР°С†РёРµРЅС‚РѕРІ
+    4:   Скачать шаблон CSV для импорта пациентов
     5: </a>
     6: 
     7: <form method="post" enctype="multipart/form-data" style="margin-top:10px;">
-    8:     <label for="file">Р’С‹Р±РµСЂРёС‚Рµ CSV-С„Р°Р№Р»:</label>
+    8:     <label for="file">Выберите CSV-файл:</label>
     9:     <input type="file" name="file" id="file" required>
-   10:     <button type="submit">РРјРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ</button>
+   10:     <button type="submit">Импортировать</button>
    11: </form>
    12: 
    13: {% if preview_data %}
-   14:   <h3>РџСЂРµРґРїСЂРѕСЃРјРѕС‚СЂ РґР°РЅРЅС‹С…</h3>
+   14:   <h3>Предпросмотр данных</h3>
    15:   <form method="post" action="{{ url_for('import_patients_confirm') }}">
    16:     <input type="hidden" name="csv_data" value="{{ request.files['file'].stream.read().decode('utf-8-sig') | tojson }}">
    17:     <table border="1" cellpadding="3">
    18:       <tr>
-   19:         <th>Р¤РРћ</th>
-   20:         <th>Р”Р°С‚Р° СЂРѕР¶РґРµРЅРёСЏ</th>
-   21:         <th>РўРµР»РµС„РѕРЅ</th>
+   19:         <th>ФИО</th>
+   20:         <th>Дата рождения</th>
+   21:         <th>Телефон</th>
    22:         <th>Email</th>
-   23:         <th>Р”РѕР»Рі</th>
-   24:         <th>Р”РµРїРѕР·РёС‚</th>
-   25:         <th>РћС€РёР±РєРё</th>
+   23:         <th>Долг</th>
+   24:         <th>Депозит</th>
+   25:         <th>Ошибки</th>
    26:       </tr>
    27:       {% for item in preview_data %}
    28:         <tr {% if item.errors %} style="background:#ffb3b3"{% endif %}>
@@ -43,7 +43,7 @@
    43:       {% endfor %}
    44:     </table>
    45:     {% if show_confirm %}
-   46:       <button type="submit">РџРѕРґС‚РІРµСЂРґРёС‚СЊ РёРјРїРѕСЂС‚</button>
+   46:       <button type="submit">Подтвердить импорт</button>
    47:     {% endif %}
    48:   </form>
    49: {% endif %}
@@ -53,7 +53,7 @@
    53: {% endif %}
    54: 
    55: <p>
-   56:   <b>Р’РЅРёРјР°РЅРёРµ:</b> РСЃРїРѕР»СЊР·СѓР№С‚Рµ С€Р°Р±Р»РѕРЅ, С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ РѕС€РёР±РѕРє. <br>
-   57:   Р”РѕРїСѓСЃС‚РёРјС‹Рµ РїРѕР»СЏ: <br>
+   56:   <b>Внимание:</b> Используйте шаблон, чтобы не было ошибок. <br>
+   57:   Допустимые поля: <br>
    58:   <code>full_name, dob, phone, passport, email, referral, debt, deposit, partner_points</code>
    59: </p>

@@ -1,0 +1,22 @@
+    1: # tools/dump_routes.py
+    2: # Печатает таблицу всех маршрутов Flask из main.app
+    3: 
+    4: import os
+    5: from pathlib import Path
+    6: from importlib import import_module
+    7: 
+    8: ROOT = Path(__file__).resolve().parents[1]
+    9: import sys
+   10: if str(ROOT) not in sys.path:
+   11:     sys.path.insert(0, str(ROOT))
+   12: 
+   13: app = import_module("main").app   # важно: у тебя main.py
+   14: 
+   15: def format_rule(r):
+   16:     methods = ",".join(sorted(m for m in r.methods if m not in {"HEAD","OPTIONS"}))
+   17:     return f"{r.rule:50}  endpoint={r.endpoint:30}  methods={methods}"
+   18: 
+   19: lines = ["# ROUTES\n"]
+   20: for r in sorted(app.url_map.iter_rules(), key=lambda x: x.rule):
+   21:     lines.append(format_rule(r))
+   22: print("\n".join(lines))

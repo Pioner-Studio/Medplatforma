@@ -1,4 +1,4 @@
-﻿    1: import os
+    1: import os
     2: import calendar
     3: import csv
     4: import io
@@ -7,7 +7,7 @@
     7: from pathlib import Path
     8: 
     9: # --- third-party
-   10: from bson import ObjectId  # РћРЎРўРђР’Р›РЇР•Рњ С‚РѕР»СЊРєРѕ Р­РўРћРў РёРјРїРѕСЂС‚ ObjectId (Р±РµР· РґСѓР±Р»СЏ РёР· bson.objectid)
+   10: from bson import ObjectId  # ОСТАВЛЯЕМ только ЭТОТ импорт ObjectId (без дубля из bson.objectid)
    11: from flask import (
    12:     Flask, Response, flash, jsonify, redirect,
    13:     render_template, request, send_file, session, url_for
@@ -17,9 +17,9 @@
    17: import urllib
    18: from dotenv import load_dotenv
    19: 
-   20: # --- optional (markdown РјРѕР¶РµС‚ РѕС‚СЃСѓС‚СЃС‚РІРѕРІР°С‚СЊ)
+   20: # --- optional (markdown может отсутствовать)
    21: try:
-   22:     import pandas as pd  # РґР»СЏ СЌРєСЃРїРѕСЂС‚РѕРІ/РѕС‚С‡С‘С‚РѕРІ
+   22:     import pandas as pd  # для экспортов/отчётов
    23: except Exception:
    24:     pd = None
    25: 
@@ -28,23 +28,23 @@
    28: except Exception:
    29:     markdown = None
    30: 
-   31: # --- helpers (РєР°РЅРѕРЅРёС‡РЅС‹Рµ)
+   31: # --- helpers (каноничные)
    32: def oid(s):
-   33:     """Р‘РµР·РѕРїР°СЃРЅРѕ РїСЂРµРѕР±СЂР°Р·СѓРµС‚ СЃС‚СЂРѕРєСѓ РІ ObjectId РёР»Рё РІРѕР·РІСЂР°С‰Р°РµС‚ None."""
+   33:     """Безопасно преобразует строку в ObjectId или возвращает None."""
    34:     try:
    35:         return ObjectId(s) if s else None
    36:     except Exception:
    37:         return None
    38: 
    39: def iso_now(dt=None):
-   40:     """YYYY-MM-DDTHH:MM (Р»РѕРєР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ)."""
+   40:     """YYYY-MM-DDTHH:MM (локальное время)."""
    41:     return (dt or datetime.now()).strftime("%Y-%m-%dT%H:%M")
    42: 
    43: def write_log(action, comment="", obj="", extra=None):
-   44:     """Р›С‘РіРєРѕРµ Р¶СѓСЂРЅР°Р»РёСЂРѕРІР°РЅРёРµ РґРµР№СЃС‚РІРёР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ."""
+   44:     """Лёгкое журналирование действий пользователя."""
    45:     log = {
    46:         "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
-   47:         "user": session.get("user_name", "Р“РѕСЃС‚СЊ"),
+   47:         "user": session.get("user_name", "Гость"),
    48:         "role": session.get("user_role", ""),
    49:         "avatar_url": session.get("avatar_url", "/static/avatars/demo-user.png"),
    50:         "ip": request.remote_addr,
@@ -56,8 +56,8 @@
    56:         log.update(extra)
    57:     db.logs.insert_one(log)
    58: 
-   59: # --- Flask app + РєРѕРЅС„РёРі РёР· .env
-   60: load_dotenv()  # Р·Р°РіСЂСѓР¶Р°РµРј config.env
+   59: # --- Flask app + конфиг из .env
+   60: load_dotenv()  # загружаем config.env
    61: 
    62: app = Flask(__name__)
    63: app.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-me")
@@ -65,23 +65,23 @@
    65: MONGO_URI = os.getenv("MONGO_URI")
    66: MONGO_DB  = os.getenv("MONGO_DB",  "medplatforma")
    67: 
-   68: password = urllib.parse.quote_plus("medpass123")  # РµСЃР»Рё РїР°СЂРѕР»СЊ СЃ РѕСЃРѕР±С‹РјРё СЃРёРјРІРѕР»Р°РјРё
+   68: password = urllib.parse.quote_plus("medpass123")  # если пароль с особыми символами
    69: uri = "mongodb+srv://medadmin:Med12345!@medplatforma.cnv7fbo.mongodb.net/medplatforma?retryWrites=true&w=majority"
    70: client = MongoClient(uri)
    71: db = client["medplatforma"]
    72: 
    73: def parse_iso(dt_str):
-   74:     # FullCalendar С€Р»РµС‚ ISO, РёРЅРѕРіРґР° Р±РµР· РјРёР»Р»РёСЃРµРєСѓРЅРґ
-   75:     # РџСЂРёРјРµСЂ: '2025-08-10T00:00:00Z' РёР»Рё '2025-08-10'
+   74:     # FullCalendar шлет ISO, иногда без миллисекунд
+   75:     # Пример: '2025-08-10T00:00:00Z' или '2025-08-10'
    76:     if not dt_str:
    77:         return None
    78:     try:
-   79:         # РІР°СЂРёР°РЅС‚С‹ СЃ 'Z'
+   79:         # варианты с 'Z'
    80:         if dt_str.endswith("Z"):
    81:             return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
    82:         return datetime.fromisoformat(dt_str)
    83:     except Exception:
-   84:         # РїРѕСЃР»РµРґРЅРёР№ С€Р°РЅСЃ
+   84:         # последний шанс
    85:         return (
    86:             datetime.strptime(dt_str[:19], "%Y-%m-%dT%H:%M:%S")
    87:             if "T" in dt_str
@@ -90,13 +90,13 @@
    90: 
    91: 
    92: def to_dt(s):
-   93:     """РџР°СЂСЃРёС‚ 'YYYY-MM-DDTHH:MM' РёР»Рё datetime -> datetime | None"""
+   93:     """Парсит 'YYYY-MM-DDTHH:MM' или datetime -> datetime | None"""
    94:     if isinstance(s, datetime):
    95:         return s
    96:     if not s:
    97:         return None
    98:     try:
-   99:         # РґРѕРїСѓСЃРєР°РµРј РѕР±Рµ С„РѕСЂРјС‹: '2025-08-14T17:05' Рё '2025-08-14 17:05'
+   99:         # допускаем обе формы: '2025-08-14T17:05' и '2025-08-14 17:05'
   100:         s = s.replace(" ", "T")
   101:         return datetime.strptime(s[:16], "%Y-%m-%dT%H:%M")
   102:     except Exception:
@@ -108,7 +108,7 @@
   108: 
   109: 
   110: def parse_local_dt(s: str) -> datetime | None:
-  111:     """РџСЂРёРЅРёРјР°РµС‚ 'YYYY-MM-DDTHH:MM' РёР»Рё 'YYYY-MM-DD HH:MM', РІРѕР·РІСЂР°С‰Р°РµС‚ datetime (naive)."""
+  111:     """Принимает 'YYYY-MM-DDTHH:MM' или 'YYYY-MM-DD HH:MM', возвращает datetime (naive)."""
   112:     if not s:
   113:         return None
   114:     s = s.strip()
@@ -132,7 +132,7 @@
   132: 
   133: 
   134: def calc_room_status_now(room_doc, now=None):
-  135:     """'available' | 'occupied' | 'maintenance' РЅР° С‚РµРєСѓС‰РёР№ РјРѕРјРµРЅС‚."""
+  135:     """'available' | 'occupied' | 'maintenance' на текущий момент."""
   136:     if room_doc.get("status") == "maintenance":
   137:         return "maintenance"
   138:     now = now or datetime.now()
@@ -143,7 +143,7 @@
   143: 
   144: 
   145: def get_next_event_for_room(room_id, now=None):
-  146:     """Р‘Р»РёР¶Р°Р№С€РёР№ Р±СѓРґСѓС‰РёР№ РїСЂРёС‘Рј РїРѕ room_id (>= now) РёР»Рё None."""
+  146:     """Ближайший будущий приём по room_id (>= now) или None."""
   147:     now = now or datetime.now()
   148:     cur = (
   149:         db.appointments.find({"room_id": room_id, "start": {"$gte": now}}).sort("start", 1).limit(1)
@@ -177,21 +177,21 @@
   177: 
   178: 
   179: def clinic_hours(date_dt):
-  180:     # СЂР°Р±РѕС‡РёРµ С‡Р°СЃС‹ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (РјРѕР¶РЅРѕ РІС‹РЅРµСЃС‚Рё РІ РЅР°СЃС‚СЂРѕР№РєРё)
+  180:     # рабочие часы по умолчанию (можно вынести в настройки)
   181:     return "08:00", "20:00"
   182: 
   183: 
   184: def recalc_room_status(room_id):
-  185:     """РџРµСЂРµcС‡РёС‚Р°РµС‚ СЃС‚Р°С‚СѓСЃ РєР°Р±РёРЅРµС‚Р° РЅР° С‚РµРєСѓС‰РёР№ РјРѕРјРµРЅС‚ РІСЂРµРјРµРЅРё Рё СЃРѕС…СЂР°РЅРёС‚ РІ rooms.status.
-  186:     РџСЂР°РІРёР»Рѕ: РµСЃР»Рё РµСЃС‚СЊ РїСЂРёС‘Рј, РїРµСЂРµСЃРµРєР°СЋС‰РёР№ now в†’ occupied; РёРЅР°С‡Рµ available.
-  187:     (maintenance РёРјРµРµС‚ РїСЂРёРѕСЂРёС‚РµС‚ Рё РЅРµ Р·Р°С‚РёСЂР°РµС‚СЃСЏ.)"""
+  185:     """Переcчитает статус кабинета на текущий момент времени и сохранит в rooms.status.
+  186:     Правило: если есть приём, пересекающий now → occupied; иначе available.
+  187:     (maintenance имеет приоритет и не затирается.)"""
   188:     if not room_id:
   189:         return
   190:     room = db.rooms.find_one({"_id": ObjectId(room_id)})
   191:     if not room:
   192:         return
   193:     if room.get("status") == "maintenance":
-  194:         # РѕР±СЃР»СѓР¶РёРІР°РЅРёРµ РІСЂСѓС‡РЅСѓСЋ РІС‹СЃС‚Р°РІР»СЏСЋС‚ вЂ” РЅРµ С‚СЂРѕРіР°РµРј
+  194:         # обслуживание вручную выставляют — не трогаем
   195:         return
   196:     now = datetime.now()
   197:     busy = db.appointments.find_one(
@@ -203,16 +203,16 @@
   203:         {"$set": {"status": new_status, "updated_at": datetime.utcnow()}},
   204:     )
   205: 
-  206: def s(val):  # Р±РµР·РѕРїР°СЃРЅР°СЏ СЃС‚СЂРѕРєР°
+  206: def s(val):  # безопасная строка
   207:     return (val or "").strip()
   208: 
   209: 
   210: def parse_date_yyyy_mm_dd(val):
-  211:     """РџСЂРёРЅРёРјР°РµРј 'YYYY-MM-DD' -> РІРѕР·РІСЂР°С‰Р°РµРј С‚Сѓ Р¶Рµ СЃС‚СЂРѕРєСѓ (С…СЂР°РЅРёРј СЃС‚СЂРѕРєРѕР№)"""
+  211:     """Принимаем 'YYYY-MM-DD' -> возвращаем ту же строку (храним строкой)"""
   212:     v = s(val)
   213:     if not v:
   214:         return ""
-  215:     # Р»С‘РіРєР°СЏ РІР°Р»РёРґР°С†РёСЏ
+  215:     # лёгкая валидация
   216:     try:
   217:         datetime.strptime(v, "%Y-%m-%d")
   218:         return v
@@ -221,7 +221,7 @@
   221: 
   222: 
   223: def next_seq(name: str) -> int:
-  224:     """Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ РёРЅРєСЂРµРјРµРЅС‚ РІ MongoDB (РєРѕР»Р»РµРєС†РёСЏ counters)."""
+  224:     """Глобальный инкремент в MongoDB (коллекция counters)."""
   225:     doc = db.counters.find_one_and_update(
   226:         {"_id": name}, {"$inc": {"seq": 1}}, upsert=True, return_document=ReturnDocument.AFTER
   227:     )
@@ -229,40 +229,40 @@
   229: 
   230: 
   231: def make_card_no() -> str:
-  232:     """Р¤РѕСЂРјРёСЂСѓРµРј РЅРѕРјРµСЂ РєР°СЂС‚РѕС‡РєРё РІРёРґР° CT-000123."""
+  232:     """Формируем номер карточки вида CT-000123."""
   233:     n = next_seq("patient_card_no")
   234:     return f"CT-{n:06d}"
   235: 
   236: def main():
   237:     parser = argparse.ArgumentParser(description="ClubStom docs/zip generator")
-  238:     parser.add_argument("--zip", action="store_true", help="СЃРґРµР»Р°С‚СЊ Р°СЂС…РёРІ РїСЂРѕРµРєС‚Р° РІ /exports")
-  239:     parser.add_argument("--note", type=str, default="", help="Р·Р°РјРµС‚РєР°/РєРѕРјРјРµРЅС‚Р°СЂРёР№")
-  240:     parser.add_argument("--lint", action="store_true", help="РїСЂРѕРІРµСЂРёС‚СЊ РґСѓР±Р»Рё Рё РІС‹РІРµСЃС‚Рё РѕС‚С‡С‘С‚")
+  238:     parser.add_argument("--zip", action="store_true", help="сделать архив проекта в /exports")
+  239:     parser.add_argument("--note", type=str, default="", help="заметка/комментарий")
+  240:     parser.add_argument("--lint", action="store_true", help="проверить дубли и вывести отчёт")
   241:     args = parser.parse_args()
   242: 
   243:     app, err = _load_flask_app()
   244:     if err:
   245:         (DOCS / "ROUTES.md").write_text(
-  246:             "# ROUTES\n\nРќРµ СѓРґР°Р»РѕСЃСЊ РёРјРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ:\n\n```\n" + err + "\n```\n",
+  246:             "# ROUTES\n\nНе удалось импортировать приложение:\n\n```\n" + err + "\n```\n",
   247:             encoding="utf-8",
   248:         )
-  249:         print("[WARN] РћС€РёР±РєР° РёРјРїРѕСЂС‚Р° app. РџРѕРґСЂРѕР±РЅРѕСЃС‚Рё РІ docs/ROUTES.md")
+  249:         print("[WARN] Ошибка импорта app. Подробности в docs/ROUTES.md")
   250:     else:
   251:         routes_md = _dump_routes_md(app)
   252:         (DOCS / "ROUTES.md").write_text(routes_md, encoding="utf-8")
-  253:         print("[OK] docs/ROUTES.md РѕР±РЅРѕРІР»С‘РЅ")
+  253:         print("[OK] docs/ROUTES.md обновлён")
   254: 
   255:         if args.lint:
   256:             problems, count = _lint_project(app)
   257:             report = "# LINT REPORT\n\n"
   258:             if count == 0:
-  259:                 report += "РџСЂРѕР±Р»РµРј РЅРµ РЅР°Р№РґРµРЅРѕ вњ…\n"
+  259:                 report += "Проблем не найдено ✅\n"
   260:             else:
   261:                 report += "\n".join(f"- {p}" for p in problems) + "\n"
   262:             (DOCS / "LINT.md").write_text(report, encoding="utf-8")
-  263:             print(f"[OK] docs/LINT.md СЃРѕР·РґР°РЅ ({count} РїСЂРѕР±Р»РµРј)")
+  263:             print(f"[OK] docs/LINT.md создан ({count} проблем)")
   264: 
-  265: # --- Р±С‹СЃС‚СЂР°СЏ healthвЂ‘РїСЂРѕРІРµСЂРєР° (СЃРјРѕРє-С‚РµСЃС‚)
+  265: # --- быстрая health‑проверка (смок-тест)
   266: @app.route("/healthz")
   267: def healthz():
   268:     try:
@@ -281,7 +281,7 @@
   281:     if markdown:
   282:         html = markdown.markdown(text, extensions=["tables", "fenced_code", "toc"])
   283:     else:
-  284:         # Р¤РѕР»Р±СЌРє: РїРѕРєР°Р·С‹РІР°РµРј РєР°Рє pre, РµСЃР»Рё markdown РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
+  284:         # Фолбэк: показываем как pre, если markdown не установлен
   285:         html = f"<pre style='white-space:pre-wrap'>{text}</pre>"
   286: 
   287:     return render_template("roadmap.html", content=Markup(html))
@@ -290,9 +290,9 @@
   290: @app.route("/api/free_slots", methods=["POST"])
   291: def api_free_slots():
   292:     """
-  293:     Р’С…РѕРґ: {doctor_id, room_name, date: 'YYYY-MM-DD', duration_min: 30}
-  294:     Р’С‹С…РѕРґ: ["09:00","09:30",...]
-  295:     Р›РѕРіРёРєР°: Р±РµСЂС‘Рј РІСЃРµ РїСЂРёС‘РјС‹ РІСЂР°С‡Р° Р/РР›Р РєР°Р±РёРЅРµС‚Р° РЅР° РґР°С‚Сѓ, РІС‹С‡РёС‚Р°РµРј РёР· СЂР°Р±РѕС‡РµРіРѕ РѕРєРЅР°.
+  293:     Вход: {doctor_id, room_name, date: 'YYYY-MM-DD', duration_min: 30}
+  294:     Выход: ["09:00","09:30",...]
+  295:     Логика: берём все приёмы врача И/ИЛИ кабинета на дату, вычитаем из рабочего окна.
   296:     """
   297:     data = request.get_json(force=True, silent=True) or {}
   298:     doctor_id = data.get("doctor_id") or ""
@@ -307,20 +307,20 @@
   307:     except Exception:
   308:         return jsonify({"ok": False, "error": "bad_date"}), 400
   309: 
-  310:     # РіСЂР°РЅРёС†С‹ РґРЅСЏ
+  310:     # границы дня
   311:     start_day = datetime.combine(day, datetime.min.time())
   312:     end_day = start_day + timedelta(days=1)
   313: 
-  314:     # РјР°РїРїРёРј РєР°Р±РёРЅРµС‚ РїРѕ РёРјРµРЅРё РІ _id (РµСЃР»Рё РїРµСЂРµРґР°РЅ)
+  314:     # маппим кабинет по имени в _id (если передан)
   315:     room = db.rooms.find_one({"name": room_name}, {"_id": 1}) if room_name else None
   316:     room_id = room["_id"] if room else None
   317: 
-  318:     # СЃРѕР±РёСЂР°РµРј Р·Р°РЅСЏС‚РѕСЃС‚СЊ (РІСЂР°С‡ + РїРѕ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РєР°Р±РёРЅРµС‚)
+  318:     # собираем занятость (врач + по возможности кабинет)
   319:     match = {"start": {"$lt": end_day}, "end": {"$gt": start_day}}
   320:     try:
   321:         match["doctor_id"] = ObjectId(doctor_id)
   322:     except Exception:
-  323:         match["doctor_id"] = doctor_id  # РІРґСЂСѓРі СѓР¶Рµ СЃС‚СЂРѕРєРѕР№
+  323:         match["doctor_id"] = doctor_id  # вдруг уже строкой
   324:     if room_id:
   325:         match["room_id"] = room_id
   326: 
@@ -336,12 +336,12 @@
   336:             e = datetime.combine(day, datetime.max.time())
   337:         busy.append((s, e))
   338: 
-  339:     # СЂР°Р±РѕС‡РµРµ РѕРєРЅРѕ РєР»РёРЅРёРєРё (РјРѕР¶РЅРѕ Р·Р°РјРµРЅРёС‚СЊ РЅР° СЂР°СЃРїРёСЃР°РЅРёРµ РІСЂР°С‡Р°)
+  339:     # рабочее окно клиники (можно заменить на расписание врача)
   340:     wh_start_s, wh_end_s = clinic_hours(day)
   341:     wh_start = datetime.combine(day, datetime.strptime(wh_start_s, "%H:%M").time())
   342:     wh_end = datetime.combine(day, datetime.strptime(wh_end_s, "%H:%M").time())
   343: 
-  344:     # С€Р°Рі 5 РјРёРЅСѓС‚, РІС‹РґР°С‘Рј СЃС‚Р°СЂС‚С‹, РєРѕС‚РѕСЂС‹Рµ РЅРµ РїРµСЂРµСЃРµРєР°СЋС‚СЃСЏ СЃ busy
+  344:     # шаг 5 минут, выдаём старты, которые не пересекаются с busy
   345:     step = 5
   346:     free = []
   347:     t = wh_start
@@ -359,7 +359,7 @@
   359:     return jsonify({"ok": True, "slots": free})
   360: 
   361: 
-  362: # ======= РђР’РўРћР РР—РђР¦РРЇ =======
+  362: # ======= АВТОРИЗАЦИЯ =======
   363: @app.route("/login", methods=["GET", "POST"])
   364: def login():
   365:     if request.method == "POST":
@@ -367,22 +367,22 @@
   367:         if password == "demo":
   368:             session["user_id"] = "demo"
   369:             session["user_role"] = "admin"
-  370:             session["user_name"] = "Р”РµРјРѕ РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ"
+  370:             session["user_name"] = "Демо Пользователь"
   371:             session["avatar_url"] = "/static/avatars/demo-user.png"
   372:             return redirect(url_for("calendar_view"))
   373:         else:
-  374:             flash("РќРµРІРµСЂРЅС‹Р№ РїР°СЂРѕР»СЊ! Р’РІРµРґРёС‚Рµ 'demo'", "danger")
+  374:             flash("Неверный пароль! Введите 'demo'", "danger")
   375:     return render_template("login.html")
   376: 
   377: 
   378: @app.route("/logout")
   379: def logout():
-  380:     write_log("logout", comment="Р’С‹С…РѕРґ РёР· СЃРёСЃС‚РµРјС‹", obj="Р’С‹С…РѕРґ")
+  380:     write_log("logout", comment="Выход из системы", obj="Выход")
   381:     session.clear()
   382:     return redirect(url_for("login"))
   383: 
   384: 
-  385: # --- РњР°СЂС€СЂСѓС‚: Р“Р»Р°РІРЅС‹Р№ РєР°Р»РµРЅРґР°СЂСЊ ---
+  385: # --- Маршрут: Главный календарь ---
   386: @app.route("/")
   387: def home():
   388:     return redirect(url_for("calendar_view"))
@@ -401,14 +401,14 @@
   401: 
   402:     now = datetime.now()
   403: 
-  404:     # РЎС‡РёС‚Р°РµРј СЃС‚Р°С‚СѓСЃ "РЅР° СЃРµР№С‡Р°СЃ" + Р±Р»РёР¶Р°Р№С€РёР№ РїСЂРёС‘Рј (РµСЃР»Рё СЃРІРѕР±РѕРґРµРЅ)
+  404:     # Считаем статус "на сейчас" + ближайший приём (если свободен)
   405:     room_info = {}
   406:     for r in rooms:
   407:         state = calc_room_status_now(r, now)  # 'available'|'occupied'|'maintenance'
   408:         text = (
-  409:             "РћР±СЃР»СѓР¶РёРІР°РЅРёРµ"
+  409:             "Обслуживание"
   410:             if state == "maintenance"
-  411:             else ("Р—Р°РЅСЏС‚" if state == "occupied" else "РЎРІРѕР±РѕРґРµРЅ")
+  411:             else ("Занят" if state == "occupied" else "Свободен")
   412:         )
   413:         color = (
   414:             "#d97706" if state == "maintenance" else ("#cc0000" if state == "occupied" else "green")
@@ -460,9 +460,9 @@
   460:     for r in rooms:
   461:         state = calc_room_status_now(r, now)
   462:         text = (
-  463:             "РћР±СЃР»СѓР¶РёРІР°РЅРёРµ"
+  463:             "Обслуживание"
   464:             if state == "maintenance"
-  465:             else ("Р—Р°РЅСЏС‚" if state == "occupied" else "РЎРІРѕР±РѕРґРµРЅ")
+  465:             else ("Занят" if state == "occupied" else "Свободен")
   466:         )
   467:         color = (
   468:             "#d97706" if state == "maintenance" else ("#cc0000" if state == "occupied" else "green")
@@ -547,9 +547,9 @@
   547:             {
   548:                 "start": fmt_hm(sdt),
   549:                 "end": fmt_hm(edt),
-  550:                 "doctor": doctors.get(a.get("doctor_id"), {}).get("full_name", "вЂ”"),
-  551:                 "patient": patients.get(a.get("patient_id"), {}).get("full_name", "вЂ”"),
-  552:                 "service": services.get(a.get("service_id"), {}).get("name", "вЂ”"),
+  550:                 "doctor": doctors.get(a.get("doctor_id"), {}).get("full_name", "—"),
+  551:                 "patient": patients.get(a.get("patient_id"), {}).get("full_name", "—"),
+  552:                 "service": services.get(a.get("service_id"), {}).get("name", "—"),
   553:                 "status": a.get("status_key", "scheduled"),
   554:                 "is_now": is_now_between(sdt, edt, now),
   555:             }
@@ -571,7 +571,7 @@
   571: 
   572: @app.route("/export_calendar")
   573: def export_calendar():
-  574:     write_log("export", comment="Р­РєСЃРїРѕСЂС‚ РєР°Р»РµРЅРґР°СЂСЏ", obj="РљР°Р»РµРЅРґР°СЂСЊ")
+  574:     write_log("export", comment="Экспорт календаря", obj="Календарь")
   575: 
   576:     appts = list(db.appointments.find())
   577:     doctors = {str(d["_id"]): d for d in db.doctors.find({}, {"full_name": 1})}
@@ -617,21 +617,21 @@
   617: 
   618: def get_status_color(status):
   619:     return {
-  620:         "РџРµСЂРІРёС‡РЅС‹Р№": "#82B4FF",
-  621:         "РџРѕРІС‚РѕСЂРЅС‹Р№": "#FFD366",
-  622:         "РћРїР»Р°С‡РµРЅ": "#B4F0C0",
-  623:         "РћС‚РєР°Р·": "#FF7474",
-  624:         "РќРѕРІС‹Р№": "#D4D4D4",
+  620:         "Первичный": "#82B4FF",
+  621:         "Повторный": "#FFD366",
+  622:         "Оплачен": "#B4F0C0",
+  623:         "Отказ": "#FF7474",
+  624:         "Новый": "#D4D4D4",
   625:     }.get(status, "#D4D4D4")
   626: 
   627: 
-  628: # --- РњР°СЂС€СЂСѓС‚: Р”РѕР±Р°РІР»РµРЅРёРµ СЃРѕР±С‹С‚РёСЏ ---
+  628: # --- Маршрут: Добавление события ---
   629: @app.route("/add_event", methods=["GET", "POST"])
   630: def add_event():
   631:     if "user_id" not in session:
   632:         return redirect(url_for("login"))
   633: 
-  634:     # РЎРїСЂР°РІРѕС‡РЅРёРєРё РґР»СЏ С„РѕСЂРјС‹
+  634:     # Справочники для формы
   635:     doctors = list(db.doctors.find({}, {"full_name": 1}).sort("full_name", 1))
   636:     patients = list(db.patients.find({}, {"full_name": 1}).sort("full_name", 1))
   637:     services = list(
@@ -640,18 +640,18 @@
   640:     rooms = list(db.rooms.find({}, {"name": 1, "status": 1}).sort("name", 1))
   641: 
   642:     if request.method == "POST":
-  643:         # 1) Р§РёС‚Р°РµРј РїРѕР»СЏ
+  643:         # 1) Читаем поля
   644:         doctor_id_s = request.form.get("doctor_id") or ""
   645:         patient_id_s = request.form.get("patient_id") or ""
   646:         service_id_s = request.form.get("service_id") or ""
   647:         room_id_s = request.form.get("room_id") or ""
   648:         start_s = request.form.get("start") or ""  # datetime-local
-  649:         end_s = request.form.get("end") or ""  # РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ
+  649:         end_s = request.form.get("end") or ""  # опционально
   650: 
   651:         comment = (request.form.get("comment") or "").strip()
   652:         status_key = (request.form.get("status_key") or "scheduled").strip()
   653: 
-  654:         # 2) РџСЂРµРѕР±СЂР°Р·СѓРµРј ID
+  654:         # 2) Преобразуем ID
   655:         try:
   656:             doctor_id = ObjectId(doctor_id_s) if doctor_id_s else None
   657:         except:
@@ -669,21 +669,21 @@
   669:         except:
   670:             room_id = None
   671: 
-  672:         # 3) Р’Р°Р»РёРґР°С†РёСЏ РѕР±СЏР·Р°С‚РµР»СЊРЅС‹С… РїРѕР»РµР№
+  672:         # 3) Валидация обязательных полей
   673:         errors = []
   674:         if not room_id:
-  675:             errors.append("Р’С‹Р±РµСЂРёС‚Рµ РєР°Р±РёРЅРµС‚.")
+  675:             errors.append("Выберите кабинет.")
   676:         if not service_id:
-  677:             errors.append("Р’С‹Р±РµСЂРёС‚Рµ СѓСЃР»СѓРіСѓ.")
+  677:             errors.append("Выберите услугу.")
   678:         if not doctor_id:
-  679:             errors.append("Р’С‹Р±РµСЂРёС‚Рµ РІСЂР°С‡Р°.")
+  679:             errors.append("Выберите врача.")
   680:         if not patient_id:
-  681:             errors.append("Р’С‹Р±РµСЂРёС‚Рµ РїР°С†РёРµРЅС‚Р°.")
+  681:             errors.append("Выберите пациента.")
   682:         start_dt = parse_local_dt(start_s)
   683:         if not start_dt:
-  684:             errors.append("РЈРєР°Р¶РёС‚Рµ РґР°С‚Сѓ Рё РІСЂРµРјСЏ РЅР°С‡Р°Р»Р°.")
+  684:             errors.append("Укажите дату и время начала.")
   685: 
-  686:         # 4) Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ Рё РєРѕРЅРµС† РїСЂРёС‘РјР°
+  686:         # 4) Длительность и конец приёма
   687:         end_dt = parse_local_dt(end_s) if end_s else None
   688:         if not end_dt and start_dt and service_id:
   689:             srv = db.services.find_one({"_id": service_id}, {"duration_min": 1}) or {}
@@ -691,7 +691,7 @@
   691:             end_dt = add_minutes(start_dt, dur)
   692: 
   693:         if not end_dt or (start_dt and end_dt <= start_dt):
-  694:             errors.append("РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РїСЂРёС‘РјР°.")
+  694:             errors.append("Некорректный интервал приёма.")
   695: 
   696:         if errors:
   697:             for e in errors:
@@ -700,17 +700,17 @@
   700:                 "add_event.html", doctors=doctors, patients=patients, services=services, rooms=rooms
   701:             )
   702: 
-  703:         # 5) РџСЂРѕРІРµСЂРєР° РєРѕРЅС„Р»РёРєС‚Р° РїРѕ РєР°Р±РёРЅРµС‚Сѓ
+  703:         # 5) Проверка конфликта по кабинету
   704:         conflict = db.appointments.find_one(
   705:             {"room_id": room_id, "start": {"$lt": end_dt}, "end": {"$gt": start_dt}}
   706:         )
   707:         if conflict:
-  708:             flash("Р’ СЌС‚РѕС‚ РёРЅС‚РµСЂРІР°Р» РєР°Р±РёРЅРµС‚ Р·Р°РЅСЏС‚.", "danger")
+  708:             flash("В этот интервал кабинет занят.", "danger")
   709:             return render_template(
   710:                 "add_event.html", doctors=doctors, patients=patients, services=services, rooms=rooms
   711:             )
   712: 
-  713:         # 6) РЎРѕР·РґР°С‘Рј РїСЂРёС‘Рј
+  713:         # 6) Создаём приём
   714:         appt = {
   715:             "doctor_id": doctor_id,
   716:             "patient_id": patient_id,
@@ -725,16 +725,16 @@
   725:         }
   726:         db.appointments.insert_one(appt)
   727: 
-  728:         # 7) РћР±РЅРѕРІРёРј СЃС‚Р°С‚СѓСЃ РєР°Р±РёРЅРµС‚Р° (РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС€СЊ СЌС‚Сѓ С„СѓРЅРєС†РёСЋ)
+  728:         # 7) Обновим статус кабинета (если используешь эту функцию)
   729:         try:
   730:             recalc_room_status(room_id)
   731:         except Exception:
   732:             pass
   733: 
-  734:         flash("Р—Р°РїРёСЃСЊ СЃРѕР·РґР°РЅР°.", "success")
+  734:         flash("Запись создана.", "success")
   735:         return redirect(url_for("calendar_view"))
   736: 
-  737:     # GET вЂ” РѕС‚СЂРёСЃРѕРІРєР° С„РѕСЂРјС‹
+  737:     # GET — отрисовка формы
   738:     return render_template(
   739:         "add_event.html", doctors=doctors, patients=patients, services=services, rooms=rooms
   740:     )
@@ -747,7 +747,7 @@
   747: 
   748:     appt = db.appointments.find_one({"_id": ObjectId(event_id)})
   749:     if not appt:
-  750:         flash("Р—Р°РїРёСЃСЊ РЅРµ РЅР°Р№РґРµРЅР°.", "danger")
+  750:         flash("Запись не найдена.", "danger")
   751:         return redirect(url_for("calendar_view"))
   752: 
   753:     doctors = list(db.doctors.find().sort("full_name", 1))
@@ -761,11 +761,11 @@
   761:         room_name = request.form["cabinet"]
   762:         service_id = request.form.get("service_id") or None
   763: 
-  764:         # РґР°С‚Р°/РІСЂРµРјСЏ
+  764:         # дата/время
   765:         start_raw = request.form["datetime"][:16]
   766:         start_dt = to_dt(start_raw)
   767:         if not start_dt:
-  768:             flash("РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ РґР°С‚Р°/РІСЂРµРјСЏ.", "danger")
+  768:             flash("Некорректная дата/время.", "danger")
   769:             return render_template(
   770:                 "edit_event.html",
   771:                 event=appt,
@@ -777,7 +777,7 @@
   777: 
   778:         room = db.rooms.find_one({"name": room_name})
   779:         if not room:
-  780:             flash("РљР°Р±РёРЅРµС‚ РЅРµ РЅР°Р№РґРµРЅ.", "danger")
+  780:             flash("Кабинет не найден.", "danger")
   781:             return render_template(
   782:                 "edit_event.html",
   783:                 event=appt,
@@ -791,7 +791,7 @@
   791:         duration = int(srv.get("duration_min", 30)) if srv else 30
   792:         end_dt = add_minutes(start_dt, duration)
   793: 
-  794:         # РџСЂРѕРІРµСЂРєР° Р·Р°РЅСЏС‚РѕСЃС‚Рё РєР°Р±РёРЅРµС‚Р° (РёСЃРєР»СЋС‡Р°СЏ С‚РµРєСѓС‰СѓСЋ Р·Р°РїРёСЃСЊ)
+  794:         # Проверка занятости кабинета (исключая текущую запись)
   795:         busy = db.appointments.find_one(
   796:             {
   797:                 "_id": {"$ne": appt["_id"]},
@@ -801,7 +801,7 @@
   801:             }
   802:         )
   803:         if busy:
-  804:             flash("РљР°Р±РёРЅРµС‚ Р·Р°РЅСЏС‚ РЅР° СЌС‚Рѕ РІСЂРµРјСЏ.", "danger")
+  804:             flash("Кабинет занят на это время.", "danger")
   805:             return render_template(
   806:                 "edit_event.html",
   807:                 event=appt,
@@ -830,11 +830,11 @@
   830:             },
   831:         )
   832: 
-  833:         flash("Р—Р°РїРёСЃСЊ РѕР±РЅРѕРІР»РµРЅР°.", "success")
+  833:         flash("Запись обновлена.", "success")
   834:         return redirect(url_for("calendar_view"))
   835: 
-  836:     # GET вЂ” РїРѕРґРіРѕС‚РѕРІРёРј РґР°РЅРЅС‹Рµ РґР»СЏ С„РѕСЂРјС‹
-  837:     # РџСЂРµРѕР±СЂР°Р·СѓРµРј РґР»СЏ С€Р°Р±Р»РѕРЅР° datetime-local
+  836:     # GET — подготовим данные для формы
+  837:     # Преобразуем для шаблона datetime-local
   838:     start_val = appt.get("start")
   839:     start_local = (
   840:         start_val.strftime("%Y-%m-%dT%H:%M")
@@ -842,7 +842,7 @@
   842:         else (to_dt(start_val) or datetime.now()).strftime("%Y-%m-%dT%H:%M")
   843:     )
   844: 
-  845:     # РўРµРєСѓС‰РёРµ Р·РЅР°С‡РµРЅРёСЏ
+  845:     # Текущие значения
   846:     current_room_name = ""
   847:     if appt.get("room_id"):
   848:         r = db.rooms.find_one({"_id": appt["room_id"]})
@@ -865,12 +865,12 @@
   865:     data = request.get_json()
   866:     doctor_id = data.get("doctor_id")
   867:     date = data.get("date")
-  868:     # РџРѕР»СѓС‡Р°РµРј РІСЃРµ СЃРѕР±С‹С‚РёСЏ СЌС‚РѕРіРѕ РІСЂР°С‡Р° РЅР° СЌС‚Сѓ РґР°С‚Сѓ
+  868:     # Получаем все события этого врача на эту дату
   869:     slots = []
   870:     for ev in db.events.find({"doctor_id": doctor_id}):
   871:         ev_date = ev["start"][:10] if "start" in ev else ""
   872:         if ev_date == date:
-  873:             # РїСЂРёРјРµСЂ: РµСЃР»Рё 'start': "2025-07-10T15:00"
+  873:             # пример: если 'start': "2025-07-10T15:00"
   874:             time_part = ev["start"].split("T")[1][:5]
   875:             slots.append(time_part)
   876:     return jsonify({"slots": slots})
@@ -878,25 +878,25 @@
   878: 
   879: @app.route("/busy_slots/<doctor_id>")
   880: def busy_slots(doctor_id):
-  881:     # РџРѕР»СѓС‡Р°РµРј РІСЃРµ Р·Р°РїРёСЃРё РІСЂР°С‡Р° Р·Р° СЃРµРіРѕРґРЅСЏ/РЅРµРґРµР»СЋ (РёР»Рё Р·Р° РІРµСЃСЊ РєР°Р»РµРЅРґР°СЂСЊ)
+  881:     # Получаем все записи врача за сегодня/неделю (или за весь календарь)
   882:     from datetime import datetime, timedelta
   883: 
   884:     start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-  885:     end = start + timedelta(days=14)  # РЅР°РїСЂРёРјРµСЂ, 2 РЅРµРґРµР»Рё РІРїРµСЂС‘Рґ
+  885:     end = start + timedelta(days=14)  # например, 2 недели вперёд
   886: 
   887:     events = list(
   888:         db.events.find(
   889:             {"doctor_id": doctor_id, "start": {"$gte": start.isoformat(), "$lt": end.isoformat()}}
   890:         )
   891:     )
-  892:     # Р’РѕР·РІСЂР°С‰Р°РµРј СЃРїРёСЃРѕРє РёРЅС‚РµСЂРІР°Р»РѕРІ (РЅР°С‡Р°Р»Рѕ Рё РєРѕРЅРµС†)
+  892:     # Возвращаем список интервалов (начало и конец)
   893:     busy = []
   894:     for e in events:
   895:         busy.append({"start": e["start"], "end": e.get("end", e["start"])})
   896:     return jsonify(busy)
   897: 
   898: 
-  899: # ======= Р’Р РђР§Р =======
+  899: # ======= ВРАЧИ =======
   900: @app.route("/doctors")
   901: def doctors():
   902:     if "user_id" not in session:
@@ -918,10 +918,10 @@
   918:             "email": request.form.get("email", ""),
   919:             "phone": request.form.get("phone", ""),
   920:             "avatar_url": request.form.get("avatar_url", "/static/avatars/demo-doctor.png"),
-  921:             "status": request.form.get("status", "Р°РєС‚РёРІРµРЅ"),
+  921:             "status": request.form.get("status", "активен"),
   922:         }
   923:         db.doctors.insert_one(doctor)
-  924:         write_log("add_doctor", comment=f"Р”РѕР±Р°РІР»РµРЅ РІСЂР°С‡ {doctor['full_name']}", obj="Р’СЂР°С‡")
+  924:         write_log("add_doctor", comment=f"Добавлен врач {doctor['full_name']}", obj="Врач")
   925:         return redirect(url_for("doctors"))
   926:     return render_template("add_doctor.html")
   927: 
@@ -930,14 +930,14 @@
   930: def doctor_card(doctor_id):
   931:     doctor = db.doctors.find_one({"_id": ObjectId(doctor_id)})
   932:     if not doctor:
-  933:         return "Р’СЂР°С‡ РЅРµ РЅР°Р№РґРµРЅ", 404
+  933:         return "Врач не найден", 404
   934:     appointments = list(db.events.find({"doctor_id": doctor_id}))
   935:     return render_template("doctor_card.html", doctor=doctor, appointments=appointments)
   936: 
   937: 
   938: @app.route("/doctor_busy_slots/<doctor_id>")
   939: def doctor_busy_slots(doctor_id):
-  940:     # РќР°С…РѕРґРёРј РІСЃРµ СЃРѕР±С‹С‚РёСЏ РїРѕ doctor_id (Р·Р° Р±Р»РёР¶Р°Р№С€РёРµ 30 РґРЅРµР№, С‡С‚РѕР±С‹ РЅРµ С‚СЏРЅСѓС‚СЊ РІСЃС‘ РїРѕРґСЂСЏРґ)
+  940:     # Находим все события по doctor_id (за ближайшие 30 дней, чтобы не тянуть всё подряд)
   941:     from datetime import datetime, timedelta
   942: 
   943:     start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -947,7 +947,7 @@
   947:             {"doctor_id": doctor_id, "start": {"$gte": start.isoformat(), "$lt": end.isoformat()}}
   948:         )
   949:     )
-  950:     # Р”Р»СЏ РєР°Р¶РґРѕРіРѕ СЃРѕР±С‹С‚РёСЏ РІРѕР·РІСЂР°С‰Р°РµРј start Рё end
+  950:     # Для каждого события возвращаем start и end
   951:     busy = []
   952:     for e in events:
   953:         busy.append({"start": e["start"], "end": e.get("end", e["start"])})
@@ -964,29 +964,29 @@
   964:     doctor = db.doctors.find_one({"_id": doctor_id})
   965:     if not doctor:
   966:         return jsonify({"error": "not found"}), 404
-  967:     # РџСЂРёРјРµСЂ СЃС‚СЂСѓРєС‚СѓСЂС‹ СЂР°СЃРїРёСЃР°РЅРёСЏ: {"0": {"start": "08:00", "end": "18:00"}, ...}
+  967:     # Пример структуры расписания: {"0": {"start": "08:00", "end": "18:00"}, ...}
   968:     schedule = doctor.get("schedule", {})
-  969:     # РќР°С…РѕРґРёРј РІСЃРµ СЃРѕР±С‹С‚РёСЏ РїРѕ РІСЂР°С‡Сѓ Р·Р° РЅСѓР¶РЅСѓСЋ РґР°С‚Сѓ (РёР»Рё РґРёР°РїР°Р·РѕРЅ)
+  969:     # Находим все события по врачу за нужную дату (или диапазон)
   970:     events = list(db.events.find({"doctor_id": doctor_id}))
   971:     busy_slots = [{"start": e["start"], "end": e.get("end", e["start"])} for e in events]
   972:     return jsonify(
   973:         {
-  974:             "schedule": schedule,  # dict СЃ РґРЅСЏРјРё РЅРµРґРµР»Рё, РєРѕРіРґР° РІСЂР°С‡ СЂР°Р±РѕС‚Р°РµС‚
-  975:             "busy_slots": busy_slots,  # СЃРїРёСЃРѕРє {"start": "...", "end": "..."}
+  974:             "schedule": schedule,  # dict с днями недели, когда врач работает
+  975:             "busy_slots": busy_slots,  # список {"start": "...", "end": "..."}
   976:         }
   977:     )
   978: 
   979: 
-  980: # ======= Р¤РРќРђРќРЎР« =======
+  980: # ======= ФИНАНСЫ =======
   981: @app.route("/finance_report")
   982: def finance_report():
   983:     operations = list(db.finance.find())
-  984:     # ---- Р¤РёР»СЊС‚СЂС‹ РёР· С„РѕСЂРјС‹ ----
+  984:     # ---- Фильтры из формы ----
   985:     search = request.args.get("search", "").strip()
   986:     type_filter = request.args.get("type", "")
   987:     status_filter = request.args.get("status", "")
   988: 
-  989:     # --- Р¤РёР»СЊС‚СЂСѓРµРј ---
+  989:     # --- Фильтруем ---
   990:     def match(op):
   991:         ok = True
   992:         if search:
@@ -1003,9 +1003,9 @@
  1003: 
  1004:     filtered_ops = [op for op in operations if match(op)]
  1005: 
- 1006:     # --- РЎС‚Р°С‚РёСЃС‚РёРєР° РїРѕ РѕРїРµСЂР°С†РёСЏРј ---
- 1007:     income_ops = [int(op["amount"]) for op in filtered_ops if op["type"] == "Р”РѕС…РѕРґ"]
- 1008:     expense_ops = [int(op["amount"]) for op in filtered_ops if op["type"] == "Р Р°СЃС…РѕРґ"]
+ 1006:     # --- Статистика по операциям ---
+ 1007:     income_ops = [int(op["amount"]) for op in filtered_ops if op["type"] == "Доход"]
+ 1008:     expense_ops = [int(op["amount"]) for op in filtered_ops if op["type"] == "Расход"]
  1009: 
  1010:     income = sum(income_ops)
  1011:     expenses = sum(expense_ops)
@@ -1013,28 +1013,28 @@
  1013:     debtors_sum = 32000  # demo
  1014:     avg_check = int(sum(income_ops) / len(income_ops)) if income_ops else 0
  1015: 
- 1016:     # --- Р”Р»СЏ РЅРѕРІС‹С… summary-РїРѕР»РµР№ (РјР°РєСЃРёРјР°Р»СЊРЅРѕ С‚РѕРї) ---
+ 1016:     # --- Для новых summary-полей (максимально топ) ---
  1017:     operations_count = len(filtered_ops)
- 1018:     paid_ops = [op for op in filtered_ops if op.get("status") == "РѕРїР»Р°С‡РµРЅ"]
+ 1018:     paid_ops = [op for op in filtered_ops if op.get("status") == "оплачен"]
  1019:     paid_count = len(paid_ops)
  1020:     paid_percent = int(100 * paid_count / operations_count) if operations_count else 0
  1021: 
- 1022:     # РўРѕРї РІСЂР°С‡ Рё СѓСЃР»СѓРіР° (РїРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ РѕРїРµСЂР°С†РёР№)
+ 1022:     # Топ врач и услуга (по количеству операций)
  1023:     from collections import Counter
  1024: 
  1025:     top_doctor = Counter([op["doctor"] for op in filtered_ops if op.get("doctor")]).most_common(1)
  1026:     top_service = Counter([op["service"] for op in filtered_ops if op.get("service")]).most_common(
  1027:         1
  1028:     )
- 1029:     top_doctor = top_doctor[0][0] if top_doctor else "вЂ”"
- 1030:     top_service = top_service[0][0] if top_service else "вЂ”"
+ 1029:     top_doctor = top_doctor[0][0] if top_doctor else "—"
+ 1030:     top_service = top_service[0][0] if top_service else "—"
  1031: 
- 1032:     # --- Р“СЂР°С„РёРє РїРѕ РјРµСЃСЏС†Р°Рј ---
+ 1032:     # --- График по месяцам ---
  1033:     months = OrderedDict()
  1034:     for op in filtered_ops:
  1035:         m = op["date"].split(".")[1]  # MM
  1036:         months.setdefault(m, {"income": 0, "expenses": 0})
- 1037:         if op["type"] == "Р”РѕС…РѕРґ":
+ 1037:         if op["type"] == "Доход":
  1038:             months[m]["income"] += int(op["amount"])
  1039:         else:
  1040:             months[m]["expenses"] += int(op["amount"])
@@ -1042,14 +1042,14 @@
  1042:         "labels": [calendar.month_abbr[int(m)] for m in months.keys()],
  1043:         "datasets": [
  1044:             {
- 1045:                 "label": "Р”РѕС…РѕРґС‹",
+ 1045:                 "label": "Доходы",
  1046:                 "borderColor": "#22c55e",
  1047:                 "backgroundColor": "#dcfce7",
  1048:                 "data": [v["income"] for v in months.values()],
  1049:                 "tension": 0.4,
  1050:             },
  1051:             {
- 1052:                 "label": "Р Р°СЃС…РѕРґС‹",
+ 1052:                 "label": "Расходы",
  1053:                 "borderColor": "#ef4444",
  1054:                 "backgroundColor": "#fee2e2",
  1055:                 "data": [v["expenses"] for v in months.values()],
@@ -1063,7 +1063,7 @@
  1063:         "expenses": expenses,
  1064:         "debtors_count": debtors_count,
  1065:         "debtors_sum": debtors_sum,
- 1066:         "month_name": "РёСЋР»СЊ",  # РјРѕР¶РЅРѕ СЃРґРµР»Р°С‚СЊ РґРёРЅР°РјРёС‡РЅРѕ!
+ 1066:         "month_name": "июль",  # можно сделать динамично!
  1067:         "avg_check": avg_check,
  1068:         "operations_count": operations_count,
  1069:         "paid_count": paid_count,
@@ -1079,23 +1079,23 @@
  1079: 
  1080: @app.route("/finance_report/export")
  1081: def finance_report_export():
- 1082:     write_log("export", comment="Р­РєСЃРїРѕСЂС‚ С„РёРЅР°РЅСЃРѕРІРѕРіРѕ РѕС‚С‡С‘С‚Р°", obj="Р¤РёРЅР°РЅСЃРѕРІС‹Р№ РѕС‚С‡С‘С‚")
+ 1082:     write_log("export", comment="Экспорт финансового отчёта", obj="Финансовый отчёт")
  1083:     operations = list(db.finance.find())
- 1084:     income_sum = sum(int(op["amount"]) for op in operations if op["type"] == "Р”РѕС…РѕРґ")
- 1085:     expense_sum = sum(int(op["amount"]) for op in operations if op["type"] == "Р Р°СЃС…РѕРґ")
- 1086:     income_ops = [int(op["amount"]) for op in operations if op["type"] == "Р”РѕС…РѕРґ"]
+ 1084:     income_sum = sum(int(op["amount"]) for op in operations if op["type"] == "Доход")
+ 1085:     expense_sum = sum(int(op["amount"]) for op in operations if op["type"] == "Расход")
+ 1086:     income_ops = [int(op["amount"]) for op in operations if op["type"] == "Доход"]
  1087:     avg_check = int(sum(income_ops) / len(income_ops)) if income_ops else 0
  1088:     debtors_count = 4  # demo
  1089:     debtors_sum = 32000  # demo
- 1090:     report_month = "РёСЋР»СЊ"
+ 1090:     report_month = "июль"
  1091: 
  1092:     data = {
- 1093:         "Р”РѕС…РѕРґС‹": [income_sum],
- 1094:         "Р Р°СЃС…РѕРґС‹": [expense_sum],
- 1095:         "РЎСЂРµРґРЅРёР№ С‡РµРє": [avg_check],
- 1096:         "Р”РѕР»Р¶РЅРёРєРё (С‡РµР»)": [debtors_count],
- 1097:         "Р”РѕР»РіРё (в‚Ѕ)": [debtors_sum],
- 1098:         "РњРµСЃСЏС†": [report_month],
+ 1093:         "Доходы": [income_sum],
+ 1094:         "Расходы": [expense_sum],
+ 1095:         "Средний чек": [avg_check],
+ 1096:         "Должники (чел)": [debtors_count],
+ 1097:         "Долги (₽)": [debtors_sum],
+ 1098:         "Месяц": [report_month],
  1099:     }
  1100:     format = request.args.get("format", "xlsx")
  1101:     if format == "csv":
@@ -1113,7 +1113,7 @@
  1113:         output = io.BytesIO()
  1114:         df = pd.DataFrame(data)
  1115:         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
- 1116:             df.to_excel(writer, index=False, sheet_name="Р¤РёРЅР°РЅСЃС‹")
+ 1116:             df.to_excel(writer, index=False, sheet_name="Финансы")
  1117:         output.seek(0)
  1118:         return send_file(
  1119:             output,
@@ -1123,12 +1123,12 @@
  1123:         )
  1124: 
  1125: 
- 1126: # ======= РћРЎРќРћР’РќР«Р• РЎРўР РђРќРР¦Р«/РњРћР”РЈР›Р (Р—РђР“Р›РЈРЁРљР) =======
+ 1126: # ======= ОСНОВНЫЕ СТРАНИЦЫ/МОДУЛИ (ЗАГЛУШКИ) =======
  1127: @app.route("/tasks")
  1128: def tasks():
  1129:     if "user_id" not in session:
  1130:         return redirect(url_for("login"))
- 1131:     # Р¤РѕСЂРјРёСЂСѓРµРј Р·Р°РґР°С‡Рё РґР»СЏ С€Р°Р±Р»РѕРЅР°:
+ 1131:     # Формируем задачи для шаблона:
  1132:     tasks = list(db.tasks.find())
  1133:     for t in tasks:
  1134:         t["_id"] = str(t["_id"])
@@ -1137,7 +1137,7 @@
  1137:             if t.get("assigned_to")
  1138:             else None
  1139:         )
- 1140:         t["assigned_name"] = assignee["full_name"] if assignee else "Р‘РµР· РёСЃРїРѕР»РЅРёС‚РµР»СЏ"
+ 1140:         t["assigned_name"] = assignee["full_name"] if assignee else "Без исполнителя"
  1141:         t["assigned_avatar_url"] = (
  1142:             assignee["avatar_url"]
  1143:             if assignee and "avatar_url" in assignee
@@ -1146,7 +1146,7 @@
  1146:     doctors = list(db.doctors.find())
  1147:     return render_template(
  1148:         "tasks.html", tasks=tasks, doctors=doctors
- 1149:     )  # <-- Р’РћРў Р­РўРћ Р”РћР›Р–РќРћ Р‘Р«РўР¬ Р’РќРЈРўР Р Р¤РЈРќРљР¦РР!
+ 1149:     )  # <-- ВОТ ЭТО ДОЛЖНО БЫТЬ ВНУТРИ ФУНКЦИИ!
  1150: 
  1151: 
  1152: @app.route("/add_task", methods=["POST"])
@@ -1167,7 +1167,7 @@
  1167: @app.route("/mark_task_done/<task_id>")
  1168: def mark_task_done(task_id):
  1169:     db.tasks.update_one({"_id": ObjectId(task_id)}, {"$set": {"status": "done"}})
- 1170:     write_log("task_done", comment=f"Р—Р°РґР°С‡Р° {task_id} РѕС‚РјРµС‡РµРЅР° РІС‹РїРѕР»РЅРµРЅРЅРѕР№", obj="Р—Р°РґР°С‡Р°")
+ 1170:     write_log("task_done", comment=f"Задача {task_id} отмечена выполненной", obj="Задача")
  1171:     return redirect(url_for("tasks"))
  1172: 
  1173: 
@@ -1177,8 +1177,8 @@
  1177:         return redirect(url_for("login"))
  1178:     task = db.tasks.find_one({"_id": ObjectId(task_id)})
  1179:     if not task:
- 1180:         return "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°", 404
- 1181:     # РњРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ РїРѕРґРіСЂСѓР·РєСѓ РёСЃРїРѕР»РЅРёС‚РµР»СЏ, РµСЃР»Рё РЅСѓР¶РЅРѕ
+ 1180:         return "Задача не найдена", 404
+ 1181:     # Можно добавить подгрузку исполнителя, если нужно
  1182:     assignee = (
  1183:         db.doctors.find_one({"_id": ObjectId(task.get("assigned_to", ""))})
  1184:         if task.get("assigned_to")
@@ -1196,7 +1196,7 @@
  1196: @app.route("/messages")
  1197: def messages():
  1198:     chats = list(db.messages.find())
- 1199:     user_name = "РРІР°РЅРѕРІР° РђРЅРЅР° (Р°РґРјРёРЅ)"  # Р”Р»СЏ РґРµРјРѕ
+ 1199:     user_name = "Иванова Анна (админ)"  # Для демо
  1200:     return render_template("messages.html", chats=chats, user_name=user_name)
  1201: 
  1202: 
@@ -1205,17 +1205,17 @@
  1205:     xrays = list(db.xrays.find())
  1206:     patients = {str(p["_id"]): p for p in db.patients.find()}
  1207:     doctors = {str(d["_id"]): d for d in db.doctors.find()}
- 1208:     # С„РёР»СЊС‚СЂС‹ (РґРѕР±Р°РІСЊ, РµСЃР»Рё РЅР°РґРѕ)
+ 1208:     # фильтры (добавь, если надо)
  1209:     return render_template("xray_room.html", xrays=xrays, patients=patients, doctors=doctors)
  1210: 
  1211: 
  1212: @app.route("/add_xray", methods=["GET", "POST"])
  1213: def add_xray():
  1214:     if request.method == "POST":
- 1215:         # Р—Р°РіСЂСѓР¶Р°РµРј С„Р°Р№Р» (image), СЃРѕС…СЂР°РЅСЏРµРј РІ /static/xrays/
- 1216:         # Р’РЅРѕСЃРёРј РІ РєРѕР»Р»РµРєС†РёСЋ xrays РІСЃРµ РґР°РЅРЅС‹Рµ
+ 1215:         # Загружаем файл (image), сохраняем в /static/xrays/
+ 1216:         # Вносим в коллекцию xrays все данные
  1217:         # ...
- 1218:         flash("РЎРЅРёРјРѕРє СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅ!", "success")
+ 1218:         flash("Снимок успешно добавлен!", "success")
  1219:         return redirect(url_for("xray_room"))
  1220:     patients = list(db.patients.find())
  1221:     doctors = list(db.doctors.find())
@@ -1227,11 +1227,11 @@
  1227: 
  1228: @app.route("/ztl")
  1229: def ztl():
- 1230:     ztls = list(db.ztl.find({}))  # Р—Р°Р±РёСЂР°РµРј РІСЃРµ Р»Р°Р±РѕСЂР°С‚РѕСЂРЅС‹Рµ СЂР°Р±РѕС‚С‹
+ 1230:     ztls = list(db.ztl.find({}))  # Забираем все лабораторные работы
  1231:     patients = {str(p["_id"]): p for p in db.patients.find()}
  1232:     doctors = {str(d["_id"]): d for d in db.doctors.find()}
  1233: 
- 1234:     # РџСЂРёРІРѕРґРёРј ObjectId Рє СЃС‚СЂРѕРєР°Рј
+ 1234:     # Приводим ObjectId к строкам
  1235:     for w in ztls:
  1236:         for key in ["_id", "patient_id", "doctor_id"]:
  1237:             if key in w and isinstance(w[key], ObjectId):
@@ -1271,13 +1271,13 @@
  1271: 
  1272: @app.route("/partners")
  1273: def partners():
- 1274:     # РџРѕР»СѓС‡Р°РµРј РІСЃРµС… РїР°С†РёРµРЅС‚РѕРІ
+ 1274:     # Получаем всех пациентов
  1275:     patients = list(db.patients.find())
  1276: 
- 1277:     # РЎР»РѕРІР°СЂСЊ РґР»СЏ Р±С‹СЃС‚СЂРѕРіРѕ РґРѕСЃС‚СѓРїР°: id (СЃС‚СЂРѕРєРѕР№) -> РїР°С†РёРµРЅС‚
+ 1277:     # Словарь для быстрого доступа: id (строкой) -> пациент
  1278:     patients_map = {str(p["_id"]): p for p in patients}
  1279: 
- 1280:     # РЎР»РѕРІР°СЂСЊ СЂРµС„РµСЂР°Р»РѕРІ: id РїСЂРёРіР»Р°СЃРёС‚РµР»СЏ -> СЃРїРёСЃРѕРє РїСЂРёРіР»Р°С€С‘РЅРЅС‹С… РїР°С†РёРµРЅС‚РѕРІ
+ 1280:     # Словарь рефералов: id пригласителя -> список приглашённых пациентов
  1281:     referrals = {}
  1282:     for p in patients:
  1283:         inviter_id = str(p.get("invited_by")) if p.get("invited_by") else None
@@ -1285,16 +1285,16 @@
  1285:             referrals.setdefault(inviter_id, []).append(p)
  1286:     return render_template(
  1287:         "partners.html",
- 1288:         patients=patients,  # РЎРїРёСЃРѕРє РІСЃРµС… РїР°С†РёРµРЅС‚РѕРІ
- 1289:         patients_map=patients_map,  # Р‘С‹СЃС‚СЂС‹Р№ РґРѕСЃС‚СѓРї РїРѕ id (РґР»СЏ РїСЂРёРіР»Р°СЃРёС‚РµР»РµР№)
- 1290:         referrals=referrals,  # РљС‚Рѕ РєРѕРіРѕ РїСЂРёРіР»Р°СЃРёР»
+ 1288:         patients=patients,  # Список всех пациентов
+ 1289:         patients_map=patients_map,  # Быстрый доступ по id (для пригласителей)
+ 1290:         referrals=referrals,  # Кто кого пригласил
  1291:     )
  1292: 
  1293: 
  1294: @app.route("/logs")
  1295: def logs():
- 1296:     write_log("logs_view", comment="РџСЂРѕСЃРјРѕС‚СЂ Р¶СѓСЂРЅР°Р»Р° РґРµР№СЃС‚РІРёР№", obj="Р›РѕРіРё")
- 1297:     logs = list(db.logs.find().sort("time", -1))  # РЎРѕСЂС‚РёСЂСѓРµРј РїРѕ РґР°С‚Рµ
+ 1296:     write_log("logs_view", comment="Просмотр журнала действий", obj="Логи")
+ 1297:     logs = list(db.logs.find().sort("time", -1))  # Сортируем по дате
  1298:     return render_template("journal.html", logs=logs)
  1299: 
  1300: 
@@ -1317,7 +1317,7 @@
  1317: 
  1318: @app.route("/data_tools", methods=["GET", "POST"])
  1319: def data_tools():
- 1320:     # ... РїРѕРґРіСЂСѓР¶Р°РµРј РёСЃС‚РѕСЂРёСЋ СЌРєСЃРїРѕСЂС‚Р°/РёРјРїРѕСЂС‚Р°
+ 1320:     # ... подгружаем историю экспорта/импорта
  1321:     history = list(db.imports.find().sort("datetime", -1))
  1322:     return render_template("data_tools.html", history=history)
  1323: 
@@ -1328,7 +1328,7 @@
  1328:     collection = request.args.get("collection", "patients")
  1329:     format = request.args.get("format", "xlsx")
  1330:     data = list(db[collection].find())
- 1331:     # ... РїСЂРµРІСЂР°С‚РёС‚СЊ ObjectId РІ СЃС‚СЂРѕРєРё РґР»СЏ СЌРєСЃРїРѕСЂС‚Р°
+ 1331:     # ... превратить ObjectId в строки для экспорта
  1332:     for d in data:
  1333:         d["_id"] = str(d["_id"])
  1334:     df = pd.DataFrame(data)
@@ -1366,17 +1366,17 @@
  1366:             df = pd.read_csv(file, sep=";")
  1367:         else:
  1368:             df = pd.read_excel(file)
- 1369:         # Р’Р°Р»РёРґР°С†РёСЏ, РїРѕРґРіРѕС‚РѕРІРєР°
+ 1369:         # Валидация, подготовка
  1370:         db[collection].insert_many(df.to_dict("records"))
- 1371:         result = f"РЈСЃРїРµС€РЅРѕ ({len(df)} Р·Р°РїРёСЃРµР№)"
+ 1371:         result = f"Успешно ({len(df)} записей)"
  1372:     except Exception as e:
- 1373:         result = f"РћС€РёР±РєР°: {e}"
- 1374:     # Р›РѕРіРёСЂРѕРІР°РЅРёРµ
+ 1373:         result = f"Ошибка: {e}"
+ 1374:     # Логирование
  1375:     db.imports.insert_one(
  1376:         {
  1377:             "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
- 1378:             "user": session.get("user_name", "РіРѕСЃС‚СЊ"),
- 1379:             "operation": "РёРјРїРѕСЂС‚",
+ 1378:             "user": session.get("user_name", "гость"),
+ 1379:             "operation": "импорт",
  1380:             "collection": collection,
  1381:             "filename": filename,
  1382:             "result": result,
@@ -1404,11 +1404,11 @@
  1404: 
  1405: @app.route("/api/events")
  1406: def api_events():
- 1407:     # 1) Р”РёР°РїР°Р·РѕРЅ, РєРѕС‚РѕСЂС‹Р№ С€Р»С‘С‚ FullCalendar
+ 1407:     # 1) Диапазон, который шлёт FullCalendar
  1408:     start_str = request.args.get("start")
  1409:     end_str = request.args.get("end")
  1410: 
- 1411:     # 2) Р¤РёР»СЊС‚СЂС‹ (РїРѕРґРґРµСЂР¶РёРІР°РµРј Рё id, Рё РёРјРµРЅР°)
+ 1411:     # 2) Фильтры (поддерживаем и id, и имена)
  1412:     doctor_id = request.args.get("doctor_id")
  1413:     room_id = request.args.get("room_id")
  1414:     room_name = request.args.get("room_name")
@@ -1418,20 +1418,20 @@
  1418:     start_dt = parse_iso(start_str)
  1419:     end_dt = parse_iso(end_str)
  1420: 
- 1421:     # 3) Р‘Р°Р·РѕРІС‹Р№ Р·Р°РїСЂРѕСЃ: РїРµСЂРµСЃРµС‡РµРЅРёРµ РґРёР°РїР°Р·РѕРЅР°
+ 1421:     # 3) Базовый запрос: пересечение диапазона
  1422:     q = {}
  1423:     if start_dt and end_dt:
  1424:         q["start"] = {"$lt": end_dt}
  1425:         q["end"] = {"$gt": start_dt}
  1426: 
- 1427:     # 4) Р¤РёР»СЊС‚СЂ РїРѕ РІСЂР°С‡Сѓ
+ 1427:     # 4) Фильтр по врачу
  1428:     if doctor_id:
  1429:         try:
  1430:             q["doctor_id"] = ObjectId(doctor_id)
  1431:         except Exception:
  1432:             pass
  1433: 
- 1434:     # 5) Р¤РёР»СЊС‚СЂ РїРѕ РєР°Р±РёРЅРµС‚Сѓ
+ 1434:     # 5) Фильтр по кабинету
  1435:     if room_id:
  1436:         try:
  1437:             q["room_id"] = ObjectId(room_id)
@@ -1442,7 +1442,7 @@
  1442:         if r:
  1443:             q["room_id"] = r["_id"]
  1444: 
- 1445:     # 6) Р¤РёР»СЊС‚СЂ РїРѕ СѓСЃР»СѓРіРµ
+ 1445:     # 6) Фильтр по услуге
  1446:     if service_id:
  1447:         try:
  1448:             q["service_id"] = ObjectId(service_id)
@@ -1453,7 +1453,7 @@
  1453:         if s:
  1454:             q["service_id"] = s["_id"]
  1455: 
- 1456:     # 7) РЎРїСЂР°РІРѕС‡РЅРёРєРё РґР»СЏ РЅР°Р·РІР°РЅРёР№/С†РІРµС‚РѕРІ
+ 1456:     # 7) Справочники для названий/цветов
  1457:     doctors_map = {str(d["_id"]): d for d in db.doctors.find({}, {"full_name": 1, "avatar": 1})}
  1458:     patients_map = {str(p["_id"]): p for p in db.patients.find({}, {"full_name": 1, "avatar": 1})}
  1459:     services_map = {
@@ -1464,26 +1464,26 @@
  1464:     }
  1465:     rooms_map = {str(r["_id"]): r for r in db.rooms.find({}, {"name": 1})}
  1466: 
- 1467:     # 8) Р¤РѕСЂРјРёСЂСѓРµРј РѕС‚РІРµС‚ РІ С„РѕСЂРјР°С‚Рµ FullCalendar
+ 1467:     # 8) Формируем ответ в формате FullCalendar
  1468:     events = []
  1469:     cursor = db.appointments.find(q).sort("start", 1)
  1470: 
  1471:     for a in cursor:
- 1472:         # --- РЅРѕСЂРјР°Р»РёР·СѓРµРј ID РєР°Рє СЃС‚СЂРѕРєРё (РјРѕРіСѓС‚ Р±С‹С‚СЊ None)
+ 1472:         # --- нормализуем ID как строки (могут быть None)
  1473:         did = str(a.get("doctor_id") or "")
  1474:         pid = str(a.get("patient_id") or "")
  1475:         sid = str(a.get("service_id") or "")
  1476:         rid = str(a.get("room_id") or "")
  1477: 
- 1478:         # --- РіР°СЂР°РЅС‚РёСЂСѓРµРј С‚РёРї datetime
+ 1478:         # --- гарантируем тип datetime
  1479:         a_start = to_dt(a.get("start"))
  1480:         if not a_start:
- 1481:             # Р±РёС‚Р°СЏ Р·Р°РїРёСЃСЊ Р±РµР· РґР°С‚С‹ вЂ” РїСЂРѕРїСѓСЃРєР°РµРј
+ 1481:             # битая запись без даты — пропускаем
  1482:             continue
  1483: 
  1484:         a_end = to_dt(a.get("end"))
  1485:         if not a_end:
- 1486:             # РµСЃР»Рё РЅРµС‚ end вЂ” СЃС‡РёС‚Р°РµРј РїРѕ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё СѓСЃР»СѓРіРё (РµСЃР»Рё РµСЃС‚СЊ), РёРЅР°С‡Рµ 30 РјРёРЅ
+ 1486:             # если нет end — считаем по длительности услуги (если есть), иначе 30 мин
  1487:             dur = services_map.get(sid, {}).get("duration_min", 30)
  1488:             try:
  1489:                 dur = int(dur)
@@ -1491,15 +1491,15 @@
  1491:                 dur = 30
  1492:             a_end = add_minutes(a_start, dur)
  1493: 
- 1494:         # --- СЃРїСЂР°РІРѕС‡РЅРёРєРё
+ 1494:         # --- справочники
  1495:         doc = doctors_map.get(did, {})
  1496:         pat = patients_map.get(pid, {})
  1497:         srv = services_map.get(sid, {})
  1498:         rm = rooms_map.get(rid, {})
  1499:         st = status_map.get(a.get("status_key", "scheduled"), {})
  1500: 
- 1501:         # --- Р·Р°РіРѕР»РѕРІРѕРє СЃРѕР±С‹С‚РёСЏ
- 1502:         title = f'{srv.get("name", "РЈСЃР»СѓРіР°")} вЂ” {pat.get("full_name", "РџР°С†РёРµРЅС‚")}'
+ 1501:         # --- заголовок события
+ 1502:         title = f'{srv.get("name", "Услуга")} — {pat.get("full_name", "Пациент")}'
  1503: 
  1504:         events.append(
  1505:             {
@@ -1549,7 +1549,7 @@
  1549:     )
  1550: 
  1551: 
- 1552: # 1) РЎРїСЂР°РІРѕС‡РЅРёРєРё РґР»СЏ РјРѕРґР°Р»РєРё
+ 1552: # 1) Справочники для модалки
  1553: @app.route("/api/dicts")
  1554: def api_dicts():
  1555:     docs = list(db.doctors.find({}, {"full_name": 1}))
@@ -1571,12 +1571,12 @@
  1571:     )
  1572: 
  1573: 
- 1574: # --- 2.2: Р·Р°РЅСЏС‚РѕСЃС‚СЊ РєР°Р±РёРЅРµС‚Р° РЅР° РґРµРЅСЊ ---
+ 1574: # --- 2.2: занятость кабинета на день ---
  1575: @app.route("/api/rooms/busy")
  1576: def api_room_busy():
  1577:     """
  1578:     GET /api/rooms/busy?room_id=<oid|str>&date=YYYY-MM-DD
- 1579:     Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС‚РµСЂРІР°Р»С‹ Р·Р°РЅСЏС‚РѕСЃС‚Рё РєР°Р±РёРЅРµС‚Р° РЅР° СѓРєР°Р·Р°РЅРЅС‹Р№ РґРµРЅСЊ:
+ 1579:     Возвращает интервалы занятости кабинета на указанный день:
  1580:     { ok: True, items: [{start:'HH:MM', end:'HH:MM'}, ...] }
  1581:     """
  1582:     room_id = request.args.get("room_id", "").strip()
@@ -1588,7 +1588,7 @@
  1588:     try:
  1589:         room_oid = ObjectId(room_id)
  1590:     except Exception:
- 1591:         # РґРѕРїСѓСЃРєР°РµРј, С‡С‚Рѕ Рє РЅР°Рј РїСЂРёС€Р»Рѕ РёРјСЏ РєР°Р±РёРЅРµС‚Р° вЂ” РїРѕРїСЂРѕР±СѓРµРј РЅР°Р№С‚Рё
+ 1591:         # допускаем, что к нам пришло имя кабинета — попробуем найти
  1592:         room = db.rooms.find_one({"name": room_id}, {"_id": 1})
  1593:         if not room:
  1594:             return jsonify({"ok": False, "error": "room_not_found"}), 404
@@ -1601,7 +1601,7 @@
  1601: 
  1602:     day_end = day_start + timedelta(days=1)
  1603: 
- 1604:     # Р‘РµСЂС‘Рј РІСЃРµ РїСЂРёС‘РјС‹ РІ СЌС‚РѕРј РєР°Р±РёРЅРµС‚Рµ, РїРµСЂРµСЃРµРєР°СЋС‰РёРµ РґРµРЅСЊ
+ 1604:     # Берём все приёмы в этом кабинете, пересекающие день
  1605:     cur = db.appointments.find(
  1606:         {"room_id": room_oid, "start": {"$lt": day_end}, "end": {"$gt": day_start}},
  1607:         {"start": 1, "end": 1},
@@ -1620,12 +1620,12 @@
  1620:             }
  1621:         )
  1622: 
- 1623:     # РћС‚СЃРѕСЂС‚РёСЂСѓРµРј РїРѕ РЅР°С‡Р°Р»Сѓ
+ 1623:     # Отсортируем по началу
  1624:     items.sort(key=lambda x: x["start"])
  1625:     return jsonify({"ok": True, "items": items})
  1626: 
  1627: 
- 1628: # === РЈРґР°Р»РµРЅРёРµ РїСЂРёС‘РјР° ===
+ 1628: # === Удаление приёма ===
  1629: @app.route("/delete_appointment/<id>", methods=["POST"])
  1630: def delete_appointment(id):
  1631:     try:
@@ -1641,7 +1641,7 @@
  1641: 
  1642:     db.appointments.delete_one({"_id": oid})
  1643: 
- 1644:     # РџРµСЂРµСЃС‡РёС‚Р°С‚СЊ СЃС‚Р°С‚СѓСЃ РєР°Р±РёРЅРµС‚Р°
+ 1644:     # Пересчитать статус кабинета
  1645:     try:
  1646:         if room_id:
  1647:             recalc_room_status(room_id)
@@ -1651,7 +1651,7 @@
  1651:     return jsonify({"ok": True})
  1652: 
  1653: 
- 1654: # --- 2.3.1: РїРѕР»СѓС‡РёС‚СЊ Р·Р°РїРёСЃСЊ РґР»СЏ РјРѕРґР°Р»РєРё ---
+ 1654: # --- 2.3.1: получить запись для модалки ---
  1655: @app.route("/api/appointments/<id>")
  1656: def api_appointment_get(id):
  1657:     try:
@@ -1663,7 +1663,7 @@
  1663:     if not a:
  1664:         return jsonify({"ok": False, "error": "not_found"}), 404
  1665: 
- 1666:     def strid(v):  # Р°РєРєСѓСЂР°С‚РЅРѕ РїСЂРёРІРѕРґРёРј Рє СЃС‚СЂРѕРєРµ
+ 1666:     def strid(v):  # аккуратно приводим к строке
  1667:         return str(v) if isinstance(v, ObjectId) else (v or "")
  1668: 
  1669:     def fmt(dt):
@@ -1687,7 +1687,7 @@
  1687:     )
  1688: 
  1689: 
- 1690: # --- 2.3.2: РїРѕР»РЅРѕРµ РѕР±РЅРѕРІР»РµРЅРёРµ Р·Р°РїРёСЃРё РёР· РјРѕРґР°Р»РєРё ---
+ 1690: # --- 2.3.2: полное обновление записи из модалки ---
  1691: @app.route("/api/appointments/<id>/update", methods=["POST"])
  1692: def api_appointment_update(id):
  1693:     data = request.get_json(force=True, silent=True) or {}
@@ -1700,10 +1700,10 @@
  1700:     if not a:
  1701:         return jsonify({"ok": False, "error": "not_found"}), 404
  1702: 
- 1703:     # СЃРѕР±СЂР°С‚СЊ РѕР±РЅРѕРІР»РµРЅРёСЏ
+ 1703:     # собрать обновления
  1704:     updates = {}
  1705: 
- 1706:     # РїСЂРёРІСЏР·РєРё
+ 1706:     # привязки
  1707:     def as_oid(key):
  1708:         v = data.get(key)
  1709:         if not v:
@@ -1727,17 +1727,17 @@
  1727:     if room_oid:
  1728:         updates["room_id"] = room_oid
  1729: 
- 1730:     # СЃС‚Р°С‚СѓСЃ/РєРѕРјРјРµРЅС‚
+ 1730:     # статус/коммент
  1731:     if "status_key" in data:
  1732:         updates["status_key"] = (data.get("status_key") or "scheduled").strip()
  1733:     if "comment" in data:
  1734:         updates["comment"] = (data.get("comment") or "").strip()
  1735: 
- 1736:     # РІСЂРµРјСЏ
+ 1736:     # время
  1737:     start_dt = to_dt(data.get("start")) or a.get("start")
  1738:     end_dt = to_dt(data.get("end")) or a.get("end")
  1739: 
- 1740:     # РµСЃР»Рё РєРѕРЅРµС† РЅРµ Р·Р°РґР°РЅ вЂ” РІС‹С‡РёСЃР»РёРј РїРѕ СѓСЃР»СѓРіРµ (РёР»Рё 30 РјРёРЅ)
+ 1740:     # если конец не задан — вычислим по услуге (или 30 мин)
  1741:     if not end_dt:
  1742:         dur = 30
  1743:         if srv_oid:
@@ -1755,7 +1755,7 @@
  1755:     updates["start"] = start_dt
  1756:     updates["end"] = end_dt
  1757: 
- 1758:     # РєРѕРЅС„Р»РёРєС‚ РїРѕ РєР°Р±РёРЅРµС‚Сѓ
+ 1758:     # конфликт по кабинету
  1759:     if room_oid:
  1760:         conflict = db.appointments.find_one(
  1761:             {
@@ -1777,7 +1777,7 @@
  1777:     return jsonify({"ok": True})
  1778: 
  1779: 
- 1780: # --- 2.3.3: РїРµСЂРµРЅРѕСЃ/СЂР°СЃС‚СЏРіРёРІР°РЅРёРµ СЃРѕР±С‹С‚РёСЏ РјС‹С€РєРѕР№ (DnD/resize) ---
+ 1780: # --- 2.3.3: перенос/растягивание события мышкой (DnD/resize) ---
  1781: @app.route("/api/appointments/update_time", methods=["POST"])
  1782: def api_appointments_update_time():
  1783:     data = request.get_json(force=True, silent=True) or {}
@@ -1804,7 +1804,7 @@
  1804: 
  1805:     room_id = appt.get("room_id")
  1806: 
- 1807:     # РєРѕРЅС„Р»РёРєС‚ РїРѕ РєР°Р±РёРЅРµС‚Сѓ
+ 1807:     # конфликт по кабинету
  1808:     if room_id:
  1809:         conflict = db.appointments.find_one(
  1810:             {
@@ -1826,7 +1826,7 @@
  1826:     return jsonify({"ok": True})
  1827: 
  1828: 
- 1829: # Р»С‘РіРєРёРµ СЃРїСЂР°РІРѕС‡РЅРёРєРё РґР»СЏ С„СЂРѕРЅС‚Р°
+ 1829: # лёгкие справочники для фронта
  1830: @app.route("/api/services_min")
  1831: def api_services_min():
  1832:     items = []
@@ -1860,7 +1860,7 @@
  1860:     if not kind or amount <= 0:
  1861:         return jsonify({"ok": False, "error": "bad_params"}), 400
  1862: 
- 1863:     # СЃС‚СЂРѕРіРѕ РёР· РїСЂР°Р№СЃР°: РµСЃР»Рё СѓРєР°Р·Р°РЅ service_id РїСЂРё payment вЂ” РґРѕР±Р°РІРёРј СЃРµСЂРІРёСЃ-С‡Р°СЂРґР¶ (С‡С‚РѕР±С‹ РґРѕР»Рі СЃС‡РёС‚Р°Р»СЃСЏ)
+ 1863:     # строго из прайса: если указан service_id при payment — добавим сервис-чардж (чтобы долг считался)
  1864:     ts = datetime.now()
  1865:     doc = {
  1866:         "patient_id": pid,
@@ -1876,7 +1876,7 @@
  1876:     }
  1877:     db.ledger.insert_one(doc)
  1878: 
- 1879:     # РµСЃР»Рё РІС‹Р±СЂР°РЅР° СѓСЃР»СѓРіР° Рё СЌС‚Рѕ РѕРїР»Р°С‚Р° СѓСЃР»СѓРіРё вЂ” РґРѕР±Р°РІРёРј СЃС‚СЂРѕРєСѓ service_charge (РµСЃР»Рё РµС‘ РµС‰С‘ РЅРµС‚ РЅР° СЌС‚РѕС‚ РІРёР·РёС‚)
+ 1879:     # если выбрана услуга и это оплата услуги — добавим строку service_charge (если её ещё нет на этот визит)
  1880:     if kind == "payment" and service_id:
  1881:         s = db.services.find_one({"_id": service_id}, {"price": 1})
  1882:         price = int((s or {}).get("price", 0) or 0)
@@ -1887,7 +1887,7 @@
  1887:                     "kind": "service_charge",
  1888:                     "amount": price,
  1889:                     "source": None,
- 1890:                     "comment": f"РќР°С‡РёСЃР»РµРЅРёРµ Р·Р° СѓСЃР»СѓРіСѓ",
+ 1890:                     "comment": f"Начисление за услугу",
  1891:                     "service_id": service_id,
  1892:                     "ts": ts,
  1893:                     "ts_iso": doc["ts_iso"],
@@ -1910,7 +1910,7 @@
  1910:     db.messages.insert_one(
  1911:         {
  1912:             "patient_id": _id,
- 1913:             "from": "admin",  # РґР°Р»СЊС€Рµ РјРѕР¶РµРј С…СЂР°РЅРёС‚СЊ user_id СЂРѕР»Рё (Р°РґРјРёРЅ/РєСѓСЂР°С‚РѕСЂ)
+ 1913:             "from": "admin",  # дальше можем хранить user_id роли (админ/куратор)
  1914:             "text": text,
  1915:             "ts": ts,
  1916:             "ts_iso": ts.strftime("%Y-%m-%dT%H:%M"),
@@ -1919,11 +1919,11 @@
  1919:     return jsonify({"ok": True})
  1920: 
  1921: 
- 1922: # ===================== РЈРЎР›РЈР“Р (services) =====================
+ 1922: # ===================== УСЛУГИ (services) =====================
  1923: 
  1924: 
  1925: def _service_form_data():
- 1926:     """РЎС‡РёС‚С‹РІР°РµРј Рё РІР°Р»РёРґРёСЂСѓРµРј РїРѕР»СЏ С„РѕСЂРјС‹ СѓСЃР»СѓРіРё."""
+ 1926:     """Считываем и валидируем поля формы услуги."""
  1927:     name = (request.form.get("name") or "").strip()
  1928:     code = (request.form.get("code") or "").strip().upper()
  1929:     description = (request.form.get("description") or "").strip()
@@ -1934,21 +1934,21 @@
  1934: 
  1935:     errors = []
  1936:     if not name:
- 1937:         errors.append("РќР°Р·РІР°РЅРёРµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ.")
+ 1937:         errors.append("Название обязательно.")
  1938:     if not code:
- 1939:         errors.append("РљРѕРґ РѕР±СЏР·Р°С‚РµР»РµРЅ.")
+ 1939:         errors.append("Код обязателен.")
  1940:     try:
  1941:         price = int(price)
  1942:         if price < 0:
- 1943:             errors.append("Р¦РµРЅР° РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕР№.")
+ 1943:             errors.append("Цена не может быть отрицательной.")
  1944:     except ValueError:
- 1945:         errors.append("Р¦РµРЅР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ С‡РёСЃР»РѕРј.")
+ 1945:         errors.append("Цена должна быть числом.")
  1946:     try:
  1947:         duration_min = int(duration_min)
  1948:         if duration_min <= 0:
- 1949:             errors.append("Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ > 0.")
+ 1949:             errors.append("Длительность должна быть > 0.")
  1950:     except ValueError:
- 1951:         errors.append("Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ С‡РёСЃР»РѕРј.")
+ 1951:         errors.append("Длительность должна быть числом.")
  1952: 
  1953:     data = {
  1954:         "name": name,
@@ -1979,9 +1979,9 @@
  1979: def add_service():
  1980:     if request.method == "POST":
  1981:         data, errors = _service_form_data()
- 1982:         # РїСЂРѕРІРµСЂРєР° СѓРЅРёРєР°Р»СЊРЅРѕСЃС‚Рё РєРѕРґР°
+ 1982:         # проверка уникальности кода
  1983:         if db.services.find_one({"code": data["code"]}):
- 1984:             errors.append("РљРѕРґ СѓСЃР»СѓРіРё СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ.")
+ 1984:             errors.append("Код услуги уже используется.")
  1985:         if errors:
  1986:             for e in errors:
  1987:                 flash(e, "danger")
@@ -1989,7 +1989,7 @@
  1989:         data["created_at"] = datetime.utcnow()
  1990:         data["updated_at"] = datetime.utcnow()
  1991:         db.services.insert_one(data)
- 1992:         flash("РЈСЃР»СѓРіР° РґРѕР±Р°РІР»РµРЅР°.", "success")
+ 1992:         flash("Услуга добавлена.", "success")
  1993:         return redirect(url_for("services_list"))
  1994:     # GET
  1995:     return render_template(
@@ -2002,25 +2002,25 @@
  2002: def edit_service(id):
  2003:     item = db.services.find_one({"_id": ObjectId(id)})
  2004:     if not item:
- 2005:         flash("РЈСЃР»СѓРіР° РЅРµ РЅР°Р№РґРµРЅР°.", "danger")
+ 2005:         flash("Услуга не найдена.", "danger")
  2006:         return redirect(url_for("services_list"))
  2007: 
  2008:     if request.method == "POST":
  2009:         data, errors = _service_form_data()
- 2010:         # СѓРЅРёРєР°Р»СЊРЅРѕСЃС‚СЊ РєРѕРґР° (РЅРµ СЃС‡РёС‚Р°СЏ С‚РµРєСѓС‰СѓСЋ Р·Р°РїРёСЃСЊ)
+ 2010:         # уникальность кода (не считая текущую запись)
  2011:         other = db.services.find_one({"code": data["code"], "_id": {"$ne": ObjectId(id)}})
  2012:         if other:
- 2013:             errors.append("РљРѕРґ СѓСЃР»СѓРіРё СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ.")
+ 2013:             errors.append("Код услуги уже используется.")
  2014:         if errors:
  2015:             for e in errors:
  2016:                 flash(e, "danger")
- 2017:             # РІРµСЂРЅСѓС‚СЊ РІРІРµРґС‘РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
+ 2017:             # вернуть введённые данные
  2018:             item.update(data)
  2019:             return render_template("edit_service.html", item=item)
  2020:         db.services.update_one(
  2021:             {"_id": ObjectId(id)}, {"$set": {**data, "updated_at": datetime.utcnow()}}
  2022:         )
- 2023:         flash("РР·РјРµРЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅС‹.", "success")
+ 2023:         flash("Изменения сохранены.", "success")
  2024:         return redirect(url_for("services_list"))
  2025: 
  2026:     return render_template("edit_service.html", item=item)
@@ -2029,27 +2029,27 @@
  2029: @app.route("/delete_service/<id>", methods=["POST"])
  2030: def delete_service(id):
  2031:     db.services.delete_one({"_id": ObjectId(id)})
- 2032:     flash("РЈСЃР»СѓРіР° СѓРґР°Р»РµРЅР°.", "success")
+ 2032:     flash("Услуга удалена.", "success")
  2033:     return redirect(url_for("services_list"))
  2034: 
  2035: 
- 2036: # =================== /РЈРЎР›РЈР“Р (services) ======================
+ 2036: # =================== /УСЛУГИ (services) ======================
  2037: 
- 2038: # ===================== РљРђР‘РРќР•РўР« (rooms) =====================
+ 2038: # ===================== КАБИНЕТЫ (rooms) =====================
  2039: 
- 2040: # РЎРїСЂР°РІРѕС‡РЅРёРєРё РґР»СЏ СѓРґРѕР±РЅРѕРіРѕ РІС‹Р±РѕСЂР° РІ С„РѕСЂРјР°С…
+ 2040: # Справочники для удобного выбора в формах
  2041: ROOM_TYPES = [
- 2042:     ("РўРµСЂР°РїРёСЏ", "РўРµСЂР°РїРёСЏ"),
- 2043:     ("РҐРёСЂСѓСЂРіРёСЏ", "РҐРёСЂСѓСЂРіРёСЏ"),
- 2044:     ("Р РµРЅС‚РіРµРЅ", "Р РµРЅС‚РіРµРЅ"),
- 2045:     ("Р“РёРіРёРµРЅР°", "Р“РёРіРёРµРЅР°"),
- 2046:     ("РћСЂС‚РѕРїРµРґРёСЏ", "РћСЂС‚РѕРїРµРґРёСЏ"),
- 2047:     ("РћСЂС‚РѕРґРѕРЅС‚РёСЏ", "РћСЂС‚РѕРґРѕРЅС‚РёСЏ"),
+ 2042:     ("Терапия", "Терапия"),
+ 2043:     ("Хирургия", "Хирургия"),
+ 2044:     ("Рентген", "Рентген"),
+ 2045:     ("Гигиена", "Гигиена"),
+ 2046:     ("Ортопедия", "Ортопедия"),
+ 2047:     ("Ортодонтия", "Ортодонтия"),
  2048: ]
  2049: ROOM_STATUSES = [
- 2050:     ("available", "РЎРІРѕР±РѕРґРµРЅ"),
- 2051:     ("occupied", "Р—Р°РЅСЏС‚"),
- 2052:     ("maintenance", "РћР±СЃР»СѓР¶РёРІР°РЅРёРµ"),
+ 2050:     ("available", "Свободен"),
+ 2051:     ("occupied", "Занят"),
+ 2052:     ("maintenance", "Обслуживание"),
  2053: ]
  2054: 
  2055: 
@@ -2060,18 +2060,18 @@
  2060:     color = (request.form.get("color") or "#1abc9c").strip()
  2061:     errors = []
  2062:     if not name:
- 2063:         errors.append("РќР°Р·РІР°РЅРёРµ РєР°Р±РёРЅРµС‚Р° РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ.")
+ 2063:         errors.append("Название кабинета обязательно.")
  2064:     if rtype not in [t[0] for t in ROOM_TYPES]:
- 2065:         errors.append("РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ С‚РёРї РєР°Р±РёРЅРµС‚Р°.")
+ 2065:         errors.append("Некорректный тип кабинета.")
  2066:     if status not in [s[0] for s in ROOM_STATUSES]:
- 2067:         errors.append("РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃС‚Р°С‚СѓСЃ РєР°Р±РёРЅРµС‚Р°.")
+ 2067:         errors.append("Некорректный статус кабинета.")
  2068:     return {"name": name, "type": rtype, "status": status, "color": color}, errors
  2069: 
  2070: 
  2071: @app.route("/rooms")
  2072: def rooms_list():
  2073:     items = list(db.rooms.find({}).sort([("name", 1)]))
- 2074:     # Р”Р»СЏ С‚СѓР»С‚РёРїР° СЃС‚Р°С‚СѓСЃР° РЅР° СЂСѓСЃСЃРєРѕРј
+ 2074:     # Для тултипа статуса на русском
  2075:     status_title = dict(ROOM_STATUSES)
  2076:     return render_template("rooms.html", items=items, status_title=status_title)
  2077: 
@@ -2080,9 +2080,9 @@
  2080: def add_room():
  2081:     if request.method == "POST":
  2082:         data, errors = _room_form_data()
- 2083:         # СѓРЅРёРєР°Р»СЊРЅРѕСЃС‚СЊ РёРјРµРЅРё РєР°Р±РёРЅРµС‚Р°
+ 2083:         # уникальность имени кабинета
  2084:         if db.rooms.find_one({"name": data["name"]}):
- 2085:             errors.append("РљР°Р±РёРЅРµС‚ СЃ С‚Р°РєРёРј РЅР°Р·РІР°РЅРёРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚.")
+ 2085:             errors.append("Кабинет с таким названием уже существует.")
  2086:         if errors:
  2087:             for e in errors:
  2088:                 flash(e, "danger")
@@ -2092,13 +2092,13 @@
  2092:         data["created_at"] = datetime.utcnow()
  2093:         data["updated_at"] = datetime.utcnow()
  2094:         db.rooms.insert_one(data)
- 2095:         flash("РљР°Р±РёРЅРµС‚ РґРѕР±Р°РІР»РµРЅ.", "success")
+ 2095:         flash("Кабинет добавлен.", "success")
  2096:         return redirect(url_for("rooms_list"))
  2097: 
  2098:     # GET
  2099:     return render_template(
  2100:         "add_room.html",
- 2101:         form={"type": "РўРµСЂР°РїРёСЏ", "status": "available", "color": "#1abc9c"},
+ 2101:         form={"type": "Терапия", "status": "available", "color": "#1abc9c"},
  2102:         ROOM_TYPES=ROOM_TYPES,
  2103:         ROOM_STATUSES=ROOM_STATUSES,
  2104:     )
@@ -2108,15 +2108,15 @@
  2108: def edit_room(id):
  2109:     item = db.rooms.find_one({"_id": ObjectId(id)})
  2110:     if not item:
- 2111:         flash("РљР°Р±РёРЅРµС‚ РЅРµ РЅР°Р№РґРµРЅ.", "danger")
+ 2111:         flash("Кабинет не найден.", "danger")
  2112:         return redirect(url_for("rooms_list"))
  2113: 
  2114:     if request.method == "POST":
  2115:         data, errors = _room_form_data()
- 2116:         # СѓРЅРёРєР°Р»СЊРЅРѕСЃС‚СЊ РёРјРµРЅРё (РєСЂРѕРјРµ С‚РµРєСѓС‰РµРіРѕ)
+ 2116:         # уникальность имени (кроме текущего)
  2117:         other = db.rooms.find_one({"name": data["name"], "_id": {"$ne": ObjectId(id)}})
  2118:         if other:
- 2119:             errors.append("РљР°Р±РёРЅРµС‚ СЃ С‚Р°РєРёРј РЅР°Р·РІР°РЅРёРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚.")
+ 2119:             errors.append("Кабинет с таким названием уже существует.")
  2120:         if errors:
  2121:             for e in errors:
  2122:                 flash(e, "danger")
@@ -2127,7 +2127,7 @@
  2127:         db.rooms.update_one(
  2128:             {"_id": ObjectId(id)}, {"$set": {**data, "updated_at": datetime.utcnow()}}
  2129:         )
- 2130:         flash("РР·РјРµРЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅС‹.", "success")
+ 2130:         flash("Изменения сохранены.", "success")
  2131:         return redirect(url_for("rooms_list"))
  2132: 
  2133:     return render_template(
@@ -2138,13 +2138,13 @@
  2138: @app.route("/delete_room/<id>", methods=["POST"])
  2139: def delete_room(id):
  2140:     db.rooms.delete_one({"_id": ObjectId(id)})
- 2141:     flash("РљР°Р±РёРЅРµС‚ СѓРґР°Р»С‘РЅ.", "success")
+ 2141:     flash("Кабинет удалён.", "success")
  2142:     return redirect(url_for("rooms_list"))
  2143: 
  2144: 
- 2145: # =================== /РљРђР‘РРќР•РўР« (rooms) ======================
+ 2145: # =================== /КАБИНЕТЫ (rooms) ======================
  2146: 
- 2147: # ===================== РџРђР¦РР•РќРўР« (patients) =====================
+ 2147: # ===================== ПАЦИЕНТЫ (patients) =====================
  2148: 
  2149: 
  2150: def _patient_form_data():
@@ -2161,18 +2161,18 @@
  2161:     notes = (request.form.get("notes") or "").strip()
  2162:     avatar = (
  2163:         request.form.get("avatar") or ""
- 2164:     ).strip()  # РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ '/static/avatars/patients/p1.jpg'
+ 2164:     ).strip()  # относительный путь '/static/avatars/patients/p1.jpg'
  2165: 
  2166:     errors = []
  2167:     if not full_name:
- 2168:         errors.append("Р¤РРћ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ.")
- 2169:     # РїСЂРѕСЃС‚Р°СЏ РІР°Р»РёРґР°С†РёСЏ РґР°С‚С‹
+ 2168:         errors.append("ФИО обязательно.")
+ 2169:     # простая валидация даты
  2170:     bdate = None
  2171:     if birthday:
  2172:         try:
  2173:             bdate = datetime.strptime(birthday, "%Y-%m-%d")
  2174:         except ValueError:
- 2175:             errors.append("Р”Р°С‚Р° СЂРѕР¶РґРµРЅРёСЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІ С„РѕСЂРјР°С‚Рµ Р“Р“Р“Р“-РњРњ-Р”Р”.")
+ 2175:             errors.append("Дата рождения должна быть в формате ГГГГ-ММ-ДД.")
  2176: 
  2177:     data = {
  2178:         "full_name": full_name,
@@ -2190,7 +2190,7 @@
  2190: @app.route("/patients")
  2191: def patients_list():
  2192:     q = {}
- 2193:     # РџРѕРёСЃРє РїРѕ Р¤РРћ РёР»Рё С‚РµР»РµС„РѕРЅСѓ/РїРѕС‡С‚Рµ
+ 2193:     # Поиск по ФИО или телефону/почте
  2194:     search = (request.args.get("q") or "").strip()
  2195:     if search:
  2196:         q = {
@@ -2203,7 +2203,7 @@
  2203: 
  2204:     items = list(db.patients.find(q).sort([("full_name", 1)]))
  2205: 
- 2206:     # РќРћР РњРђР›РР—РђР¦РРЇ: РіР°СЂР°РЅС‚РёСЂСѓРµРј contacts/avatar/Р°РґСЂРµСЃР°, СЃС‚СЂРѕРєРѕРІС‹Р№ _id
+ 2206:     # НОРМАЛИЗАЦИЯ: гарантируем contacts/avatar/адреса, строковый _id
  2207:     for p in items:
  2208:         p["_id"] = str(p.get("_id"))
  2209:         # contacts
@@ -2227,7 +2227,7 @@
  2227:         addr.setdefault("zip", "")
  2228:         p["address"] = addr
  2229: 
- 2230:     # Р‘С‹СЃС‚СЂС‹Р№ СЃС‡С‘С‚С‡РёРє РІРёР·РёС‚РѕРІ
+ 2230:     # Быстрый счётчик визитов
  2231:     appts_count = {}
  2232:     if items:
  2233:         ids = [ObjectId(p["_id"]) for p in items if p.get("_id")]
@@ -2252,7 +2252,7 @@
  2252:             return render_template("add_patient.html", form=data)
  2253:         data["created_at"] = datetime.utcnow()
  2254:         db.patients.insert_one(data)
- 2255:         flash("РџР°С†РёРµРЅС‚ РґРѕР±Р°РІР»РµРЅ.", "success")
+ 2255:         flash("Пациент добавлен.", "success")
  2256:         return redirect(url_for("patients_list"))
  2257:     # GET
  2258:     return render_template("add_patient.html", form={})
@@ -2262,7 +2262,7 @@
  2262: def edit_patient(id):
  2263:     item = db.patients.find_one({"_id": ObjectId(id)})
  2264:     if not item:
- 2265:         flash("РџР°С†РёРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ.", "danger")
+ 2265:         flash("Пациент не найден.", "danger")
  2266:         return redirect(url_for("patients_list"))
  2267: 
  2268:     if request.method == "POST":
@@ -2270,11 +2270,11 @@
  2270:         if errors:
  2271:             for e in errors:
  2272:                 flash(e, "danger")
- 2273:             # РїРѕРґСЃС‚Р°РІРёРј РѕР±СЂР°С‚РЅРѕ РІРІРµРґС‘РЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ
+ 2273:             # подставим обратно введённые значения
  2274:             item.update(data)
  2275:             return render_template("edit_patient.html", item=item)
  2276:         db.patients.update_one({"_id": ObjectId(id)}, {"$set": data})
- 2277:         flash("РР·РјРµРЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅС‹.", "success")
+ 2277:         flash("Изменения сохранены.", "success")
  2278:         return redirect(url_for("patients_list"))
  2279: 
  2280:     # GET
@@ -2284,8 +2284,8 @@
  2284: @app.route("/delete_patient/<id>", methods=["POST"])
  2285: def delete_patient(id):
  2286:     db.patients.delete_one({"_id": ObjectId(id)})
- 2287:     # СЃРІСЏР·Р°РЅРЅС‹Рµ РІРёР·РёС‚С‹ СѓРјС‹С€Р»РµРЅРЅРѕ РЅРµ С‚СЂРѕРіР°РµРј (РёСЃС‚РѕСЂРёС‡РЅРѕСЃС‚СЊ)
- 2288:     flash("РџР°С†РёРµРЅС‚ СѓРґР°Р»С‘РЅ.", "success")
+ 2287:     # связанные визиты умышленно не трогаем (историчность)
+ 2288:     flash("Пациент удалён.", "success")
  2289:     return redirect(url_for("patients_list"))
  2290: 
  2291: 
@@ -2294,24 +2294,24 @@
  2294:     try:
  2295:         oid = ObjectId(id)
  2296:     except Exception:
- 2297:         flash("РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID РїР°С†РёРµРЅС‚Р°.", "danger")
+ 2297:         flash("Некорректный ID пациента.", "danger")
  2298:         return redirect(url_for("patients_list"))
  2299: 
  2300:     p = db.patients.find_one({"_id": oid})
  2301:     if not p:
- 2302:         flash("РџР°С†РёРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ.", "danger")
+ 2302:         flash("Пациент не найден.", "danger")
  2303:         return redirect(url_for("patients_list"))
  2304: 
- 2305:     # РќРѕСЂРјР°Р»РёР·СѓРµРј РїРѕР»СЏ, С‡С‚РѕР± С€Р°Р±Р»РѕРЅ РЅРµ РїР°РґР°Р»
+ 2305:     # Нормализуем поля, чтоб шаблон не падал
  2306:     p.setdefault("card_no", "")
  2307:     p.setdefault("sex", "")
- 2308:     p.setdefault("birthdate", "")  # С…СЂР°РЅРёРј СЃС‚СЂРѕРєРѕР№ 'YYYY-MM-DD'
+ 2308:     p.setdefault("birthdate", "")  # храним строкой 'YYYY-MM-DD'
  2309:     p.setdefault("phone", "")
  2310:     p.setdefault("email", "")
  2311:     p.setdefault("full_name", "")
  2312:     p.setdefault("notes", "")
  2313: 
- 2314:     # РђРЅРєРµС‚Р°
+ 2314:     # Анкета
  2315:     q = p.get("questionary", {}) or {}
  2316:     questionary = {
  2317:         "allergy": s(q.get("allergy")),
@@ -2348,7 +2348,7 @@
  2348:         "notes": s(data.get("notes")),
  2349:     }
  2350: 
- 2351:     # card_no РјРѕР¶РЅРѕ РјРµРЅСЏС‚СЊ РІСЂСѓС‡РЅСѓСЋ (РёР»Рё СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РѕС‚РґРµР»СЊРЅРѕР№ РєРЅРѕРїРєРѕР№)
+ 2351:     # card_no можно менять вручную (или сгенерировать отдельной кнопкой)
  2352:     if "card_no" in data:
  2353:         upd["card_no"] = s(data.get("card_no"))
  2354: 
@@ -2409,10 +2409,10 @@
  2409:     if not p:
  2410:         return jsonify({"ok": False, "error": "not_found"}), 404
  2411: 
- 2412:     # ledger (С„РёРЅР°РЅСЃРѕРІС‹Рµ РѕРїРµСЂР°С†РёРё)
+ 2412:     # ledger (финансовые операции)
  2413:     ledger = []
  2414:     for x in db.ledger.find({"patient_id": _id}).sort("ts", -1).limit(200):
- 2415:         # РїРѕРґС‚СЏРЅРµРј РёРјСЏ СѓСЃР»СѓРіРё
+ 2415:         # подтянем имя услуги
  2416:         sname = ""
  2417:         sid = x.get("service_id")
  2418:         if sid:
@@ -2429,9 +2429,9 @@
  2429:             }
  2430:         )
  2431: 
- 2432:     # РґРѕР»РіРё/РґРµРїРѕР·РёС‚: РїСЂРѕСЃС‚Р°СЏ РјРѕРґРµР»СЊ
- 2433:     # debt = СЃСѓРјРјР° СѓСЃР»СѓРі (kind=service_charge) - РѕРїР»Р°С‚С‹ (kind=payment) - СЃРїРёСЃР°РЅРёСЏ СЃ РґРµРїРѕР·РёС‚Р° (kind=deposit_use)
- 2434:     # deposit = РІРЅРµСЃРµРЅРѕ (kind=deposit) - РёСЃРїРѕР»СЊР·РѕРІР°РЅРѕ (kind=deposit_use)
+ 2432:     # долги/депозит: простая модель
+ 2433:     # debt = сумма услуг (kind=service_charge) - оплаты (kind=payment) - списания с депозита (kind=deposit_use)
+ 2434:     # deposit = внесено (kind=deposit) - использовано (kind=deposit_use)
  2435:     svc_total = sum(
  2436:         int(x.get("amount", 0) or 0)
  2437:         for x in db.ledger.find({"patient_id": _id, "kind": "service_charge"})
@@ -2450,14 +2450,14 @@
  2450:     debt = max(0, svc_total - pay_total - dep_use)
  2451:     deposit = max(0, dep_in - dep_use)
  2452: 
- 2453:     # РїСЂРѕСЃС‚С‹Рµ Р°РіСЂРµРіР°С‚С‹ РґР»СЏ РєР°СЂС‚РѕС‡РєРё
+ 2453:     # простые агрегаты для карточки
  2454:     plans = list(db.plans.find({"patient_id": _id}, {"title": 1, "comment": 1}).sort("created", -1))
  2455:     plans = [{"title": pl.get("title", ""), "comment": pl.get("comment", "")} for pl in plans]
  2456: 
- 2457:     # РїРѕСЃР»РµРґРЅРёРµ РІРёР·РёС‚С‹
+ 2457:     # последние визиты
  2458:     appts = []
  2459:     for a in db.appointments.find({"patient_id": _id}).sort("start", -1).limit(20):
- 2460:         appts.append({"start": iso_now(a.get("start")), "title": a.get("title") or "Р’РёР·РёС‚"})
+ 2460:         appts.append({"start": iso_now(a.get("start")), "title": a.get("title") or "Визит"})
  2461: 
  2462:     survey = db.surveys.find_one({"patient_id": _id}) or {}
  2463:     survey = {
@@ -2472,7 +2472,7 @@
  2472:         tasks.append(
  2473:             {
  2474:                 "title": t.get("title", ""),
- 2475:                 "status": t.get("status", "РІ СЂР°Р±РѕС‚Рµ"),
+ 2475:                 "status": t.get("status", "в работе"),
  2476:                 "deadline": t.get("deadline_iso", ""),
  2477:             }
  2478:         )
@@ -2499,7 +2499,7 @@
  2499:             "stats": {
  2500:                 "debt": debt,
  2501:                 "deposit": deposit,
- 2502:                 "incash": pay_total,  # СѓСЃР»РѕРІРЅРѕ РїРѕРєР°Р·С‹РІР°РµРј СЃСѓРјРјС‹ РѕРїР»Р°С‚ РєР°Рє "РІ РєР°СЃСЃРµ (РїР°С†РёРµРЅС‚)"
+ 2502:                 "incash": pay_total,  # условно показываем суммы оплат как "в кассе (пациент)"
  2503:             },
  2504:             "ledger": ledger,
  2505:             "plans": plans,
@@ -2510,7 +2510,7 @@
  2510:         }
  2511:     )
  2512: 
- 2513:     # РЅРѕСЂРјР°Р»РёР·Р°С†РёСЏ РїРѕР»РµР№, С‡С‚РѕР±С‹ С€Р°Р±Р»РѕРЅ РЅРµ РїР°РґР°Р»
+ 2513:     # нормализация полей, чтобы шаблон не падал
  2514:     p["_id"] = str(p["_id"])
  2515:     contacts = p.get("contacts") or {}
  2516:     if not isinstance(contacts, dict):
@@ -2532,12 +2532,12 @@
  2532:     if not p.get("avatar"):
  2533:         p["avatar"] = "/static/avatars/patients/default.jpg"
  2534: 
- 2535:     # РїРѕСЃР»РµРґРЅРёРµ 50 РІРёР·РёС‚РѕРІ РїР°С†РёРµРЅС‚Р°
+ 2535:     # последние 50 визитов пациента
  2536:     visits = list(
  2537:         db.appointments.find({"patient_id": ObjectId(p["_id"])}).sort("start", -1).limit(50)
  2538:     )
  2539: 
- 2540:     # СЃРїСЂР°РІРѕС‡РЅРёРєРё РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+ 2540:     # справочники для отображения
  2541:     doctor_map = {str(d["_id"]): d for d in db.doctors.find({}, {"full_name": 1})}
  2542:     service_map = {
  2543:         str(s["_id"]): s
@@ -2548,7 +2548,7 @@
  2548:         s["key"]: s for s in db.visit_statuses.find({}, {"key": 1, "title": 1, "color": 1})
  2549:     }
  2550: 
- 2551:     # РїСЂРёРІРѕРґРёРј СЃРѕР±С‹С‚РёСЏ Рє СѓРґРѕР±РЅРѕРјСѓ РІРёРґСѓ
+ 2551:     # приводим события к удобному виду
  2552:     visits_view = []
  2553:     for v in visits:
  2554:         sid = str(v.get("service_id") or "")
@@ -2572,11 +2572,11 @@
  2572:                 "_id": str(v["_id"]),
  2573:                 "start_iso": v_start.strftime("%Y-%m-%d %H:%M"),
  2574:                 "end_iso": v_end.strftime("%Y-%m-%d %H:%M"),
- 2575:                 "doctor": doctor_map.get(did, {}).get("full_name", "вЂ”"),
- 2576:                 "service": service_map.get(sid, {}).get("name", "вЂ”"),
+ 2575:                 "doctor": doctor_map.get(did, {}).get("full_name", "—"),
+ 2576:                 "service": service_map.get(sid, {}).get("name", "—"),
  2577:                 "service_price": service_map.get(sid, {}).get("price", None),
- 2578:                 "room": room_map.get(rid, {}).get("name", "вЂ”"),
- 2579:                 "status": status_map.get(st_key, {}).get("title", "вЂ”"),
+ 2578:                 "room": room_map.get(rid, {}).get("name", "—"),
+ 2579:                 "status": status_map.get(st_key, {}).get("title", "—"),
  2580:                 "status_color": status_map.get(st_key, {}).get("color", "#3498db"),
  2581:                 "sum": v.get("sum", 0),
  2582:                 "comment": v.get("comment", ""),
@@ -2586,8 +2586,8 @@
  2586:     return render_template("patient_card.html", p=p, visits=visits_view)
  2587: 
  2588: 
- 2589: # =================== /РџРђР¦РР•РќРўР« (patients) ======================
+ 2589: # =================== /ПАЦИЕНТЫ (patients) ======================
  2590: 
- 2591: # ======= Р—РђРџРЈРЎРљ =======
+ 2591: # ======= ЗАПУСК =======
  2592: if __name__ == "__main__":
  2593:     app.run(debug=True)

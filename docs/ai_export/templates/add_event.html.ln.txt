@@ -1,35 +1,35 @@
-﻿    1: {% extends "base.html" %}
+    1: {% extends "base.html" %}
     2: {% block content %}
-    3: <h2 style="margin:8px 0 14px;">Р”РѕР±Р°РІРёС‚СЊ Р·Р°РїРёСЃСЊ</h2>
+    3: <h2 style="margin:8px 0 14px;">Добавить запись</h2>
     4: 
     5: <form method="post" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;">
-    6:   <!-- Р’СЂР°С‡ -->
+    6:   <!-- Врач -->
     7:   <label>
-    8:     <div>Р’СЂР°С‡</div>
+    8:     <div>Врач</div>
     9:     <select name="doctor_id" required style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;">
-   10:       <option value="">вЂ” РІС‹Р±РµСЂРёС‚Рµ вЂ”</option>
+   10:       <option value="">— выберите —</option>
    11:       {% for d in doctors %}
    12:         <option value="{{ d._id }}">{{ d.full_name }}</option>
    13:       {% endfor %}
    14:     </select>
    15:   </label>
    16: 
-   17:   <!-- РџР°С†РёРµРЅС‚ -->
+   17:   <!-- Пациент -->
    18:   <label>
-   19:     <div>РџР°С†РёРµРЅС‚</div>
+   19:     <div>Пациент</div>
    20:     <select name="patient_id" required style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;">
-   21:       <option value="">вЂ” РІС‹Р±РµСЂРёС‚Рµ вЂ”</option>
+   21:       <option value="">— выберите —</option>
    22:       {% for p in patients %}
    23:         <option value="{{ p._id }}">{{ p.full_name }}</option>
    24:       {% endfor %}
    25:     </select>
    26:   </label>
    27: 
-   28:   <!-- РЈСЃР»СѓРіР° -->
+   28:   <!-- Услуга -->
    29:   <label>
-   30:     <div>РЈСЃР»СѓРіР°</div>
+   30:     <div>Услуга</div>
    31:     <select id="service_id" name="service_id" required style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;">
-   32:       <option value="">вЂ” РІС‹Р±РµСЂРёС‚Рµ вЂ”</option>
+   32:       <option value="">— выберите —</option>
    33:       {% for s in services %}
    34:         <option value="{{ s._id }}" data-dur="{{ s.duration_min or 30 }}">{{ s.name }}</option>
    35:       {% endfor %}
@@ -37,11 +37,11 @@
    37:     <small id="service_hint" style="opacity:.7;"></small>
    38:   </label>
    39: 
-   40:   <!-- РљР°Р±РёРЅРµС‚ -->
+   40:   <!-- Кабинет -->
    41:   <label>
-   42:     <div>РљР°Р±РёРЅРµС‚</div>
+   42:     <div>Кабинет</div>
    43:     <select id="room_id" name="room_id" required style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;">
-   44:       <option value="">вЂ” РІС‹Р±РµСЂРёС‚Рµ вЂ”</option>
+   44:       <option value="">— выберите —</option>
    45:       {% for r in rooms %}
    46:         <option value="{{ r._id }}">{{ r.name }}</option>
    47:       {% endfor %}
@@ -49,41 +49,41 @@
    49:     <small id="busy_hint" style="opacity:.75;"></small>
    50:   </label>
    51: 
-   52:   <!-- РќР°С‡Р°Р»Рѕ -->
+   52:   <!-- Начало -->
    53:   <label>
-   54:     <div>РќР°С‡Р°Р»Рѕ</div>
+   54:     <div>Начало</div>
    55:     <input id="start" type="datetime-local" name="start" required step="300"
    56:            style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;">
    57:   </label>
    58: 
-   59:   <!-- РљРѕРЅРµС† (СЃС‚Р°РІРёРј Р°РІС‚РѕРјР°С‚РѕРј, РјРѕР¶РЅРѕ РїРѕРїСЂР°РІРёС‚СЊ) -->
+   59:   <!-- Конец (ставим автоматом, можно поправить) -->
    60:   <label>
-   61:     <div>РљРѕРЅРµС†</div>
+   61:     <div>Конец</div>
    62:     <input id="end" type="datetime-local" name="end" step="300"
    63:            style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;">
-   64:     <small style="opacity:.7;">Р•СЃР»Рё РЅРµ СѓРєР°Р¶РµС‚Рµ, РїРѕРґСЃС‚Р°РІРёС‚СЃСЏ РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ СѓСЃР»СѓРіРё.</small>
+   64:     <small style="opacity:.7;">Если не укажете, подставится длительность услуги.</small>
    65:   </label>
    66: 
-   67:   <!-- РЎС‚Р°С‚СѓСЃ -->
+   67:   <!-- Статус -->
    68:   <label>
-   69:     <div>РЎС‚Р°С‚СѓСЃ</div>
+   69:     <div>Статус</div>
    70:     <select name="status_key" style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;">
-   71:       <option value="scheduled">Р—Р°РїР»Р°РЅРёСЂРѕРІР°РЅ</option>
-   72:       <option value="arrived">РџСЂРёР±С‹Р»</option>
-   73:       <option value="done">Р—Р°РІРµСЂС€С‘РЅ</option>
-   74:       <option value="cancelled">РћС‚РјРµРЅС‘РЅ</option>
+   71:       <option value="scheduled">Запланирован</option>
+   72:       <option value="arrived">Прибыл</option>
+   73:       <option value="done">Завершён</option>
+   74:       <option value="cancelled">Отменён</option>
    75:     </select>
    76:   </label>
    77: 
-   78:   <!-- РљРѕРјРјРµРЅС‚Р°СЂРёР№ -->
+   78:   <!-- Комментарий -->
    79:   <label style="grid-column:1/-1;">
-   80:     <div>РљРѕРјРјРµРЅС‚Р°СЂРёР№</div>
+   80:     <div>Комментарий</div>
    81:     <textarea name="comment" rows="3" style="width:100%;padding:8px;border:1px solid #dbeafd;border-radius:8px;"></textarea>
    82:   </label>
    83: 
    84:   <div style="grid-column:1/-1;display:flex;gap:12px;">
-   85:     <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;border-radius:8px;padding:10px 18px;">РЎРѕР·РґР°С‚СЊ</button>
-   86:     <a href="{{ url_for('calendar_view') }}" class="btn" style="padding:10px 14px;border:1px solid #dbeafd;border-radius:8px;">РћС‚РјРµРЅР°</a>
+   85:     <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;border-radius:8px;padding:10px 18px;">Создать</button>
+   86:     <a href="{{ url_for('calendar_view') }}" class="btn" style="padding:10px 14px;border:1px solid #dbeafd;border-radius:8px;">Отмена</a>
    87:   </div>
    88: </form>
    89: {% endblock %}
@@ -115,13 +115,13 @@
   115:     const start = new Date(sVal);
   116:     const end = addMinutes(start, dur);
   117:     endInp.value = isoLocal(end);
-  118:     hint.textContent = `Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ: ${dur} РјРёРЅ. РљРѕРЅРµС†: ${endInp.value.split('T')[1]}`;
+  118:     hint.textContent = `Длительность: ${dur} мин. Конец: ${endInp.value.split('T')[1]}`;
   119:   }
   120: 
   121:   serviceSel?.addEventListener('change', recalcEnd);
   122:   startInp?.addEventListener('change', recalcEnd);
   123: 
-  124:   // РџРѕРґСЃРєР°Р·РєР° Р·Р°РЅСЏС‚С‹С… РёРЅС‚РµСЂРІР°Р»РѕРІ РїРѕ РєР°Р±РёРЅРµС‚Сѓ Рё РґР°С‚Рµ
+  124:   // Подсказка занятых интервалов по кабинету и дате
   125:   function refreshBusy(){
   126:     const roomId = roomSel.value;
   127:     const sVal = startInp.value;
@@ -130,12 +130,12 @@
   130:     fetch(`/api/rooms/busy?room_id=${encodeURIComponent(roomId)}&date=${date}`)
   131:       .then(r => r.json())
   132:       .then(data => {
-  133:         if (!data.ok) { busyHint.textContent = 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°РЅСЏС‚РѕСЃС‚СЊ'; return; }
-  134:         if (!data.items.length) { busyHint.textContent = 'РЎРІРѕР±РѕРґРЅРѕ РІРµСЃСЊ РґРµРЅСЊ'; return; }
-  135:         const txt = data.items.map(i => `${i.start}вЂ“${i.end}`).join(', ');
-  136:         busyHint.textContent = `Р—Р°РЅСЏС‚Рѕ: ${txt}`;
+  133:         if (!data.ok) { busyHint.textContent = 'Не удалось загрузить занятость'; return; }
+  134:         if (!data.items.length) { busyHint.textContent = 'Свободно весь день'; return; }
+  135:         const txt = data.items.map(i => `${i.start}–${i.end}`).join(', ');
+  136:         busyHint.textContent = `Занято: ${txt}`;
   137:       })
-  138:       .catch(()=> busyHint.textContent = 'РћС€РёР±РєР° СЃРµС‚Рё');
+  138:       .catch(()=> busyHint.textContent = 'Ошибка сети');
   139:   }
   140: 
   141:   roomSel?.addEventListener('change', refreshBusy);
