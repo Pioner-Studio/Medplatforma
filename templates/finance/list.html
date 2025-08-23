@@ -1,39 +1,85 @@
-{% extends "base.html" %}{% block content %}
-<h1>Финансы</h1>
-<p>Доходы: {{ income }} ₽ &nbsp; Расходы: {{ expense }} ₽</p>
+{% extends "_layout.html" %}
+{% block content %}
+<div class="cs-wrap">
+  <h1 class="cs-h1">Финансы</h1>
 
-<form method="get" class="mb-3">
-  <select name="type">
-    <option value="">Все типы</option>
-    <option value="income"  {{ 'selected' if f_type=='income'  else '' }}>Доход</option>
-    <option value="expense" {{ 'selected' if f_type=='expense' else '' }}>Расход</option>
-    <option value="deposit" {{ 'selected' if f_type=='deposit' else '' }}>Депозит</option>
-    <option value="salary"  {{ 'selected' if f_type=='salary'  else '' }}>ЗП</option>
-    <option value="purchase"{{ 'selected' if f_type=='purchase'else '' }}>Закупка</option>
-  </select>
-  <select name="source">
-    <option value="">Любой источник</option>
-    <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
-    <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
-    <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
-  </select>
-  <button class="btn btn-primary">Фильтр</button>
-  <a class="btn btn-success" href="{{ url_for('finance.add_get') }}">Внести</a>
-</form>
+  <div class="cs-cards">
+    <div class="cs-card"><div class="cs-metric-label">Доходы</div><div class="cs-metric-value">{{ income|default(0) }} ₽</div></div>
+    <div class="cs-card"><div class="cs-metric-label">Расходы</div><div class="cs-metric-value">{{ expense|default(0) }} ₽</div></div>
+    {% if by_source %}
+    <div class="cs-card">
+      <div class="cs-metric-label">Поступления по источникам</div>
+      <ul class="cs-ul">
+        {% for src, sum in by_source.items() %}
+          <li><span class="cs-pill">{{ src }}</span> {{ sum }} ₽</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
 
-<table class="table table-striped">
-  <thead><tr><th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Комментарий</th></tr></thead>
-  <tbody>
-    {% for x in items %}
-      <tr>
-        <td>{{ x.ts }}</td>
-        <td>{{ x.type }}</td>
-        <td>{{ x.source or '—' }}</td>
-        <td>{{ x.amount }}</td>
-        <td>{{ x.service_name or '—' }}</td>
-        <td>{{ x.note }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+  <form method="get" action="/finance" class="cs-toolbar">
+    <select name="type" class="cs-input">
+      <option value="">Все типы</option>
+      <option value="income"  {{ 'selected' if f_type=='income' else '' }}>Доход</option>
+      <option value="expense" {{ 'selected' if f_type=='expense' else '' }}>Расход</option>
+      <option value="deposit" {{ 'selected' if f_type=='deposit' else '' }}>Депозит</option>
+      <option value="salary"  {{ 'selected' if f_type=='salary' else '' }}>ЗП</option>
+      <option value="purchase"{{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
+    </select>
+
+    <select name="source" class="cs-input">
+      <option value="">Любой источник</option>
+      <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
+      <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
+      <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
+    </select>
+
+    <button class="cs-btn">Фильтр</button>
+    <a class="cs-link" href="/finance/add">Внести</a>
+    <a class="cs-link" href="/finance/report/cashbox">Касса</a>
+  </form>
+
+  <div class="cs-table-wrap">
+    <table class="cs-table">
+      <thead>
+        <tr><th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Комментарий</th></tr>
+      </thead>
+      <tbody>
+        {% for it in (items or []) %}
+          <tr>
+            <td>{{ it.ts }}</td>
+            <td>{{ it.type }}</td>
+            <td>{{ it.source }}</td>
+            <td>{{ it.amount }} ₽</td>
+            <td>{{ it.service_name }}</td>
+            <td>{{ it.note }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6" class="cs-empty">Записей нет</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+.cs-wrap{max-width:980px;margin:0 auto;padding:8px 12px 28px}
+.cs-h1{font-size:28px;margin:10px 0 14px}
+.cs-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:6px 0 12px}
+.cs-card{background:#fff;border:1px solid #eee;border-radius:14px;padding:12px 14px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.cs-metric-label{font-size:12px;color:#667;letter-spacing:.3px;text-transform:uppercase}
+.cs-metric-value{font-size:22px;margin-top:4px}
+.cs-ul{margin:6px 0 0 0;padding-left:16px}
+.cs-pill{display:inline-block;background:#f2f5ff;border:1px solid #cdd6ff;border-radius:999px;padding:2px 8px;margin-right:6px;font-size:12px}
+.cs-toolbar{display:flex;gap:10px;align-items:center;margin:14px 0 10px}
+.cs-input{padding:6px 10px;border:1px solid #d6d7dc;border-radius:8px}
+.cs-btn{background:#2e6cff;color:#fff;border:0;border-radius:10px;padding:8px 16px;cursor:pointer}
+.cs-link{margin-left:8px}
+.cs-table-wrap{overflow:auto}
+.cs-table{width:100%;border-collapse:separate;border-spacing:0 6px}
+.cs-table th{font-weight:600;font-size:13px;color:#444;text-align:left;padding:8px 10px}
+.cs-table td{background:#fff;border:1px solid #eee;border-left:none;border-right:none;padding:10px;border-radius:6px}
+.cs-empty{text-align:center;color:#777}
+</style>
 {% endblock %}

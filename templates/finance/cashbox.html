@@ -1,0 +1,30 @@
+{% extends "_layout.html" %}
+{% block content %}
+<h1 class="h1">Касса</h1>
+
+<div class="grid">
+  <div class="card">
+    <div class="muted">Доходы</div>
+    <div style="font-size:28px;font-weight:700">{{ income|default(0) }} ₽</div>
+  </div>
+  <div class="card">
+    <div class="muted">Расходы</div>
+    <div style="font-size:28px;font-weight:700">{{ expense|default(0) }} ₽</div>
+  </div>
+</div>
+
+<div class="space"></div>
+
+<div class="card">
+  <div class="muted" style="margin-bottom:8px">Поступления по источникам</div>
+  <div class="toolbar">
+    <span class="pill">Альфа — {{ by_source.alpha|default(0) }} ₽</span>
+    <span class="pill">Сбер — {{ by_source.sber|default(0) }} ₽</span>
+    <span class="pill">Нал — {{ by_source.cash|default(0) }} ₽</span>
+  </div>
+  <div class="space"></div>
+  <a class="link" href="/finance?source=alpha">Фильтр: Альфа</a> ·
+  <a class="link" href="/finance?source=sber">Сбер</a> ·
+  <a class="link" href="/finance?source=cash">Нал</a>
+</div>
+{% endblock %}

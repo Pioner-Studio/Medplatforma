@@ -146,10 +146,10 @@ def report_cashbox():
 
     # Источники поступлений
     by_source = {}
-    for op in db.finance_ops.find({"type":"income"}):
-        src = op.get("source") or "unknown"
-        by_source.setdefault(src, 0)
-        by_source[src] += int(op.get("amount",0) or 0)
+    for op in ops:
+        if op.get("type") == "income":
+            src = op.get("source") or "unknown"
+            by_source[src] = by_source.get(src, 0) + int(op.get("amount",0) or 0)
 
     return render_template(
         "finance/list.html",
