@@ -17,6 +17,8 @@ from pymongo import MongoClient, ReturnDocument
 import urllib
 from dotenv import load_dotenv
 
+load_dotenv()
+
 # --- optional (markdown может отсутствовать)
 try:
     import pandas as pd  # для экспортов/отчётов
@@ -60,20 +62,26 @@ def write_log(action, comment="", obj="", extra=None):
 load_dotenv()  # загружаем config.env
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-me")
+app.secret_key = os.getenv("SECRET_KEY", "dev")
 
+# Mongo
 MONGO_URI = os.getenv("MONGO_URI")
-MONGO_DB  = os.getenv("MONGO_DB",  "medplatforma")
-
-client = MongoClient(MONGO_URI)
+MONGO_DB  = os.getenv("MONGO_DB", "medplatforma")
+client = MongoClient(MONGO_URI)             # можно использовать твой уже готовый клиент
 db = client[MONGO_DB]
 
-# --- Register finance blueprint ---
+# ВАЖНО: отдаём DB блюпринтам
+app.config["DB"] = db
+
+# --- финмодуль: импорт и регистрация блюпринта ---
 try:
-    from routes_finance import bp_finance
-    app.register_blueprint(bp_finance, url_prefix="/finance")
+    # в routes_finance.py блюпринт называется bp
+    from routes_finance import bp as bp_finance
+    # url_prefix уже задан внутри файла: Blueprint("finance", ..., url_prefix="/finance")
+    app.register_blueprint(bp_finance)
 except Exception as e:
     print(f"[WARN] routes_finance не подключён: {e}")
+    
 def parse_iso(dt_str):
     # FullCalendar шлет ISO, иногда без миллисекунд
     # Пример: '2025-08-10T00:00:00Z' или '2025-08-10'
