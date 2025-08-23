@@ -79,32 +79,39 @@ def add_get():
 def add_post():
     db = get_db()
 
-    kind   = (request.form.get("type") or "").strip()          # income | expense | deposit | salary | purchase
-    source = (request.form.get("source") or "").strip()        # alpha | sber | cash
-    svc_id = (request.form.get("service_id") or "").strip()    # строго из справочника
+    kind   = (request.form.get("type") or "").strip()          # income|expense|deposit|salary|purchase
+    source = (request.form.get("source") or "").strip()        # alpha|sber|cash
+    svc_id = (request.form.get("service_id") or "").strip()
     note   = (request.form.get("note") or "").strip()
 
-    # ВАЖНО: жёсткая блокировка ручной цены — цену берём из services
+    amount = 0
     svc_oid = None
-    if svc_id:
-        try:
-            svc_oid = ObjectId(svc_id)
-        except Exception:
-            svc_oid = None
 
-    price = 0
-    if svc_oid:
-        svc = db.services.find_one({"_id": svc_oid}, {"price":1})
-        price = int((svc or {}).get("price", 0) or 0)
+    if kind == "income":
+        # только из прайса
+        if svc_id:
+            try:
+                svc_oid = ObjectId(svc_id)
+            except Exception:
+                svc_oid = None
+        if svc_oid:
+            svc = db.services.find_one({"_id": svc_oid}, {"price": 1})
+            amount = int((svc or {}).get("price", 0) or 0)
+    else:
+        # вручную для расход/закупка/депозит/ЗП
+        try:
+            amount = int(request.form.get("amount", 0) or 0)
+        except ValueError:
+            amount = 0
 
     # Валидация
     errors = []
-    if kind not in ("income","expense","deposit","salary","purchase"):
+    if kind not in ("income", "expense", "deposit", "salary", "purchase"):
         errors.append("Некорректный тип операции.")
     if kind == "income" and not svc_oid:
         errors.append("Для дохода нужно выбрать услугу из прайса.")
-    if kind in ("income","expense") and price <= 0:
-        errors.append("Цена услуги не задана в прайсе.")
+    if amount <= 0:
+        errors.append("Сумма должна быть больше 0.")
 
     if errors:
         for e in errors:
@@ -114,11 +121,14 @@ def add_post():
     doc = {
         "type": kind,
         "source": source or None,
-        "service_id": svc_oid,
-        "amount": price,                     # только из прайса!
+        "service_id": svc_oid if kind == "income" else None,
+        "amount": amount,                        # income — из прайса, остальное — вручную
         "note": note,
         "created_at": datetime.utcnow(),
     }
+    if kind == "purchase":
+        doc["category"] = "purchase"
+
     db.finance_ops.insert_one(doc)
     flash("Операция сохранена.", "success")
     return redirect(url_for("finance.list_ops"))
@@ -140,23 +150,25 @@ def api_services():
 @bp.get("/report/cashbox")
 def report_cashbox():
     db = get_db()
-    income  = sum(int(x.get("amount",0) or 0) for x in db.finance_ops.find({"type":"income"}))
-    deposit = sum(int(x.get("amount",0) or 0) for x in db.finance_ops.find({"type":"deposit"}))
-    expense = sum(int(x.get("amount",0) or 0) for x in db.finance_ops.find({"type":{"$in":["expense","salary","purchase"]}}))
 
-    # Источники поступлений
-    by_source = {}
-    for op in ops:
-        if op.get("type") == "income":
-            src = op.get("source") or "unknown"
-            by_source[src] = by_source.get(src, 0) + int(op.get("amount",0) or 0)
+    income  = sum(int(x.get("amount", 0) or 0) for x in db.finance_ops.find({"type": "income"}))
+    deposit = sum(int(x.get("amount", 0) or 0) for x in db.finance_ops.find({"type": "deposit"}))
+    expense = sum(
+        int(x.get("amount", 0) or 0)
+        for x in db.finance_ops.find({"type": {"$in": ["expense", "salary", "purchase"]}})
+    )
+
+    # Источники поступлений (считаем только доходы)
+    by_source = {"alpha": 0, "sber": 0, "cash": 0}
+    for x in db.finance_ops.find({"type": "income"}, {"source": 1, "amount": 1}):
+        src = (x.get("source") or "").lower()
+        if src in by_source:
+            by_source[src] += int(x.get("amount", 0) or 0)
 
     return render_template(
-        "finance/list.html",
-        items=[],
+        "finance/cashbox.html",
         income=income + deposit,
         expense=expense,
         by_source=by_source,
-        f_type="",
-        f_source=""
     )
+

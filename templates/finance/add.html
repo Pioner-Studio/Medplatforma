@@ -14,6 +14,11 @@
       </select>
     </div>
 
+    <div class="cs-row" id="amountRow" style="display:none">
+      <label class="cs-label">Сумма</label>
+      <input type="number" min="0" step="1" name="amount" class="cs-input" placeholder="0">
+    </div>
+
     <div class="cs-row">
       <label class="cs-label">Источник</label>
       <select name="source" class="cs-input">
@@ -48,14 +53,27 @@
 </div>
 
 <script>
-  (function(){
-    const params = new URLSearchParams(location.search);
-    const t = params.get('type');
-    if (t) { const sel = document.getElementById('typeSel'); if (sel) sel.value = t; }
-    const svcSel = document.getElementById('svcSel'), hint = document.getElementById('priceHint');
-    function updateHint(){ const opt = svcSel?.options[svcSel.selectedIndex]; const p = opt?opt.getAttribute('data-price'):null; hint.textContent = p ? ('Цена: ' + p + ' ₽') : 'Цена: —'; }
-    if (svcSel && hint){ svcSel.addEventListener('change', updateHint); updateHint(); }
-  })();
+(function(){
+  const params = new URLSearchParams(location.search);
+  const typeSel = document.getElementById('typeSel');
+  const svcRow  = document.getElementById('svcSel')?.closest('.cs-row');
+  const amountRow = document.getElementById('amountRow');
+
+  function toggleRows(){
+    const t = typeSel.value;
+    const isIncome = t === 'income';
+    if (svcRow)    svcRow.style.display = isIncome ? '' : 'none';
+    if (amountRow) amountRow.style.display = isIncome ? 'none' : '';
+  }
+
+  if (params.get('type')) { typeSel.value = params.get('type'); }
+  typeSel.addEventListener('change', toggleRows);
+  toggleRows();
+
+  const svcSel = document.getElementById('svcSel'), hint = document.getElementById('priceHint');
+  function updateHint(){ const opt = svcSel?.options[svcSel.selectedIndex]; const p = opt?opt.getAttribute('data-price'):null; hint.textContent = p ? ('Цена: ' + p + ' ₽') : 'Цена: —'; }
+  if (svcSel && hint){ svcSel.addEventListener('change', updateHint); updateHint(); }
+})();
 </script>
 
 <style>
