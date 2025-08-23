@@ -1,0 +1,39 @@
+{% extends "base.html" %}{% block content %}
+<h1>Внести операцию</h1>
+<form method="post">
+  <div>
+    <label>Тип</label>
+    <select name="type" required>
+      <option value="income">Доход (оплата услуги)</option>
+      <option value="expense">Расход</option>
+      <option value="deposit">Депозит</option>
+      <option value="salary">ЗП врача</option>
+      <option value="purchase">Деньги на закупку</option>
+    </select>
+  </div>
+  <div>
+    <label>Источник</label>
+    <select name="source">
+      <option value="">—</option>
+      <option value="alpha">Альфа</option>
+      <option value="sber">Сбер</option>
+      <option value="cash">Нал</option>
+    </select>
+  </div>
+  <div>
+    <label>Услуга (цена строго из прайса)</label>
+    <select name="service_id" id="service_id">
+      <option value="">—</option>
+      {% for s in services %}
+        <option value="{{ s._id }}">{{ s.name }} — {{ s.price }} ₽</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Комментарий</label>
+    <input name="note" />
+  </div>
+  <button class="btn btn-primary">Сохранить</button>
+  <a class="btn btn-link" href="{{ url_for('finance.list_ops') }}">Отмена</a>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}{% block content %}
+<h1>Финансы</h1>
+<p>Доходы: {{ income }} ₽ &nbsp; Расходы: {{ expense }} ₽</p>
+
+<form method="get" class="mb-3">
+  <select name="type">
+    <option value="">Все типы</option>
+    <option value="income"  {{ 'selected' if f_type=='income'  else '' }}>Доход</option>
+    <option value="expense" {{ 'selected' if f_type=='expense' else '' }}>Расход</option>
+    <option value="deposit" {{ 'selected' if f_type=='deposit' else '' }}>Депозит</option>
+    <option value="salary"  {{ 'selected' if f_type=='salary'  else '' }}>ЗП</option>
+    <option value="purchase"{{ 'selected' if f_type=='purchase'else '' }}>Закупка</option>
+  </select>
+  <select name="source">
+    <option value="">Любой источник</option>
+    <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
+    <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
+    <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
+  </select>
+  <button class="btn btn-primary">Фильтр</button>
+  <a class="btn btn-success" href="{{ url_for('finance.add_get') }}">Внести</a>
+</form>
+
+<table class="table table-striped">
+  <thead><tr><th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Комментарий</th></tr></thead>
+  <tbody>
+    {% for x in items %}
+      <tr>
+        <td>{{ x.ts }}</td>
+        <td>{{ x.type }}</td>
+        <td>{{ x.source or '—' }}</td>
+        <td>{{ x.amount }}</td>
+        <td>{{ x.service_name or '—' }}</td>
+        <td>{{ x.note }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
