@@ -21,13 +21,30 @@
   <form method="get" action="/finance" class="cs-toolbar">
     <select name="type" class="cs-input">
       <option value="">Все типы</option>
-      <option value="income"  {{ 'selected' if f_type=='income' else '' }}>Доход</option>
-      <option value="expense" {{ 'selected' if f_type=='expense' else '' }}>Расход</option>
-      <option value="deposit" {{ 'selected' if f_type=='deposit' else '' }}>Депозит</option>
-      <option value="salary"  {{ 'selected' if f_type=='salary' else '' }}>ЗП</option>
-      <option value="purchase"{{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
+      <option value="income"   {{ 'selected' if f_type=='income'   else '' }}>Доход</option>
+      <option value="expense"  {{ 'selected' if f_type=='expense'  else '' }}>Расход</option>
+      <option value="deposit"  {{ 'selected' if f_type=='deposit'  else '' }}>Депозит</option>
+      <option value="salary"   {{ 'selected' if f_type=='salary'   else '' }}>ЗП</option>
+      <option value="purchase" {{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
     </select>
 
+  {% if by_source %}
+  <div class="card" style="margin:10px 0; padding:10px; border:1px solid #e5e7eb; border-radius:10px; background:#fff">
+    <div class="muted" style="margin-top:6px">Поступления по источникам</div>
+    <div class="toolbar" style="display:flex; gap:8px; flex-wrap:wrap">
+      <span class="pill">Альфа — {{ by_source.get('alpha', 0) }} ₽</span>
+      <span class="pill">Сбер — {{ by_source.get('sber', 0) }} ₽</span>
+      <span class="pill">Нал — {{ by_source.get('cash', 0) }} ₽</span>
+  </div>
+  <div style="margin-top:6px">
+    Фильтр:
+    <a href="/finance">Все</a> ·
+    <a href="/finance?source=alpha">Альфа</a> ·
+    <a href="/finance?source=sber">Сбер</a> ·
+    <a href="/finance?source=cash">Нал</a>
+  </div>
+{% endif %}
+  
     <select name="source" class="cs-input">
       <option value="">Любой источник</option>
       <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
@@ -38,6 +55,10 @@
     <button class="cs-btn">Фильтр</button>
     <a class="cs-link" href="/finance/add">Внести</a>
     <a class="cs-link" href="/finance/add?type=purchase">Деньги на закупку</a>
+    <span style="margin-left:8px">Быстрые расходы:</span>
+    <a class="cs-link" href="/finance/add?type=expense&category=rent">Аренда</a>
+    <a class="cs-link" href="/finance/add?type=expense&category=marketing">Маркетинг</a>
+    <a class="cs-link" href="/finance/add?type=expense&category=dividends">Дивиденды</a>
     <a class="cs-link" href="/finance/report/cashbox">Касса</a>
   </form>
 
