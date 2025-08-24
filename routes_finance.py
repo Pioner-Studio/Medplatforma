@@ -66,6 +66,7 @@ def list_ops():
             "amount": int(op.get("amount", 0) or 0),
             "patient_id": str(op.get("patient_id") or "") or "",
             "service_name": (svc or {}).get("name", ""),
+            "category": op.get("category", ""),
             "note": op.get("note", "")
         })
 
@@ -90,7 +91,7 @@ def add_get():
         db.services.find({"is_active": True}, {"name": 1, "price": 1}).sort("name", 1)
     )
 
-    # пресеты из querystring: /finance/add?type=expense&category=rent
+    # пресеты из querystring (для быстрых ссылок)
     preset_type = (request.args.get("type") or "").strip()
     preset_category = (request.args.get("category") or "").strip()
 
@@ -157,17 +158,18 @@ def add_post():
         "created_at": datetime.utcnow(),
     }
 
-    # категория для расходов
-    if kind in ("expense", "purchase"):
-        if category:
-            doc["category"] = category
-        elif kind == "purchase":
-            # если пришли по ссылке «Деньги на закупку» без category — проставим по умолчанию
-            doc["category"] = "purchase"
+    # Категория расходов:
+    # - для отдельного типа purchase — фиксируем 'purchase'
+    # - для обычного expense — берём из формы (быстрые ссылки)
+    if kind == "purchase":
+        doc["category"] = "purchase"
+    elif kind == "expense" and category:
+        doc["category"] = category
 
     db.finance_ops.insert_one(doc)
     flash("Операция сохранена.", "success")
     return redirect(url_for("finance.list_ops"))
+
 
 # -------------------------
 # API: список услуг (для JS)

@@ -61,35 +61,41 @@
 
 <script>
 (function(){
-  const params = new URLSearchParams(location.search);
+  // Пресеты с сервера (если пришли из быстрых ссылок)
+  const PRESET_TYPE = "{{ preset_type or '' }}";
+  const PRESET_CATEGORY = "{{ preset_category or '' }}";
+
+  const form = document.getElementById('financeAddForm');
   const typeSel = document.getElementById('typeSel');
   const svcRow  = document.getElementById('svcSel')?.closest('.cs-row');
   const amountRow = document.getElementById('amountRow');
   const hiddenCategory = document.getElementById('hiddenCategory');
 
-  // выбрать тип из пресета/URL
-  const presetType = (window.__preset_type__ || params.get('type') || '').trim();
-  if (presetType && typeSel) typeSel.value = presetType;
+  // Если пришёл пресет типа — подставим
+  if (PRESET_TYPE) typeSel.value = PRESET_TYPE;
+  if (PRESET_CATEGORY && hiddenCategory) hiddenCategory.value = PRESET_CATEGORY;
 
+  // Переключение видимости сумм/услуг
   function toggleRows(){
     const t = typeSel.value;
     const isIncome = t === 'income';
     if (svcRow)    svcRow.style.display = isIncome ? '' : 'none';
     if (amountRow) amountRow.style.display = isIncome ? 'none' : '';
+
+    // если выбрали не income — услуга не обязательна
+    const svcSel = document.getElementById('svcSel');
+    if (svcSel) svcSel.required = isIncome;
   }
+
   typeSel.addEventListener('change', toggleRows);
   toggleRows();
 
-  // категория берётся из querystring ?category=...
-  const qCategory = (params.get('category') || '').trim();
-  if (hiddenCategory && qCategory) hiddenCategory.value = qCategory;
-
-  // подсказка цены (если доход)
-  const svcSel = document.getElementById('svcSel'),
-        hint   = document.getElementById('priceHint');
+  // Подсказка цены
+  const svcSel = document.getElementById('svcSel');
+  const hint = document.getElementById('priceHint');
   function updateHint(){
     const opt = svcSel?.options[svcSel.selectedIndex];
-    const p   = opt ? opt.getAttribute('data-price') : null;
+    const p = opt ? opt.getAttribute('data-price') : null;
     if (hint) hint.textContent = p ? ('Цена: ' + p + ' ₽') : 'Цена: —';
   }
   if (svcSel && hint){ svcSel.addEventListener('change', updateHint); updateHint(); }
