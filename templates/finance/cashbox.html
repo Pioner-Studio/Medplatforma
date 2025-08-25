@@ -22,6 +22,17 @@
     <span class="pill">Сбер — {{ by_source.sber|default(0) }} ₽</span>
     <span class="pill">Нал — {{ by_source.cash|default(0) }} ₽</span>
   </div>
+<div class="card">
+  <div class="muted" style="margin-bottom:8px">Расходы по категориям</div>
+  <div class="toolbar">
+    {% for cat, sum in (by_category or {}).items() %}
+      <span class="pill">{{ cat }} — {{ sum }} ₽</span>
+    {% else %}
+      <span class="muted">нет данных</span>
+    {% endfor %}
+  </div>
+</div>
+
   <div class="space"></div>
   <a class="link" href="/finance?source=alpha">Фильтр: Альфа</a> ·
   <a class="link" href="/finance?source=sber">Сбер</a> ·

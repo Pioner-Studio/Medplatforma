@@ -61,36 +61,34 @@
 
 <script>
 (function(){
-  // Пресеты с сервера (если пришли из быстрых ссылок)
   const PRESET_TYPE = "{{ preset_type or '' }}";
   const PRESET_CATEGORY = "{{ preset_category or '' }}";
 
-  const form = document.getElementById('financeAddForm');
+  const params = new URLSearchParams(location.search);
   const typeSel = document.getElementById('typeSel');
-  const svcRow  = document.getElementById('svcSel')?.closest('.cs-row');
   const amountRow = document.getElementById('amountRow');
   const hiddenCategory = document.getElementById('hiddenCategory');
 
-  // Если пришёл пресет типа — подставим
+  // тип из query или пресета
+  if (params.get('type')) typeSel.value = params.get('type');
   if (PRESET_TYPE) typeSel.value = PRESET_TYPE;
-  if (PRESET_CATEGORY && hiddenCategory) hiddenCategory.value = PRESET_CATEGORY;
 
-  // Переключение видимости сумм/услуг
+  // категория из query или пресета
+  const cat = PRESET_CATEGORY || params.get('category') || '';
+  if (hiddenCategory) hiddenCategory.value = cat;
+
   function toggleRows(){
-    const t = typeSel.value;
-    const isIncome = t === 'income';
-    if (svcRow)    svcRow.style.display = isIncome ? '' : 'none';
+    const isIncome = typeSel.value === 'income';
+    // сумма видна для НЕ доходов
     if (amountRow) amountRow.style.display = isIncome ? 'none' : '';
-
-    // если выбрали не income — услуга не обязательна
-    const svcSel = document.getElementById('svcSel');
-    if (svcSel) svcSel.required = isIncome;
+    // услуга видна только для доходов
+    const svcRow = document.getElementById('svcSel')?.closest('.cs-row');
+    if (svcRow) svcRow.style.display = isIncome ? '' : 'none';
   }
-
   typeSel.addEventListener('change', toggleRows);
   toggleRows();
 
-  // Подсказка цены
+  // подсказка цены услуги
   const svcSel = document.getElementById('svcSel');
   const hint = document.getElementById('priceHint');
   function updateHint(){

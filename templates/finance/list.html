@@ -19,54 +19,47 @@
   </div>
 
   <form method="get" action="/finance" class="cs-toolbar">
-    <select name="type" class="cs-input">
-      <option value="">Все типы</option>
-      <option value="income"   {{ 'selected' if f_type=='income'   else '' }}>Доход</option>
-      <option value="expense"  {{ 'selected' if f_type=='expense'  else '' }}>Расход</option>
-      <option value="deposit"  {{ 'selected' if f_type=='deposit'  else '' }}>Депозит</option>
-      <option value="salary"   {{ 'selected' if f_type=='salary'   else '' }}>ЗП</option>
-      <option value="purchase" {{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
-    </select>
 
-  {% if by_source %}
-  <div class="card" style="margin:10px 0; padding:10px; border:1px solid #e5e7eb; border-radius:10px; background:#fff">
-    <div class="muted" style="margin-top:6px">Поступления по источникам</div>
-    <div class="toolbar" style="display:flex; gap:8px; flex-wrap:wrap">
-      <span class="pill">Альфа — {{ by_source.get('alpha', 0) }} ₽</span>
-      <span class="pill">Сбер — {{ by_source.get('sber', 0) }} ₽</span>
-      <span class="pill">Нал — {{ by_source.get('cash', 0) }} ₽</span>
-  </div>
-  <div style="margin-top:6px">
-    Фильтр:
-    <a href="/finance">Все</a> ·
-    <a href="/finance?source=alpha">Альфа</a> ·
-    <a href="/finance?source=sber">Сбер</a> ·
-    <a href="/finance?source=cash">Нал</a>
-  </div>
-{% endif %}
-  
-    <select name="source" class="cs-input">
-      <option value="">Любой источник</option>
-      <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
-      <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
-      <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
-    </select>
+  <!-- Тип операции -->
+  <select name="type" class="cs-input" title="Тип">
+  <option value="">Все типы</option>
+  <option value="income"   {{ 'selected' if f_type=='income'   else '' }}>Доход</option>
+  <option value="expense"  {{ 'selected' if f_type=='expense'  else '' }}>Расход</option>
+  <option value="deposit"  {{ 'selected' if f_type=='deposit'  else '' }}>Депозит</option>
+  <option value="salary"   {{ 'selected' if f_type=='salary'   else '' }}>ЗП</option>
+  <option value="purchase" {{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
+</select>
 
-    <button class="cs-btn">Фильтр</button>
-    <a class="cs-link" href="/finance/add">Внести</a>
-    <a class="cs-link" href="/finance/add?type=purchase">Деньги на закупку</a>
-    <span style="margin-left:8px">Быстрые расходы:</span>
-    <a class="cs-link" href="/finance/add?type=expense&category=rent">Аренда</a>
-    <a class="cs-link" href="/finance/add?type=expense&category=marketing">Маркетинг</a>
-    <a class="cs-link" href="/finance/add?type=expense&category=dividends">Дивиденды</a>
-    <a class="cs-link" href="/finance/report/cashbox">Касса</a>
-  </form>
+<select name="category" class="cs-input" title="Категория">
+  <option value="">Любая категория</option>
+  <option value="purchase"  {{ 'selected' if f_category=='purchase'  else '' }}>Закупка</option>
+  <option value="rent"      {{ 'selected' if f_category=='rent'      else '' }}>Аренда</option>
+  <option value="marketing" {{ 'selected' if f_category=='marketing' else '' }}>Маркетинг</option>
+  <option value="dividends" {{ 'selected' if f_category=='dividends' else '' }}>Дивиденды</option>
+</select>
+
+<select name="source" class="cs-input" title="Источник">
+  <option value="">Любой источник</option>
+  <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
+  <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
+  <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
+</select>
+
+<button class="cs-btn" type="submit">Фильтр</button>
+
+  <span style="margin-left:8px">Быстрые расходы:</span>
+  <a class="cs-link" href="/finance/add?type=expense&category=rent">Аренда</a>
+  <a class="cs-link" href="/finance/add?type=expense&category=marketing">Маркетинг</a>
+  <a class="cs-link" href="/finance/add?type=expense&category=dividends">Дивиденды</a>
+  <a class="cs-link" href="/finance/add?type=purchase">Касса</a>
+</form>
 
   <div class="cs-table-wrap">
     <table class="cs-table">
       <thead>
-        <tr><th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Комментарий</th></tr>
+        <tr><th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Категория</th><th>Комментарий</th></tr>
       </thead>
+
       <tbody>
         {% for it in (items or []) %}
           <tr>
@@ -75,6 +68,7 @@
             <td>{{ it.source }}</td>
             <td>{{ it.amount }} ₽</td>
             <td>{{ it.service_name }}</td>
+            <td>{{ it.category or '—' }}</td>
             <td>{{ it.note }}</td>
           </tr>
         {% else %}

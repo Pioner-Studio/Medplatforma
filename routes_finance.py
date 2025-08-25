@@ -23,38 +23,46 @@ def get_db():
 def list_ops():
     db = get_db()
 
-    # фильтры из querystring
-    f_type   = (request.args.get("type") or "").strip()     # income|expense|deposit|salary|purchase
-    f_source = (request.args.get("source") or "").strip()   # alpha|sber|cash
+    # --- фильтры из querystring ---
+    f_type     = (request.args.get("type") or "").strip()      # income|expense|deposit|salary|purchase
+    f_source   = (request.args.get("source") or "").strip()    # alpha|sber|cash
+    f_category = (request.args.get("category") or "").strip()  # purchase|rent|marketing|dividends
 
-    # запрос к БД
+    # --- запрос к БД по фильтрам ---
     q = {}
     if f_type:
         q["type"] = f_type
     if f_source:
         q["source"] = f_source
+    if f_category:
+        q["category"] = f_category
 
     ops = list(db.finance_ops.find(q).sort("created_at", -1).limit(500))
 
-    # Разбивка поступлений по источникам (только income)
-    by_source = {}
-    for op in ops:
-        if op.get("type") == "income":
-            src = (op.get("source") or "unknown").lower()
-            by_source[src] = by_source.get(src, 0) + int(op.get("amount", 0) or 0)
-
-    # Подтянем имена услуг
+    # --- имена услуг для отображения ---
     service_ids = [op.get("service_id") for op in ops if op.get("service_id")]
     svc_map = {}
     if service_ids:
         cur = db.services.find({"_id": {"$in": service_ids}}, {"name": 1, "price": 1})
         svc_map = {s["_id"]: s for s in cur}
 
-    # Сводные суммы
-    income  = sum(int(op.get("amount", 0) or 0) for op in ops if op.get("type") in ("income",))
+    # --- сводные суммы по текущей выборке ---
+    income  = sum(int(op.get("amount", 0) or 0) for op in ops if op.get("type") == "income")
     expense = sum(int(op.get("amount", 0) or 0) for op in ops if op.get("type") in ("expense", "salary", "purchase"))
 
-    # Представление для таблицы
+    # --- карточка «Поступления по источникам» (всегда по всем доходам) ---
+    by_source = {}
+    for op in db.finance_ops.find({"type": "income"}):
+        src = (op.get("source") or "unknown").lower()
+        by_source[src] = by_source.get(src, 0) + int(op.get("amount", 0) or 0)
+
+    # --- карточка «Расходы по категориям» (всегда по всем расходам) ---
+    by_category = {}
+    for op in db.finance_ops.find({"type": {"$in": ["expense", "purchase"]}}):
+        cat = op.get("category") or "other"
+        by_category[cat] = by_category.get(cat, 0) + int(op.get("amount", 0) or 0)
+
+    # --- подготовка к шаблону ---
     view = []
     for op in ops:
         svc = svc_map.get(op.get("service_id"))
@@ -64,9 +72,8 @@ def list_ops():
             "type": op.get("type", ""),
             "source": op.get("source", ""),
             "amount": int(op.get("amount", 0) or 0),
-            "patient_id": str(op.get("patient_id") or "") or "",
             "service_name": (svc or {}).get("name", ""),
-            "category": op.get("category", ""),
+            "category": op.get("category"),
             "note": op.get("note", "")
         })
 
@@ -76,10 +83,11 @@ def list_ops():
         income=income,
         expense=expense,
         by_source=by_source,
+        by_category=by_category,
         f_type=f_type,
         f_source=f_source,
+        f_category=f_category,
     )
-
 
 # -------------------------
 # Форма «Внести» (GET)
@@ -109,17 +117,19 @@ def add_get():
 def add_post():
     db = get_db()
 
-    kind   = (request.form.get("type") or "").strip()          # income|expense|deposit|salary|purchase
-    source = (request.form.get("source") or "").strip()        # alpha|sber|cash
+    kind   = (request.form.get("type") or "").strip()      # income|expense|deposit|salary|purchase
+    source = (request.form.get("source") or "").strip()    # alpha|sber|cash
     svc_id = (request.form.get("service_id") or "").strip()
     note   = (request.form.get("note") or "").strip()
-    category = (request.form.get("category") or "").strip()    # аренда/маркетинг/дивиденды/закупка и т.п.
+
+    # категория приходит скрытым полем с формы add.html (быстрые ссылки её подставляют)
+    form_category = (request.form.get("category") or "").strip()
 
     amount = 0
     svc_oid = None
 
     if kind == "income":
-        # только из прайса
+        # доход: сумма строго из прайса по выбранной услуге
         if svc_id:
             try:
                 svc_oid = ObjectId(svc_id)
@@ -129,13 +139,13 @@ def add_post():
             svc = db.services.find_one({"_id": svc_oid}, {"price": 1})
             amount = int((svc or {}).get("price", 0) or 0)
     else:
-        # вручную для расход/закупка/депозит/ЗП
+        # не доход: сумма вручную
         try:
             amount = int(request.form.get("amount", 0) or 0)
         except ValueError:
             amount = 0
 
-    # Валидация
+    # базовая валидация
     errors = []
     if kind not in ("income", "expense", "deposit", "salary", "purchase"):
         errors.append("Некорректный тип операции.")
@@ -143,33 +153,32 @@ def add_post():
         errors.append("Для дохода нужно выбрать услугу из прайса.")
     if amount <= 0:
         errors.append("Сумма должна быть больше 0.")
-
     if errors:
         for e in errors:
             flash(e, "danger")
         return redirect(url_for("finance.add_get"))
 
+    # вычисляем итоговую категорию
+    category = None
+    if kind == "purchase":
+        category = "purchase"
+    elif kind == "expense":
+        category = form_category or None  # (rent|marketing|dividends|...)
+
+    # итоговый документ
     doc = {
         "type": kind,
         "source": source or None,
         "service_id": (svc_oid if kind == "income" else None),
         "amount": amount,
+        "category": category,   # только для expense/purchase; для остальных — None
         "note": note,
         "created_at": datetime.utcnow(),
     }
 
-    # Категория расходов:
-    # - для отдельного типа purchase — фиксируем 'purchase'
-    # - для обычного expense — берём из формы (быстрые ссылки)
-    if kind == "purchase":
-        doc["category"] = "purchase"
-    elif kind == "expense" and category:
-        doc["category"] = category
-
     db.finance_ops.insert_one(doc)
     flash("Операция сохранена.", "success")
     return redirect(url_for("finance.list_ops"))
-
 
 # -------------------------
 # API: список услуг (для JS)
@@ -190,22 +199,29 @@ def api_services():
 def report_cashbox():
     db = get_db()
 
-    # Сводные суммы по типам
-    income  = sum(int(x.get("amount", 0) or 0) for x in db.finance_ops.find({"type": "income"}))
-    deposit = sum(int(x.get("amount", 0) or 0) for x in db.finance_ops.find({"type": "deposit"}))
-    expense = sum(int(x.get("amount", 0) or 0) for x in db.finance_ops.find({
-        "type": {"$in": ["expense", "salary", "purchase"]}
-    }))
+    # Сводные суммы
+    income  = sum(int(x.get("amount",0) or 0) for x in db.finance_ops.find({"type":"income"}))
+    deposit = sum(int(x.get("amount",0) or 0) for x in db.finance_ops.find({"type":"deposit"}))
+    expense = sum(int(x.get("amount",0) or 0) for x in db.finance_ops.find({"type":{"$in":["expense","salary","purchase"]}}))
 
-    # Поступления по источникам (только доходы)
-    by_source: dict[str, int] = {}
-    for op in db.finance_ops.find({"type": "income"}):
+    # Источники доходов (как у тебя)
+    by_source = {}
+    for op in db.finance_ops.find({"type":"income"}):
         src = (op.get("source") or "unknown").lower()
-        by_source[src] = by_source.get(src, 0) + int(op.get("amount", 0) or 0)
+        by_source[src] = by_source.get(src, 0) + int(op.get("amount",0) or 0)
+
+    # ⬇️ НОВОЕ: расходы по категориям
+    by_category = {}
+    for op in db.finance_ops.find({"type":{"$in":["expense","purchase"]}}):
+        cat = op.get("category") or "other"
+        by_category[cat] = by_category.get(cat, 0) + int(op.get("amount",0) or 0)
 
     return render_template(
-        "finance/cashbox.html",       # ВАЖНО: правильный шаблон
-        income=income + deposit,      # Доходы + депозиты
+        "finance/cashbox.html",
+        income=income + deposit,
         expense=expense,
         by_source=by_source,
+        by_category=by_category,
     )
+
+

@@ -64,6 +64,12 @@ load_dotenv()  # загружаем config.env
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev")
 
+# Авто‑перезагрузка шаблонов и отключение cache статики в dev
+app.config.update(
+    TEMPLATES_AUTO_RELOAD=True,
+    SEND_FILE_MAX_AGE_DEFAULT=0,
+)
+
 # Mongo
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB  = os.getenv("MONGO_DB", "medplatforma")
