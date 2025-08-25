@@ -117,19 +117,18 @@ def add_get():
 def add_post():
     db = get_db()
 
-    kind   = (request.form.get("type") or "").strip()      # income|expense|deposit|salary|purchase
-    source = (request.form.get("source") or "").strip()    # alpha|sber|cash
+    kind   = (request.form.get("type") or "").strip()          # income|expense|deposit|salary|purchase
+    source = (request.form.get("source") or "").strip()        # alpha|sber|cash
     svc_id = (request.form.get("service_id") or "").strip()
     note   = (request.form.get("note") or "").strip()
-
-    # категория приходит скрытым полем с формы add.html (быстрые ссылки её подставляют)
-    form_category = (request.form.get("category") or "").strip()
+    # категория приходит из hidden (заполняется быстрыми ссылками)
+    category_from_form = (request.form.get("category") or "").strip()
 
     amount = 0
     svc_oid = None
 
     if kind == "income":
-        # доход: сумма строго из прайса по выбранной услуге
+        # Для дохода берём цену услуги из прайса
         if svc_id:
             try:
                 svc_oid = ObjectId(svc_id)
@@ -139,13 +138,13 @@ def add_post():
             svc = db.services.find_one({"_id": svc_oid}, {"price": 1})
             amount = int((svc or {}).get("price", 0) or 0)
     else:
-        # не доход: сумма вручную
+        # Для расход/закупка/депозит/ЗП — сумма вручную
         try:
             amount = int(request.form.get("amount", 0) or 0)
         except ValueError:
             amount = 0
 
-    # базовая валидация
+    # Валидация
     errors = []
     if kind not in ("income", "expense", "deposit", "salary", "purchase"):
         errors.append("Некорректный тип операции.")
@@ -158,23 +157,24 @@ def add_post():
             flash(e, "danger")
         return redirect(url_for("finance.add_get"))
 
-    # вычисляем итоговую категорию
+    # Категория: фиксируем правила
     category = None
     if kind == "purchase":
-        category = "purchase"
+        category = "purchase"              # закупка — всегда своя категория
     elif kind == "expense":
-        category = form_category or None  # (rent|marketing|dividends|...)
+        category = category_from_form or None
 
-    # итоговый документ
+    # Документ к сохранению
     doc = {
         "type": kind,
         "source": source or None,
         "service_id": (svc_oid if kind == "income" else None),
         "amount": amount,
-        "category": category,   # только для expense/purchase; для остальных — None
         "note": note,
         "created_at": datetime.utcnow(),
     }
+    if category:            # добавляем поле только когда оно есть
+        doc["category"] = category
 
     db.finance_ops.insert_one(doc)
     flash("Операция сохранена.", "success")
