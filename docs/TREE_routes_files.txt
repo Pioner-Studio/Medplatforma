@@ -1,0 +1,12 @@
+﻿
+> │   routes_finance.py
+> │   routes_schedule.py
+  │   ru_catalogs.py
+  │   seed.py
+>         routes_finance.cpython-311.pyc
+>         routes_finance.cpython-312.pyc
+>         routes_schedule.cpython-312.pyc
+          ru_catalogs.cpython-311.pyc
+          
+
+

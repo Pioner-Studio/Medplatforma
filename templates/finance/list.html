@@ -1,124 +1,99 @@
 {% extends "_layout.html" %}
 {% block content %}
-<div class="cs-wrap">
-  <h1 class="cs-h1">Финансы</h1>
 
-  <div class="cs-cards">
-    <div class="cs-card"><div class="cs-metric-label">Доходы</div><div class="cs-metric-value">{{ income|default(0) }} ₽</div></div>
-    <div class="cs-card"><div class="cs-metric-label">Расходы</div><div class="cs-metric-value">{{ expense|default(0) }} ₽</div></div>
-    {% if by_source %}
-    <div class="cs-card">
-      <div class="cs-metric-label">Поступления по источникам</div>
-      <ul class="cs-ul">
-        {% for src, sum in by_source.items() %}
-          <li><span class="cs-pill">{{ src }}</span> {{ sum }} ₽</li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
+<h1 class="cs-h1">Финансы</h1>
+
+<!-- Верхняя панель действий: скачать/импорт -->
+<div class="cs-toolbar" style="margin:8px 0; display:flex; gap:12px; align-items:center;">
+  <!-- Экспорт (учитываем текущие фильтры) -->
+  <a class="cs-link" href="/finance/export/csv?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">Скачать CSV</a>
+  <a class="cs-link" href="/finance/export/json?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">Скачать JSON</a>
+
+  <!-- Импорт JSON -->
+  <form method="post" action="/finance/import/json" enctype="multipart/form-data" style="display:flex; gap:6px;">
+    <input type="file" name="file" accept="application/json" class="cs-input" required>
+    <button class="cs-btn">Импорт JSON</button>
+  </form>
+</div>
+
+<!-- МЕТРИКИ -->
+<div class="cs-cards">
+  <div class="cs-card"><div class="cs-metric-label">Доходы</div><div class="cs-metric-value">{{ income|default(0) }} ₽</div></div>
+  <div class="cs-card"><div class="cs-metric-label">Расходы</div><div class="cs-metric-value">{{ expense|default(0) }} ₽</div></div>
+
+  <div class="cs-card">
+    <div class="cs-metric-label">Поступления по источникам</div>
+    <ul class="cs-ul">
+      <li><span class="cs-pill">alpha</span> {{ by_source.alpha|default(0) }} ₽</li>
+      <li><span class="cs-pill">sber</span>  {{ by_source.sber|default(0)  }} ₽</li>
+      <li><span class="cs-pill">cash</span>  {{ by_source.cash|default(0)  }} ₽</li>
+    </ul>
   </div>
+</div>
 
-  <form method="get" action="/finance" class="cs-toolbar">
-
-  <!-- Тип операции -->
+<!-- === ФИЛЬТРЫ (ОТДЕЛЬНАЯ ФОРМА!) === -->
+<form method="get" action="/finance" class="cs-toolbar">
+  <!-- Тип -->
   <select name="type" class="cs-input" title="Тип">
-  <option value="">Все типы</option>
-  <option value="income"   {{ 'selected' if f_type=='income'   else '' }}>Доход</option>
-  <option value="expense"  {{ 'selected' if f_type=='expense'  else '' }}>Расход</option>
-  <option value="deposit"  {{ 'selected' if f_type=='deposit'  else '' }}>Депозит</option>
-  <option value="salary"   {{ 'selected' if f_type=='salary'   else '' }}>ЗП</option>
-  <option value="purchase" {{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
-</select>
+    <option value="">Все типы</option>
+    <option value="income"   {{ 'selected' if f_type=='income'   else '' }}>Доход</option>
+    <option value="expense"  {{ 'selected' if f_type=='expense'  else '' }}>Расход</option>
+    <option value="deposit"  {{ 'selected' if f_type=='deposit'  else '' }}>Депозит</option>
+    <option value="salary"   {{ 'selected' if f_type=='salary'   else '' }}>ЗП</option>
+    <option value="purchase" {{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
+  </select>
 
-<select name="category" class="cs-input" title="Категория">
-  <option value="">Любая категория</option>
-  <option value="purchase"  {{ 'selected' if f_category=='purchase'  else '' }}>Закупка</option>
-  <option value="rent"      {{ 'selected' if f_category=='rent'      else '' }}>Аренда</option>
-  <option value="marketing" {{ 'selected' if f_category=='marketing' else '' }}>Маркетинг</option>
-  <option value="dividends" {{ 'selected' if f_category=='dividends' else '' }}>Дивиденды</option>
-</select>
+  <!-- Категория расхода -->
+  <select name="category" class="cs-input" title="Категория">
+    <option value="">Любая категория</option>
+    <option value="purchase"  {{ 'selected' if f_category=='purchase'  else '' }}>Закупка</option>
+    <option value="rent"      {{ 'selected' if f_category=='rent'      else '' }}>Аренда</option>
+    <option value="marketing" {{ 'selected' if f_category=='marketing' else '' }}>Маркетинг</option>
+    <option value="dividends" {{ 'selected' if f_category=='dividends' else '' }}>Дивиденды</option>
+  </select>
 
-<select name="source" class="cs-input" title="Источник">
-  <option value="">Любой источник</option>
-  <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
-  <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
-  <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
-</select>
+  <!-- Источник -->
+  <select name="source" class="cs-input" title="Источник">
+    <option value="">Любой источник</option>
+    <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
+    <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
+    <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
+  </select>
 
-<button class="cs-btn" type="submit">Фильтр</button>
-
-<a class="cs-link" href="/finance/export/csv?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">Экспорт CSV</a>
-· <a class="cs-link" href="/finance/export/json?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">JSON</a>
-· <a class="cs-link" href="/finance/export/zip?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">ZIP</a>
-· <a class="cs-link" href="/finance/print?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}" target="_blank">Печать</a>
-
-<form method="post" action="/finance/import/json" enctype="multipart/form-data" style="display:inline-block; margin-left:10px">
-  <label class="cs-link" style="cursor:pointer">
-    Импорт JSON
-    <input type="file" name="file" accept=".json,application/json" style="display:none" onchange="this.form.submit()">
-  </label>
-</form>
-
+  <button type="submit" class="cs-btn">Фильтр</button>
 
   <span style="margin-left:8px">Быстрые операции:</span>
   <a class="cs-link" href="/finance/add?type=expense&category=rent">Аренда</a>
   <a class="cs-link" href="/finance/add?type=expense&category=marketing">Маркетинг</a>
   <a class="cs-link" href="/finance/add?type=expense&category=dividends">Дивиденды</a>
   <a class="cs-link" href="/finance/add?type=purchase">Касса</a>
-  <a class="cs-link" href="/finance/add?type=salary">ЗП</a>
-  <a class="cs-link" href="/finance/add?type=deposit">Депозит</a>
 </form>
 
-{% if deposits or salaries %}
-  <div class="muted" style="margin:6px 0">
-    {% if deposits %}<span class="pill">Депозиты — {{ deposits }} ₽</span>{% endif %}
-    {% if salaries %}<span class="pill">ЗП — {{ salaries }} ₽</span>{% endif %}
-  </div>
-{% endif %}
-
-  <div class="cs-table-wrap">
-    <table class="cs-table">
-      <thead>
-        <tr><th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Категория</th><th>Комментарий</th></tr>
-      </thead>
-
-      <tbody>
-        {% for it in (items or []) %}
-          <tr>
-            <td>{{ it.ts }}</td>
-            <td>{{ it.type }}</td>
-            <td>{{ it.source }}</td>
-            <td>{{ it.amount }} ₽</td>
-            {% set RU = {"purchase":"Закупка","marketing":"Маркетинг","dividends":"Дивиденды","rent":"Аренда"} %}
-            <td>{{ it.service_name }}</td>
-            <td>{{ it.category_ru }}</td>
-            <td>{{ it.note }}</td>
-          </tr>
-        {% else %}
-          <tr><td colspan="6" class="cs-empty">Записей нет</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<!-- ТАБЛИЦА -->
+<div class="cs-table-wrap">
+  <table class="cs-table">
+    <thead>
+      <tr>
+        <th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Категория</th><th>Комментарий</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set CAT_RU = {"purchase":"Закупка","marketing":"Маркетинг","dividends":"Дивиденды","rent":"Аренда"} %}
+      {% for it in (items or []) %}
+      <tr>
+        <td>{{ it.ts }}</td>
+        <td>{{ it.type }}</td>
+        <td>{{ it.source }}</td>
+        <td>{{ it.amount }} ₽</td>
+        <td>{{ it.service_name }}</td>
+        <td>{{ CAT_RU.get(it.category, '—') }}</td>
+        <td>{{ it.note }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="cs-empty">Записей нет</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
-<style>
-.cs-wrap{max-width:980px;margin:0 auto;padding:8px 12px 28px}
-.cs-h1{font-size:28px;margin:10px 0 14px}
-.cs-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:6px 0 12px}
-.cs-card{background:#fff;border:1px solid #eee;border-radius:14px;padding:12px 14px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
-.cs-metric-label{font-size:12px;color:#667;letter-spacing:.3px;text-transform:uppercase}
-.cs-metric-value{font-size:22px;margin-top:4px}
-.cs-ul{margin:6px 0 0 0;padding-left:16px}
-.cs-pill{display:inline-block;background:#f2f5ff;border:1px solid #cdd6ff;border-radius:999px;padding:2px 8px;margin-right:6px;font-size:12px}
-.cs-toolbar{display:flex;gap:10px;align-items:center;margin:14px 0 10px}
-.cs-input{padding:6px 10px;border:1px solid #d6d7dc;border-radius:8px}
-.cs-btn{background:#2e6cff;color:#fff;border:0;border-radius:10px;padding:8px 16px;cursor:pointer}
-.cs-link{margin-left:8px}
-.cs-table-wrap{overflow:auto}
-.cs-table{width:100%;border-collapse:separate;border-spacing:0 6px}
-.cs-table th{font-weight:600;font-size:13px;color:#444;text-align:left;padding:8px 10px}
-.cs-table td{background:#fff;border:1px solid #eee;border-left:none;border-right:none;padding:10px;border-radius:6px}
-.cs-empty{text-align:center;color:#777}
-</style>
 {% endblock %}

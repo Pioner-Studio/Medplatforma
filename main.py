@@ -9,8 +9,16 @@ from pathlib import Path
 # --- third-party
 from bson import ObjectId  # ОСТАВЛЯЕМ только ЭТОТ импорт ObjectId (без дубля из bson.objectid)
 from flask import (
-    Flask, Response, flash, jsonify, redirect,
-    render_template, request, send_file, session, url_for
+    Flask,
+    Response,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
 )
 from markupsafe import Markup
 from pymongo import MongoClient, ReturnDocument
@@ -30,6 +38,7 @@ try:
 except Exception:
     markdown = None
 
+
 # --- helpers (каноничные)
 def oid(s):
     """Безопасно преобразует строку в ObjectId или возвращает None."""
@@ -38,9 +47,11 @@ def oid(s):
     except Exception:
         return None
 
+
 def iso_now(dt=None):
     """YYYY-MM-DDTHH:MM (локальное время)."""
     return (dt or datetime.now()).strftime("%Y-%m-%dT%H:%M")
+
 
 def write_log(action, comment="", obj="", extra=None):
     """Лёгкое журналирование действий пользователя."""
@@ -58,36 +69,54 @@ def write_log(action, comment="", obj="", extra=None):
         log.update(extra)
     db.logs.insert_one(log)
 
-# --- Flask app + конфиг из .env
-load_dotenv()  # загружаем config.env
 
+# --- Flask app + конфиг из .env
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev")
 
-# Авто‑перезагрузка шаблонов и отключение cache статики в dev
+# Авто-перезагрузка шаблонов и отключение cache статики в dev
 app.config.update(
     TEMPLATES_AUTO_RELOAD=True,
     SEND_FILE_MAX_AGE_DEFAULT=0,
 )
 
-# Mongo
+# Mongo (через .env)
 MONGO_URI = os.getenv("MONGO_URI")
-MONGO_DB  = os.getenv("MONGO_DB", "medplatforma")
-client = MongoClient(MONGO_URI)             # можно использовать твой уже готовый клиент
-db = client[MONGO_DB]
+DB_NAME = os.getenv("DB_NAME", "medplatforma")
 
-# ВАЖНО: отдаём DB блюпринтам
+if not MONGO_URI:
+    raise RuntimeError("MONGO_URI is not set. Put it into .env")
+
+client = MongoClient(MONGO_URI)
+
+# Быстрая проверка соединения/авторизации
+try:
+    client.admin.command("ping")
+except Exception as e:
+    # Выведет понятное сообщение в консоль, если доступ не настроен
+    raise RuntimeError(f"MongoDB auth/connection failed: {e}")
+
+db = client[DB_NAME]
+
+# Регистрируем блюпринты
+from routes_schedule import bp as schedule_bp
+
+app.register_blueprint(schedule_bp, url_prefix="/schedule")
+
+# ВАЖНО: отдаём DB блюпринтам/роутам
 app.config["DB"] = db
 
 # --- финмодуль: импорт и регистрация блюпринта ---
 try:
     # в routes_finance.py блюпринт называется bp
     from routes_finance import bp as bp_finance
+
     # url_prefix уже задан внутри файла: Blueprint("finance", ..., url_prefix="/finance")
     app.register_blueprint(bp_finance)
 except Exception as e:
     print(f"[WARN] routes_finance не подключён: {e}")
-    
+
+
 def parse_iso(dt_str):
     # FullCalendar шлет ISO, иногда без миллисекунд
     # Пример: '2025-08-10T00:00:00Z' или '2025-08-10'
@@ -183,6 +212,7 @@ def fmt_hm(dt) -> str:
         dt = to_dt(dt)
     return dt.strftime("%H:%M") if dt else ""
 
+
 def to_minutes(t: str) -> int:
     h, m = map(int, t.split(":"))
     return h * 60 + m
@@ -221,6 +251,7 @@ def recalc_room_status(room_id):
         {"$set": {"status": new_status, "updated_at": datetime.utcnow()}},
     )
 
+
 def s(val):  # безопасная строка
     return (val or "").strip()
 
@@ -251,6 +282,7 @@ def make_card_no() -> str:
     n = next_seq("patient_card_no")
     return f"CT-{n:06d}"
 
+
 def main():
     parser = argparse.ArgumentParser(description="ClubStom docs/zip generator")
     parser.add_argument("--zip", action="store_true", help="сделать архив проекта в /exports")
@@ -280,6 +312,7 @@ def main():
             (DOCS / "LINT.md").write_text(report, encoding="utf-8")
             print(f"[OK] docs/LINT.md создан ({count} проблем)")
 
+
 # --- быстрая health‑проверка (смок-тест)
 @app.route("/healthz")
 def healthz():
@@ -288,6 +321,7 @@ def healthz():
         return jsonify({"ok": True, "db": MONGO_DB})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
 
 @app.route("/roadmap")
 def roadmap_view():
@@ -1218,28 +1252,6 @@ def messages():
     return render_template("messages.html", chats=chats, user_name=user_name)
 
 
-@app.route("/xray_room")
-def xray_room():
-    xrays = list(db.xrays.find())
-    patients = {str(p["_id"]): p for p in db.patients.find()}
-    doctors = {str(d["_id"]): d for d in db.doctors.find()}
-    # фильтры (добавь, если надо)
-    return render_template("xray_room.html", xrays=xrays, patients=patients, doctors=doctors)
-
-
-@app.route("/add_xray", methods=["GET", "POST"])
-def add_xray():
-    if request.method == "POST":
-        # Загружаем файл (image), сохраняем в /static/xrays/
-        # Вносим в коллекцию xrays все данные
-        # ...
-        flash("Снимок успешно добавлен!", "success")
-        return redirect(url_for("xray_room"))
-    patients = list(db.patients.find())
-    doctors = list(db.doctors.find())
-    return render_template("add_xray.html", patients=patients, doctors=doctors)
-
-
 from bson import ObjectId
 
 
@@ -1567,24 +1579,51 @@ def api_service_get(id):
     )
 
 
-# 1) Справочники для модалки
-@app.route("/api/dicts")
+# 1) Справочники для модалки (РАСШИРЕНО: +patients, +rooms)
+@app.route("/api/dicts", methods=["GET"])
 def api_dicts():
+    db = (
+        app.config["DB"] if "DB" in app.config else db
+    )  # на случай, если у тебя DB кладётся в app.config
+
+    # Врачи
     docs = list(db.doctors.find({}, {"full_name": 1}))
+    doctors = [{"id": str(x["_id"]), "name": x.get("full_name", "")} for x in docs]
+
+    # Услуги
     srvs = list(db.services.find({}, {"name": 1, "duration_min": 1, "price": 1}))
+    services = [
+        {
+            "id": str(x["_id"]),
+            "name": x.get("name", ""),
+            "duration_min": int(x.get("duration_min") or 30),
+            "price": x.get("price", 0),
+        }
+        for x in srvs
+    ]
+
+    # Пациенты
+    pats = list(db.patients.find({}, {"full_name": 1, "birthdate": 1}))
+    patients = [
+        {
+            "id": str(p["_id"]),
+            "name": p.get("full_name", "Без имени"),
+            "birthdate": p.get("birthdate"),
+        }
+        for p in pats
+    ]
+
+    # Кабинеты
+    rms = list(db.rooms.find({}, {"name": 1}))
+    rooms = [{"id": str(r["_id"]), "name": r.get("name", "Кабинет")} for r in rms]
+
     return jsonify(
         {
             "ok": True,
-            "doctors": [{"id": str(x["_id"]), "name": x.get("full_name", "")} for x in docs],
-            "services": [
-                {
-                    "id": str(x["_id"]),
-                    "name": x.get("name", ""),
-                    "duration_min": x.get("duration_min", 30),
-                    "price": x.get("price", 0),
-                }
-                for x in srvs
-            ],
+            "doctors": doctors,
+            "services": services,
+            "patients": patients,
+            "rooms": rooms,
         }
     )
 

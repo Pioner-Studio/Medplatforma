@@ -1,75 +1,109 @@
 <aside class="sidebar">
-  <div class="sidebar-header" style="padding: 24px 0 50px 0; display: flex; justify-content: center;">
-  <img src="{{ url_for('static', filename='logo_test123.png') }}" alt="ClubStom" class="sidebar-logo-img">
-</div>
+  <div
+    class="sidebar-header"
+    style="padding: 24px 0 50px 0; display: flex; justify-content: center"
+  >
+    <img
+      src="{{ url_for('static', filename='logo_test123.png') }}"
+      alt="ClubStom"
+      class="sidebar-logo-img"
+    />
+  </div>
   <nav>
     <ul>
       <li>
-        <a href="{{ url_for('calendar_view') }}"
-           class="{% if '/calendar' in request.path or request.path == '/' %}active{% endif %}">
+        <a
+          href="{{ url_for('calendar_view') }}"
+          class="{% if '/calendar' in request.path or request.path == '/' %}active{% endif %}"
+        >
           <i class="fa-solid fa-calendar-days"></i> Расписание
         </a>
       </li>
       <li>
-        <a href="{{ url_for('patients_list') }}"
-           class="{% if '/patients' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('patients_list') }}"
+          class="{% if '/patients' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-user-injured"></i> Пациенты
         </a>
       </li>
       <li>
-        <a href="{{ url_for('doctors') }}"
-           class="{% if '/doctors' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('doctors') }}"
+          class="{% if '/doctors' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-user-md"></i> Врачи
         </a>
       </li>
       <li>
-        <a href="{{ url_for('tasks') }}"
-           class="{% if '/tasks' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('tasks') }}"
+          class="{% if '/tasks' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-list-check"></i> Задачи
         </a>
       </li>
       <li>
-        <a href="{{ url_for('messages') }}"
-           class="{% if '/messages' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('messages') }}"
+          class="{% if '/messages' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-comments"></i> Сообщения
         </a>
       </li>
+
       <li>
-        <a href="{{ url_for('xray_room') }}"
-           class="{% if '/xray_room' in request.path %}active{% endif %}">
-          <i class="fa-solid fa-x-ray"></i> Рентген кабинет
-        </a>
+        <a href="{{ url_for('rooms_list') }}"
+          ><i class="fa-solid fa-door-open"></i> Кабинеты</a
+        >
       </li>
-      <li><a href="{{ url_for('rooms_list') }}"><i class="fa-solid fa-door-open"></i> Кабинеты</a></li>
-      <li><a href="{{ url_for('services_list') }}"><i class="fa-solid fa-list-check"></i> Услуги</a></li>
-      <li><a href="{{ url_for('patients_list') }}"><i class="fa-solid fa-user-injured"></i> Пациенты</a></li>
       <li>
-        <a href="{{ url_for('ztl') }}"
-           class="{% if '/ztl' in request.path %}active{% endif %}">
+        <a href="{{ url_for('services_list') }}"
+          ><i class="fa-solid fa-list-check"></i> Услуги</a
+        >
+      </li>
+      <li>
+        <a href="{{ url_for('patients_list') }}"
+          ><i class="fa-solid fa-user-injured"></i> Пациенты</a
+        >
+      </li>
+      <li>
+        <a
+          href="{{ url_for('ztl') }}"
+          class="{% if '/ztl' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-flask"></i> ЗТЛ
         </a>
       </li>
       <li>
-        <a href="{{ url_for('partners') }}"
-           class="{% if '/partners' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('partners') }}"
+          class="{% if '/partners' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-handshake"></i> Партнерская программа
         </a>
       </li>
       <li>
-        <a href="{{ url_for('finance_report') }}"
-           class="{% if '/finance_report' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('finance_report') }}"
+          class="{% if '/finance_report' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-file-invoice-dollar"></i> Финансовый отчёт
         </a>
       </li>
       <li>
-        <a href="{{ url_for('logs') }}"
-           class="{% if '/logs' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('logs') }}"
+          class="{% if '/logs' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-book"></i> Журнал действий
         </a>
       </li>
       <li>
-        <a href="{{ url_for('data_tools') }}"
-           class="{% if '/data_tools' in request.path %}active{% endif %}">
+        <a
+          href="{{ url_for('data_tools') }}"
+          class="{% if '/data_tools' in request.path %}active{% endif %}"
+        >
           <i class="fa-solid fa-cloud-arrow-down"></i> Экспорт / Импорт
         </a>
       </li>

@@ -1,6 +1,6 @@
 # Flask routes map
 
-_generated: 2025-08-21 15:18:34_
+_generated: 2025-08-26 16:05:41_
 
 | Rule | Endpoint | Methods |
 |------|----------|---------|
@@ -11,7 +11,6 @@ _generated: 2025-08-21 15:18:34_
 | `/add_room` | `add_room` | `GET,POST` |
 | `/add_service` | `add_service` | `GET,POST` |
 | `/add_task` | `add_task` | `POST` |
-| `/add_xray` | `add_xray` | `GET,POST` |
 | `/add_ztl` | `add_ztl` | `GET,POST` |
 | `/api/appointments/<id>` | `api_appointment_get` | `GET` |
 | `/api/appointments/<id>/update` | `api_appointment_update` | `POST` |
@@ -51,6 +50,13 @@ _generated: 2025-08-21 15:18:34_
 | `/edit_service/<id>` | `edit_service` | `GET,POST` |
 | `/export_calendar` | `export_calendar` | `GET` |
 | `/export_data` | `export_data` | `GET` |
+| `/finance` | `finance.list_ops` | `GET` |
+| `/finance/add` | `finance.add_get` | `GET` |
+| `/finance/add` | `finance.add_post` | `POST` |
+| `/finance/export/csv` | `finance.export_csv` | `GET` |
+| `/finance/export/json` | `finance.export_json` | `GET` |
+| `/finance/import/json` | `finance.import_json` | `POST` |
+| `/finance/report/cashbox` | `finance.report_cashbox` | `GET` |
 | `/finance_report` | `finance_report` | `GET` |
 | `/finance_report/export` | `finance_report_export` | `GET` |
 | `/healthz` | `healthz` | `GET` |
@@ -66,13 +72,15 @@ _generated: 2025-08-21 15:18:34_
 | `/profile` | `profile` | `GET` |
 | `/roadmap` | `roadmap_view` | `GET` |
 | `/rooms` | `rooms_list` | `GET` |
+| `/schedule/` | `schedule.list_view` | `GET` |
+| `/schedule/add` | `schedule.add_appointment` | `POST` |
+| `/schedule/free_slots` | `schedule.free_slots` | `GET` |
 | `/services` | `services_list` | `GET` |
 | `/settings` | `settings` | `GET` |
 | `/static/<path:filename>` | `static` | `GET` |
 | `/task/<task_id>` | `task_card` | `GET` |
 | `/tasks` | `tasks` | `GET` |
 | `/update_event_time` | `update_event_time` | `POST` |
-| `/xray_room` | `xray_room` | `GET` |
 | `/ztl` | `ztl` | `GET` |
 
 ---
@@ -104,10 +112,6 @@ _generated: 2025-08-21 15:18:34_
 ### `/add_task`
 - endpoint: `add_task`
 - methods: `POST`
-
-### `/add_xray`
-- endpoint: `add_xray`
-- methods: `GET,POST`
 
 ### `/add_ztl`
 - endpoint: `add_ztl`
@@ -265,6 +269,34 @@ _generated: 2025-08-21 15:18:34_
 - endpoint: `export_data`
 - methods: `GET`
 
+### `/finance`
+- endpoint: `finance.list_ops`
+- methods: `GET`
+
+### `/finance/add`
+- endpoint: `finance.add_get`
+- methods: `GET`
+
+### `/finance/add`
+- endpoint: `finance.add_post`
+- methods: `POST`
+
+### `/finance/export/csv`
+- endpoint: `finance.export_csv`
+- methods: `GET`
+
+### `/finance/export/json`
+- endpoint: `finance.export_json`
+- methods: `GET`
+
+### `/finance/import/json`
+- endpoint: `finance.import_json`
+- methods: `POST`
+
+### `/finance/report/cashbox`
+- endpoint: `finance.report_cashbox`
+- methods: `GET`
+
 ### `/finance_report`
 - endpoint: `finance_report`
 - methods: `GET`
@@ -325,6 +357,18 @@ _generated: 2025-08-21 15:18:34_
 - endpoint: `rooms_list`
 - methods: `GET`
 
+### `/schedule/`
+- endpoint: `schedule.list_view`
+- methods: `GET`
+
+### `/schedule/add`
+- endpoint: `schedule.add_appointment`
+- methods: `POST`
+
+### `/schedule/free_slots`
+- endpoint: `schedule.free_slots`
+- methods: `GET`
+
 ### `/services`
 - endpoint: `services_list`
 - methods: `GET`
@@ -348,10 +392,6 @@ _generated: 2025-08-21 15:18:34_
 ### `/update_event_time`
 - endpoint: `update_event_time`
 - methods: `POST`
-
-### `/xray_room`
-- endpoint: `xray_room`
-- methods: `GET`
 
 ### `/ztl`
 - endpoint: `ztl`

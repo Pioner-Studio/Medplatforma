@@ -1,102 +1,298 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 
 <!-- Метрики и действия -->
-<div style="display:flex;align-items:center;gap:22px;padding:6px 0 6px 12px;background:#fff;border-radius:14px;box-shadow:0 1px 8px #e3eaf9b7;margin-bottom:10px;">
+<div
+  style="
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 6px 0 6px 12px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 8px #e3eaf9b7;
+    margin-bottom: 10px;
+  "
+>
   <span title="Всего кабинетов">
-    <i class="fa-solid fa-house-chimney-medical" style="color:#467fe3;"></i>
+    <i class="fa-solid fa-house-chimney-medical" style="color: #467fe3"></i>
     <b>{{ metrics.total_rooms }}</b>
   </span>
   <span title="Свободные">
-    <i class="fa-solid fa-circle-check" style="color:#21ba45;"></i>
+    <i class="fa-solid fa-circle-check" style="color: #21ba45"></i>
     <b>{{ metrics.free_rooms }}</b>
   </span>
-  <span style="margin-left:auto;display:flex;gap:12px;">
-    <a href="{{ url_for('add_event') }}" class="btn-main" style="background:#1976d2;color:#fff;font-weight:600;border-radius:8px;padding:8px 22px;font-size:1.07em;display:flex;align-items:center;gap:8px;text-decoration:none;">
+  <span style="margin-left: auto; display: flex; gap: 12px">
+    <a
+      href="{{ url_for('add_event') }}"
+      class="btn-main"
+      style="
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 22px;
+        font-size: 1.07em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      "
+    >
       <i class="fa-solid fa-plus"></i> Добавить запись
     </a>
-    <a href="{{ url_for('export_calendar') }}" class="btn-main btn-export" style="background:#fff;color:#3185cb;border:1.5px solid #dbeafd;font-weight:600;border-radius:8px;padding:8px 18px;font-size:1.07em;display:flex;align-items:center;gap:8px;text-decoration:none;">
+    <a
+      href="{{ url_for('export_calendar') }}"
+      class="btn-main btn-export"
+      style="
+        background: #fff;
+        color: #3185cb;
+        border: 1.5px solid #dbeafd;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 18px;
+        font-size: 1.07em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      "
+    >
       <i class="fa-solid fa-file-arrow-down"></i> Выгрузка
     </a>
   </span>
 </div>
 
 <!-- Кабинеты и их статус -->
-<div id="roomsBar" style="display:flex;gap:36px;margin:14px 0 12px 8px;flex-wrap:wrap;">
-  {% for cab in cabinets %}
-    {% set info = room_info.get(cab) %}
-    <span data-room-name="{{ cab }}" style="font-size:1.12em;font-weight:600;cursor:default;">
-      {{ cab }} —
-      <b class="room-status-text" style="color:{{ info.color if info else 'inherit' }}">
-        {{ (info.text if info else '—') }}
-      </b>
-      <span class="room-next" style="opacity:.7;font-weight:500;margin-left:8px;">
-        {% if info and info.state == 'available' and info.next %}
-          {% set t = info.next.start.split('T')[1] if info.next.start else '' %}
-          Ближайший: {{ t }}
-          {% if info.next.in_minutes is not none %}
-            (через
-              {% if info.next.in_minutes < 0 %}0 мин
-              {% elif info.next.in_minutes < 60 %}{{ info.next.in_minutes }} мин
-              {% else %}{{ (info.next.in_minutes // 60)|int }} ч {{ (info.next.in_minutes % 60)|int }} мин
-              {% endif %}
-            )
-          {% endif %}
-          {% if info.next.service or info.next.patient %} •
-            {{ info.next.service }}{% if info.next.service and info.next.patient %} — {% endif %}{{ info.next.patient }}
-          {% endif %}
-        {% endif %}
-      </span>
+<div
+  id="roomsBar"
+  style="display: flex; gap: 36px; margin: 14px 0 12px 8px; flex-wrap: wrap"
+>
+  {% for cab in cabinets %} {% set info = room_info.get(cab) %}
+  <span
+    data-room-name="{{ cab }}"
+    style="font-size: 1.12em; font-weight: 600; cursor: default"
+  >
+    {{ cab }} —
+    <b
+      class="room-status-text"
+      style="color:{{ info.color if info else 'inherit' }}"
+    >
+      {{ (info.text if info else '—') }}
+    </b>
+    <span
+      class="room-next"
+      style="opacity: 0.7; font-weight: 500; margin-left: 8px"
+    >
+      {% if info and info.state == 'available' and info.next %} {% set t =
+      info.next.start.split('T')[1] if info.next.start else '' %} Ближайший: {{
+      t }} {% if info.next.in_minutes is not none %} (через {% if
+      info.next.in_minutes < 0 %}0 мин {% elif info.next.in_minutes < 60 %}{{
+      info.next.in_minutes }} мин {% else %}{{ (info.next.in_minutes // 60)|int
+      }} ч {{ (info.next.in_minutes % 60)|int }} мин {% endif %} ) {% endif %}
+      {% if info.next.service or info.next.patient %} • {{ info.next.service
+      }}{% if info.next.service and info.next.patient %} — {% endif %}{{
+      info.next.patient }} {% endif %} {% endif %}
     </span>
+  </span>
   {% endfor %}
 </div>
 
 <!-- Tooltip для списка приёмов кабинета -->
-<div id="roomTip" style="
-  position:fixed; display:none; z-index:9999;
-  background:#fff; border:1px solid #e6eefb; border-radius:12px;
-  box-shadow:0 8px 24px rgba(17, 24, 39, .12);
-  padding:10px 12px; min-width:340px; max-width:460px;
-  font-size:14px; line-height:1.35;">
-  <div id="roomTipTitle" style="font-weight:700; margin-bottom:8px;"></div>
+<div
+  id="roomTip"
+  style="
+    position: fixed;
+    display: none;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #e6eefb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+    padding: 10px 12px;
+    min-width: 340px;
+    max-width: 460px;
+    font-size: 14px;
+    line-height: 1.35;
+  "
+>
+  <div id="roomTipTitle" style="font-weight: 700; margin-bottom: 8px"></div>
   <div id="roomTipBody">
-    <div style="opacity:.6;">Загрузка…</div>
+    <div style="opacity: 0.6">Загрузка…</div>
   </div>
 </div>
 
 <!-- Быстрые действия по времени -->
-<div style="grid-column:1/-1; display:flex; gap:8px; align-items:center; margin-top:-4px;">
-  <button type="button" class="btn" id="btn_plus_15" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">+15 мин</button>
-  <button type="button" class="btn" id="btn_plus_30" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">+30 мин</button>
-  <button type="button" class="btn" id="btn_plus_60" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">+60 мин</button>
-  <span style="opacity:.6;margin:0 6px;">|</span>
-  <button type="button" class="btn" id="btn_move_tomorrow" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">На завтра (то же время)</button>
-  <span style="opacity:.6;margin:0 6px;">|</span>
-  <button type="button" class="btn" id="btn_first_free" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Первый свободный слот (кабинет)</button>
+<div
+  style="
+    grid-column: 1/-1;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: -4px;
+  "
+>
+  <button
+    type="button"
+    class="btn"
+    id="btn_plus_15"
+    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
+  >
+    +15 мин
+  </button>
+  <button
+    type="button"
+    class="btn"
+    id="btn_plus_30"
+    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
+  >
+    +30 мин
+  </button>
+  <button
+    type="button"
+    class="btn"
+    id="btn_plus_60"
+    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
+  >
+    +60 мин
+  </button>
+  <span style="opacity: 0.6; margin: 0 6px">|</span>
+  <button
+    type="button"
+    class="btn"
+    id="btn_move_tomorrow"
+    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
+  >
+    На завтра (то же время)
+  </button>
+  <span style="opacity: 0.6; margin: 0 6px">|</span>
+  <button
+    type="button"
+    class="btn"
+    id="btn_first_free"
+    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
+  >
+    Первый свободный слот (кабинет)
+  </button>
 </div>
-<small id="e_warn" style="grid-column:1/-1; color:#b45309; display:none;">Предупреждение</small>
+<small id="e_warn" style="grid-column: 1/-1; color: #b45309; display: none"
+  >Предупреждение</small
+>
 
 <!-- Легенда статусов -->
-<div style="display:flex;gap:30px;align-items:center;font-size:1.01em;margin-bottom:12px;margin-left:8px;">
-  <span><span style="background:#A2C6FA;border:1.5px solid #dde7f7;width:18px;height:18px;display:inline-block;border-radius:4px;margin-right:6px;"></span>Первичный</span>
-  <span><span style="background:#FBC7C0;border:1.5px solid #fde7e7;width:18px;height:18px;display:inline-block;border-radius:4px;margin-right:6px;"></span>Отказ</span>
-  <span><span style="background:#FDE8A5;border:1.5px solid #f7e9c5;width:18px;height:18px;display:inline-block;border-radius:4px;margin-right:6px;"></span>Повторный</span>
-  <span><span style="background:#B4F0C0;border:1.5px solid #cefad5;width:18px;height:18px;display:inline-block;border-radius:4px;margin-right:6px;"></span>Оплачен</span>
+<div
+  style="
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    font-size: 1.01em;
+    margin-bottom: 12px;
+    margin-left: 8px;
+  "
+>
+  <span
+    ><span
+      style="
+        background: #a2c6fa;
+        border: 1.5px solid #dde7f7;
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+        border-radius: 4px;
+        margin-right: 6px;
+      "
+    ></span
+    >Первичный</span
+  >
+  <span
+    ><span
+      style="
+        background: #fbc7c0;
+        border: 1.5px solid #fde7e7;
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+        border-radius: 4px;
+        margin-right: 6px;
+      "
+    ></span
+    >Отказ</span
+  >
+  <span
+    ><span
+      style="
+        background: #fde8a5;
+        border: 1.5px solid #f7e9c5;
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+        border-radius: 4px;
+        margin-right: 6px;
+      "
+    ></span
+    >Повторный</span
+  >
+  <span
+    ><span
+      style="
+        background: #b4f0c0;
+        border: 1.5px solid #cefad5;
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+        border-radius: 4px;
+        margin-right: 6px;
+      "
+    ></span
+    >Оплачен</span
+  >
 </div>
 
 <!-- Фильтры -->
-<div class="calendar-filters" style="display:flex;gap:12px;align-items:center;margin-bottom:18px;">
+<div
+  class="calendar-filters"
+  style="display: flex; gap: 12px; align-items: center; margin-bottom: 18px"
+>
   <select id="doctorFilter" class="filter-select">
     <option value="">Все врачи</option>
     {% for doc in doctors %}
-      <option value="{{ doc._id }}">{{ doc.full_name }}</option>
+    <option value="{{ doc._id }}">{{ doc.full_name }}</option>
     {% endfor %}
   </select>
 
   <!-- Поиск пациента — UI оставляем, но логика не мешает drag&drop -->
-  <div style="position:relative;">
-    <input type="text" id="patientSearch" class="filter-input" placeholder="Поиск пациента..." style="padding:7px 18px;border-radius:8px;border:1px solid #dde7f7;min-width:180px;">
-    <ul id="patientSearchList" class="search-list" style="display:none;position:absolute;z-index:1000;background:#fff;border-radius:10px;box-shadow:0 2px 12px #eee;margin:0;padding:0;list-style:none;max-height:250px;overflow-y:auto;left:0;top:36px;width:100%;"></ul>
+  <div style="position: relative">
+    <input
+      type="text"
+      id="patientSearch"
+      class="filter-input"
+      placeholder="Поиск пациента..."
+      style="
+        padding: 7px 18px;
+        border-radius: 8px;
+        border: 1px solid #dde7f7;
+        min-width: 180px;
+      "
+    />
+    <ul
+      id="patientSearchList"
+      class="search-list"
+      style="
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 12px #eee;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        max-height: 250px;
+        overflow-y: auto;
+        left: 0;
+        top: 36px;
+        width: 100%;
+      "
+    ></ul>
   </div>
 
   <!-- Фильтр по услуге: оставляем общий, без списка (список можем добавить позже) -->
@@ -108,54 +304,142 @@
   <select id="cabinetFilter" class="filter-select">
     <option value="">Все кабинеты</option>
     {% for cab in cabinets %}
-      <option value="{{ cab }}">{{ cab }}</option>  <!-- value = NAME -->
+    <option value="{{ cab }}">{{ cab }}</option>
+    <!-- value = NAME -->
     {% endfor %}
   </select>
 
-  <button id="resetFilters" style="margin-left:10px;">Сбросить</button>
+  <button id="resetFilters" style="margin-left: 10px">Сбросить</button>
 </div>
 
 <!-- Календарь -->
-<div id="calendar" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:8px;min-height:72vh;"></div>
+<div
+  id="calendar"
+  style="
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px #e3eaf9b7;
+    padding: 8px;
+    min-height: 72vh;
+  "
+></div>
 
 <!-- Модалка быстрого редактирования (Готовая разметка) -->
-<div id="quickModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;">
-  <div style="background:#fff;max-width:640px;margin:7vh auto;padding:18px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.08);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-      <h3 style="margin:0;flex:1;">Редактировать запись</h3>
-      <button id="qmClose" type="button" style="border:none;background:#eee;border-radius:8px;padding:6px 10px;cursor:pointer">×</button>
+<div
+  id="quickModal"
+  style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 9999;
+  "
+>
+  <div
+    style="
+      background: #fff;
+      max-width: 640px;
+      margin: 7vh auto;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    "
+  >
+    <div
+      style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px"
+    >
+      <h3 style="margin: 0; flex: 1">Редактировать запись</h3>
+      <button
+        id="qmClose"
+        type="button"
+        style="
+          border: none;
+          background: #eee;
+          border-radius: 8px;
+          padding: 6px 10px;
+          cursor: pointer;
+        "
+      >
+        ×
+      </button>
     </div>
 
-    <form id="qmForm" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <input type="hidden" id="qm_id">
+    <form
+      id="qmForm"
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+    >
+      <input type="hidden" id="qm_id" />
 
-      <label>Врач
-        <select id="qm_doctor" class="filter-select" required style="width:100%"></select>
+      <label
+        >Врач
+        <select
+          id="qm_doctor"
+          class="filter-select"
+          required
+          style="width: 100%"
+        ></select>
       </label>
 
-      <label>Пациент
-        <select id="qm_patient" class="filter-select" required style="width:100%"></select>
+      <label
+        >Пациент
+        <select
+          id="qm_patient"
+          class="filter-select"
+          required
+          style="width: 100%"
+        ></select>
       </label>
 
-      <label>Услуга
-        <select id="qm_service" class="filter-select" required style="width:100%"></select>
-        <small id="qm_service_hint" style="opacity:.7;"></small>
+      <label
+        >Услуга
+        <select
+          id="qm_service"
+          class="filter-select"
+          required
+          style="width: 100%"
+        ></select>
+        <small id="qm_service_hint" style="opacity: 0.7"></small>
       </label>
 
-      <label>Кабинет
-        <select id="qm_room" class="filter-select" required style="width:100%"></select>
+      <label
+        >Кабинет
+        <select
+          id="qm_room"
+          class="filter-select"
+          required
+          style="width: 100%"
+        ></select>
       </label>
 
-      <label>Начало
-        <input type="datetime-local" id="qm_start" required step="300" style="width:100%">
+      <label
+        >Начало
+        <input
+          type="datetime-local"
+          id="qm_start"
+          required
+          step="300"
+          style="width: 100%"
+        />
       </label>
 
-      <label>Окончание
-        <input type="datetime-local" id="qm_end" step="300" style="width:100%">
+      <label
+        >Окончание
+        <input
+          type="datetime-local"
+          id="qm_end"
+          step="300"
+          style="width: 100%"
+        />
       </label>
 
-      <label>Статус
-        <select id="qm_status" class="filter-select" required style="width:100%">
+      <label
+        >Статус
+        <select
+          id="qm_status"
+          class="filter-select"
+          required
+          style="width: 100%"
+        >
           <option value="scheduled">Запланирован</option>
           <option value="arrived">Прибыл</option>
           <option value="done">Завершён</option>
@@ -163,333 +447,544 @@
         </select>
       </label>
 
-      <label style="grid-column:1 / -1;">Комментарий
-        <textarea id="qm_comment" rows="3" style="width:100%;"></textarea>
+      <label style="grid-column: 1 / -1"
+        >Комментарий
+        <textarea id="qm_comment" rows="3" style="width: 100%"></textarea>
       </label>
 
-      <div style="grid-column:1/-1; display:flex; gap:8px; align-items:center; margin-top:-4px;">
-        <button type="button" class="btn" id="btn_plus_15" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">+15 мин</button>
-        <button type="button" class="btn" id="btn_plus_30" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">+30 мин</button>
-        <button type="button" class="btn" id="btn_plus_60" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">+60 мин</button>
-        <span style="opacity:.6;margin:0 6px;">|</span>
-        <button type="button" class="btn" id="btn_move_tomorrow" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">На завтра (то же время)</button>
-        <span style="opacity:.6;margin:0 6px;">|</span>
-        <button type="button" class="btn" id="btn_first_free" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Первый свободный слот (кабинет)</button>
+      <div
+        style="
+          grid-column: 1/-1;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          margin-top: -4px;
+        "
+      >
+        <button
+          type="button"
+          class="btn"
+          id="btn_plus_15"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          +15 мин
+        </button>
+        <button
+          type="button"
+          class="btn"
+          id="btn_plus_30"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          +30 мин
+        </button>
+        <button
+          type="button"
+          class="btn"
+          id="btn_plus_60"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          +60 мин
+        </button>
+        <span style="opacity: 0.6; margin: 0 6px">|</span>
+        <button
+          type="button"
+          class="btn"
+          id="btn_move_tomorrow"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          На завтра (то же время)
+        </button>
+        <span style="opacity: 0.6; margin: 0 6px">|</span>
+        <button
+          type="button"
+          class="btn"
+          id="btn_first_free"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          Первый свободный слот (кабинет)
+        </button>
       </div>
-      <small id="qm_warn" style="grid-column:1/-1; color:#b45309; display:none;">Предупреждение</small>
+      <small
+        id="qm_warn"
+        style="grid-column: 1/-1; color: #b45309; display: none"
+        >Предупреждение</small
+      >
 
-      <div style="grid-column:1 / -1;display:flex;justify-content:flex-end;gap:8px;">
-        <button type="button" id="qmDelete" class="btn" style="background:#fee2e2;border:1px solid #fecaca;">Удалить</button>
+      <div
+        style="
+          grid-column: 1 / -1;
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+        "
+      >
+        <button
+          type="button"
+          id="qmDelete"
+          class="btn"
+          style="background: #fee2e2; border: 1px solid #fecaca"
+        >
+          Удалить
+        </button>
         <button type="submit" class="btn btn-primary">Сохранить</button>
       </div>
     </form>
   </div>
 </div>
 
-{% endblock %}
-
-{% block scripts %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+{% endblock %} {% block scripts %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
+<link
+  href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css"
+  rel="stylesheet"
+/>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // ---------- helpers ----------
-  const $ = s => document.querySelector(s);
-  const addMin = (d, m) => new Date(d.getTime() + m * 60000);
-  const fmtISO = d => {
-    const pad = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
-
-  // Глобально-совместимый кэш словарей (чтобы не конфликтовать с другими скриптами)
-  window.__DICT_CACHE__ = window.__DICT_CACHE__ || null;
-  async function loadDictsOnce() {
-    if (window.__DICT_CACHE__) return window.__DICT_CACHE__;
-    const r = await fetch('/api/dicts');
-    const data = await r.json();
-    if (!data.ok) throw new Error('dicts load failed');
-    window.__DICT_CACHE__ = data;
-    return data;
-  }
-
-  // ---------- ссылки на элементы модалки (разметка уже есть в шаблоне) ----------
-  const qm = {
-    modal:   $('#quickModal'),
-    close:   $('#qmClose'),
-    form:    $('#qmForm'),
-    id:      $('#qm_id'),
-    doctor:  $('#qm_doctor'),
-    patient: $('#qm_patient'),
-    service: $('#qm_service'),
-    serviceHint: $('#qm_service_hint'),
-    room:    $('#qm_room'),
-    start:   $('#qm_start'),
-    end:     $('#qm_end'),
-    status:  $('#qm_status'),
-    comment: $('#qm_comment'),
-    warn:    $('#qm_warn'),
-    btnDel:  $('#qmDelete'),
-    btnPlus15:    $('#btn_plus_15'),
-    btnPlus30:    $('#btn_plus_30'),
-    btnPlus60:    $('#btn_plus_60'),
-    btnTomorrow:  $('#btn_move_tomorrow'),
-    btnFirstFree: $('#btn_first_free'),
-  };
-
-  function openModal(){ if (qm.modal) qm.modal.style.display = 'block'; }
-  function closeModal(){ if (qm.modal) qm.modal.style.display = 'none'; }
-  qm.close?.addEventListener('click', closeModal);
-  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-  // ---------- общий помощник для времени ----------
-  function setStartEnd(ns, ne) {
-    if (qm.start) qm.start.value = fmtISO(ns);
-    if (qm.end)   qm.end.value   = fmtISO(ne);
-  }
-
-  function shiftAppointment(minutes) {
-    if (!qm.start?.value) return;
-    const s = new Date(qm.start.value);
-    const e = qm.end?.value ? new Date(qm.end.value) : s;
-    const dur = Math.max(5, Math.round((e - s) / 60000));
-    const ns = addMin(s, minutes);
-    const ne = addMin(ns, dur);
-    setStartEnd(ns, ne);
-  }
-
-  // быстрые кнопки в модалке
-  qm.btnPlus15?.addEventListener('click', () => shiftAppointment(15));
-  qm.btnPlus30?.addEventListener('click', () => shiftAppointment(30));
-  qm.btnPlus60?.addEventListener('click', () => shiftAppointment(60));
-  qm.btnTomorrow?.addEventListener('click', () => {
-    if (!qm.start?.value) return;
-    const s = new Date(qm.start.value);
-    const e = qm.end?.value ? new Date(qm.end.value) : s;
-    const dur = Math.max(5, Math.round((e - s) / 60000));
-    s.setDate(s.getDate() + 1);
-    setStartEnd(s, addMin(s, dur));
-  });
-
-  // первый свободный слот в кабинете
-  async function moveToFirstFreeInRoom() {
-    const roomId = qm.room?.value;
-    const sid    = qm.service?.value;
-    if (!roomId || !sid || !qm.start?.value) {
-      alert('Выберите кабинет, услугу и начало');
-      return;
-    }
-    const d = await loadDictsOnce();
-    const sRec = d.services.find(x => x.id === sid);
-    const dur  = parseInt(sRec?.duration_min ?? 30, 10);
-
-    let cursor = new Date(qm.start.value);
-    const limit = new Date(); limit.setDate(limit.getDate() + 7);
-
-    while (cursor < limit) {
-      const day = `${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}-${String(cursor.getDate()).padStart(2,'0')}`;
-      const resp = await fetch(`/api/rooms/busy?room_id=${encodeURIComponent(roomId)}&date=${day}`);
-      const data = await resp.json();
-      if (!data.ok) { alert('Не удалось проверить занятость кабинета'); return; }
-
-      const busy = (data.items || [])
-        .map(i => {
-          const [sh,sm] = i.start.split(':').map(Number);
-          const [eh,em] = i.end.split(':').map(Number);
-          return { s: sh*60+sm, e: eh*60+em };
-        })
-        .sort((a,b) => a.s - b.s);
-
-      const st = cursor.getHours()*60 + cursor.getMinutes();
-      const en = st + dur;
-      const overlap = busy.some(b => !(en <= b.s || st >= b.e));
-
-      if (!overlap) { setStartEnd(cursor, addMin(cursor, dur)); return; }
-      cursor = addMin(cursor, 5);
-    }
-    alert('Не найден свободный слот в ближайшие 7 дней.');
-  }
-  qm.btnFirstFree?.addEventListener('click', moveToFirstFreeInRoom);
-
-  // автоподстановка окончания по услуге
-  async function recalcEndByService() {
-    if (!qm.service?.value || !qm.start?.value) return;
-    const d = await loadDictsOnce();
-    const srv = d.services.find(s => s.id === qm.service.value);
-    const dur = parseInt(srv?.duration_min ?? 30, 10);
-    const s   = new Date(qm.start.value);
-    setStartEnd(s, addMin(s, dur));
-    if (qm.serviceHint) qm.serviceHint.textContent = `Длительность услуги: ${dur} мин.`;
-  }
-
-  // мягкое предупреждение по графику врача
-  async function checkDoctorWorking(){
-    const start = qm.start?.value;
-    if (!qm.doctor?.value || !start) { if(qm.warn) qm.warn.style.display='none'; return; }
-    try {
-      const r = await fetch('/api/doctor_schedule', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({doctor_id: qm.doctor.value})
-      });
-      if (!r.ok) { if(qm.warn) qm.warn.style.display='none'; return; }
-      const data = await r.json();
-      const sched = data?.schedule || {};
-      const s = new Date(start), e = qm.end?.value ? new Date(qm.end.value) : new Date(start);
-      const dow = (s.getDay()+6)%7;
-      const day = sched[String(dow)];
-      if (!day || !day.start || !day.end) { if(qm.warn) qm.warn.style.display='none'; return; }
-      const hm2m = hm => { const [h,m]=hm.split(':').map(Number); return h*60+m; };
-      const st = s.getHours()*60+s.getMinutes(), en = e.getHours()*60+e.getMinutes();
-      const outside = st < hm2m(day.start) || en > hm2m(day.end);
-      if (outside) {
-        if (qm.warn){ qm.warn.textContent = `Время вне графика врача (${day.start}–${day.end}). Сохранение возможно.`; qm.warn.style.display='block'; }
-      } else { if(qm.warn) qm.warn.style.display='none'; }
-    } catch(_) { if(qm.warn) qm.warn.style.display='none'; }
-  }
-
-  // ---------- Календарь ----------
-  const calEl = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(calEl, {
-    initialView: 'timeGridWeek',
-    locale: 'ru',
-    timeZone: 'local',
-    firstDay: 1,
-    height: 'auto',
-    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-    editable: true,
-    eventDurationEditable: true,
-    eventStartEditable: true,
-    eventOverlap: true,
-
-    events: (fetchInfo, success, failure) => {
-      const params = new URLSearchParams({ start: fetchInfo.startStr, end: fetchInfo.endStr });
-      const doctorSel  = $('#doctorFilter');
-      const serviceSel = $('#serviceFilter');
-      const cabinetSel = $('#cabinetFilter');
-      if (doctorSel?.value)  params.set('doctor_id', doctorSel.value);
-      if (serviceSel?.value) params.set('service_id', serviceSel.value);
-      // cabinetFilter отдаёт ИМЯ кабинета
-      if (cabinetSel?.value) params.set('room_name', cabinetSel.value);
-
-      fetch('/api/events?' + params.toString())
-        .then(r => r.json())
-        .then(data => success(data))
-        .catch(err => { console.error('events load error', err); failure(err); });
-    },
-
-    eventDidMount(info){
-      const p = info.event.extendedProps || {};
-      info.el.title = [p.service, p.patient, p.status].filter(Boolean).join(' • ');
-    },
-
-    eventDrop:   saveMoveOrResize,
-    eventResize: saveMoveOrResize,
-
-    eventClick: async (info) => {
-      await openQuickModal(info.event.id);
-    }
-  });
-  calendar.render();
-
-  async function saveMoveOrResize(info){
-    const payload = { id: info.event.id, start: info.event.startStr, end: info.event.endStr || info.event.startStr };
-    try{
-      const r = await fetch('/api/appointments/update_time', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-      });
-      const data = await r.json();
-      if (!data.ok){
-        alert(data.error === 'room_conflict' ? 'Конфликт: кабинет занят' : 'Ошибка сохранения');
-        info.revert(); return;
-      }
-      calendar.refetchEvents();
-      if (typeof refreshRoomBar === 'function') refreshRoomBar();
-    }catch(e){ alert('Сеть недоступна'); info.revert(); }
-  }
-
-  // ---------- Открытие/заполнение модалки ----------
-  async function openQuickModal(id){
-    try{
-      const d = await loadDictsOnce();
-
-      // наполняем селекты
-      if (qm.doctor)  qm.doctor.innerHTML  = d.doctors.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');
-      if (qm.patient) qm.patient.innerHTML = d.patients.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');
-      if (qm.service) qm.service.innerHTML = d.services.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');
-      if (qm.room)    qm.room.innerHTML    = d.rooms.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');
-
-      const r = await fetch(`/api/appointments/${id}`);
-      const data = await r.json();
-      if (!data.ok) { alert('Не удалось получить запись'); return; }
-      const it = data.item;
-
-      if (qm.id)      qm.id.value      = it.id || '';
-      if (qm.doctor)  qm.doctor.value  = it.doctor_id || '';
-      if (qm.patient) qm.patient.value = it.patient_id || '';
-      if (qm.service) qm.service.value = it.service_id || '';
-      if (qm.room)    qm.room.value    = it.room_id || '';
-      if (qm.status)  qm.status.value  = it.status_key || 'scheduled';
-      if (qm.comment) qm.comment.value = it.comment || '';
-      if (qm.start)   qm.start.value   = it.start || '';
-      if (qm.end)     qm.end.value     = it.end   || '';
-
-      // пересчёт и предупреждение
-      qm.service?.addEventListener('change', ()=>{ recalcEndByService(); checkDoctorWorking(); }, {once:true});
-      qm.start?.addEventListener('change',  ()=>{ recalcEndByService(); checkDoctorWorking(); }, {once:true});
-      qm.end?.addEventListener('change',    checkDoctorWorking, {once:true});
-      qm.doctor?.addEventListener('change', checkDoctorWorking, {once:true});
-
-      await recalcEndByService();
-      await checkDoctorWorking();
-      openModal();
-    }catch(e){
-      console.error(e);
-      alert('Ошибка открытия модалки: ' + (e?.message || ''));
-    }
-  }
-
-  // ---------- Сохранение / Удаление ----------
-  qm.form?.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    const payload = {
-      doctor_id:  qm.doctor?.value || '',
-      patient_id: qm.patient?.value || '',
-      service_id: qm.service?.value || '',
-      room_id:    qm.room?.value || '',
-      start:      qm.start?.value || '',
-      end:        qm.end?.value || '',
-      status_key: qm.status?.value || 'scheduled',
-      comment:    qm.comment?.value || ''
+  document.addEventListener("DOMContentLoaded", () => {
+    // ---------- helpers ----------
+    const $ = (s) => document.querySelector(s);
+    const addMin = (d, m) => new Date(d.getTime() + m * 60000);
+    const fmtISO = (d) => {
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+        d.getDate()
+      )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     };
-    try{
-      const r = await fetch(`/api/appointments/${qm.id?.value}/update`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-      });
+
+    // Глобально-совместимый кэш словарей (чтобы не конфликтовать с другими скриптами)
+    window.__DICT_CACHE__ = window.__DICT_CACHE__ || null;
+    async function loadDictsOnce() {
+      if (window.__DICT_CACHE__) return window.__DICT_CACHE__;
+      const r = await fetch("/api/dicts");
       const data = await r.json();
-      if (!data.ok){
-        alert(data.error === 'room_conflict' ? 'Конфликт: кабинет занят' : 'Ошибка сохранения');
+      if (!data.ok) throw new Error("dicts load failed");
+      window.__DICT_CACHE__ = data;
+      return data;
+    }
+
+    // ---------- ссылки на элементы модалки (разметка уже есть в шаблоне) ----------
+    const qm = {
+      modal: $("#quickModal"),
+      close: $("#qmClose"),
+      form: $("#qmForm"),
+      id: $("#qm_id"),
+      doctor: $("#qm_doctor"),
+      patient: $("#qm_patient"),
+      service: $("#qm_service"),
+      serviceHint: $("#qm_service_hint"),
+      room: $("#qm_room"),
+      start: $("#qm_start"),
+      end: $("#qm_end"),
+      status: $("#qm_status"),
+      comment: $("#qm_comment"),
+      warn: $("#qm_warn"),
+      btnDel: $("#qmDelete"),
+      btnPlus15: $("#btn_plus_15"),
+      btnPlus30: $("#btn_plus_30"),
+      btnPlus60: $("#btn_plus_60"),
+      btnTomorrow: $("#btn_move_tomorrow"),
+      btnFirstFree: $("#btn_first_free"),
+    };
+
+    function openModal() {
+      if (qm.modal) qm.modal.style.display = "block";
+    }
+    function closeModal() {
+      if (qm.modal) qm.modal.style.display = "none";
+    }
+    qm.close?.addEventListener("click", closeModal);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    // ---------- общий помощник для времени ----------
+    function setStartEnd(ns, ne) {
+      if (qm.start) qm.start.value = fmtISO(ns);
+      if (qm.end) qm.end.value = fmtISO(ne);
+    }
+
+    function shiftAppointment(minutes) {
+      if (!qm.start?.value) return;
+      const s = new Date(qm.start.value);
+      const e = qm.end?.value ? new Date(qm.end.value) : s;
+      const dur = Math.max(5, Math.round((e - s) / 60000));
+      const ns = addMin(s, minutes);
+      const ne = addMin(ns, dur);
+      setStartEnd(ns, ne);
+    }
+
+    // быстрые кнопки в модалке
+    qm.btnPlus15?.addEventListener("click", () => shiftAppointment(15));
+    qm.btnPlus30?.addEventListener("click", () => shiftAppointment(30));
+    qm.btnPlus60?.addEventListener("click", () => shiftAppointment(60));
+    qm.btnTomorrow?.addEventListener("click", () => {
+      if (!qm.start?.value) return;
+      const s = new Date(qm.start.value);
+      const e = qm.end?.value ? new Date(qm.end.value) : s;
+      const dur = Math.max(5, Math.round((e - s) / 60000));
+      s.setDate(s.getDate() + 1);
+      setStartEnd(s, addMin(s, dur));
+    });
+
+    // первый свободный слот в кабинете
+    async function moveToFirstFreeInRoom() {
+      const roomId = qm.room?.value;
+      const sid = qm.service?.value;
+      if (!roomId || !sid || !qm.start?.value) {
+        alert("Выберите кабинет, услугу и начало");
         return;
       }
-      closeModal();
-      calendar.refetchEvents();
-      if (typeof refreshRoomBar === 'function') refreshRoomBar();
-    }catch(e){ alert('Сеть недоступна'); }
-  });
+      const d = await loadDictsOnce();
+      const sRec = d.services.find((x) => x.id === sid);
+      const dur = parseInt(sRec?.duration_min ?? 30, 10);
 
-  qm.btnDel?.addEventListener('click', async () => {
-    if (!confirm('Удалить запись?')) return;
-    try{
-      const r = await fetch(`/delete_appointment/${qm.id?.value}`, {method:'POST'});
-      const data = await r.json();
-      if (!data.ok){ alert('Не удалось удалить'); return; }
-      closeModal();
-      calendar.refetchEvents();
-      if (typeof refreshRoomBar === 'function') refreshRoomBar();
-    }catch(e){ alert('Сеть недоступна'); }
-  });
+      let cursor = new Date(qm.start.value);
+      const limit = new Date();
+      limit.setDate(limit.getDate() + 7);
 
-}); // DOMContentLoaded
+      while (cursor < limit) {
+        const day = `${cursor.getFullYear()}-${String(
+          cursor.getMonth() + 1
+        ).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+        const resp = await fetch(
+          `/api/rooms/busy?room_id=${encodeURIComponent(roomId)}&date=${day}`
+        );
+        const data = await resp.json();
+        if (!data.ok) {
+          alert("Не удалось проверить занятость кабинета");
+          return;
+        }
+
+        const busy = (data.items || [])
+          .map((i) => {
+            const [sh, sm] = i.start.split(":").map(Number);
+            const [eh, em] = i.end.split(":").map(Number);
+            return { s: sh * 60 + sm, e: eh * 60 + em };
+          })
+          .sort((a, b) => a.s - b.s);
+
+        const st = cursor.getHours() * 60 + cursor.getMinutes();
+        const en = st + dur;
+        const overlap = busy.some((b) => !(en <= b.s || st >= b.e));
+
+        if (!overlap) {
+          setStartEnd(cursor, addMin(cursor, dur));
+          return;
+        }
+        cursor = addMin(cursor, 5);
+      }
+      alert("Не найден свободный слот в ближайшие 7 дней.");
+    }
+    qm.btnFirstFree?.addEventListener("click", moveToFirstFreeInRoom);
+
+    // автоподстановка окончания по услуге
+    async function recalcEndByService() {
+      if (!qm.service?.value || !qm.start?.value) return;
+      const d = await loadDictsOnce();
+      const srv = d.services.find((s) => s.id === qm.service.value);
+      const dur = parseInt(srv?.duration_min ?? 30, 10);
+      const s = new Date(qm.start.value);
+      setStartEnd(s, addMin(s, dur));
+      if (qm.serviceHint)
+        qm.serviceHint.textContent = `Длительность услуги: ${dur} мин.`;
+    }
+
+    // мягкое предупреждение по графику врача
+    async function checkDoctorWorking() {
+      const start = qm.start?.value;
+      if (!qm.doctor?.value || !start) {
+        if (qm.warn) qm.warn.style.display = "none";
+        return;
+      }
+      try {
+        const r = await fetch("/api/doctor_schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ doctor_id: qm.doctor.value }),
+        });
+        if (!r.ok) {
+          if (qm.warn) qm.warn.style.display = "none";
+          return;
+        }
+        const data = await r.json();
+        const sched = data?.schedule || {};
+        const s = new Date(start),
+          e = qm.end?.value ? new Date(qm.end.value) : new Date(start);
+        const dow = (s.getDay() + 6) % 7;
+        const day = sched[String(dow)];
+        if (!day || !day.start || !day.end) {
+          if (qm.warn) qm.warn.style.display = "none";
+          return;
+        }
+        const hm2m = (hm) => {
+          const [h, m] = hm.split(":").map(Number);
+          return h * 60 + m;
+        };
+        const st = s.getHours() * 60 + s.getMinutes(),
+          en = e.getHours() * 60 + e.getMinutes();
+        const outside = st < hm2m(day.start) || en > hm2m(day.end);
+        if (outside) {
+          if (qm.warn) {
+            qm.warn.textContent = `Время вне графика врача (${day.start}–${day.end}). Сохранение возможно.`;
+            qm.warn.style.display = "block";
+          }
+        } else {
+          if (qm.warn) qm.warn.style.display = "none";
+        }
+      } catch (_) {
+        if (qm.warn) qm.warn.style.display = "none";
+      }
+    }
+
+    // ---------- Календарь ----------
+    const calEl = document.getElementById("calendar");
+    const calendar = new FullCalendar.Calendar(calEl, {
+      initialView: "timeGridWeek",
+      locale: "ru",
+      timeZone: "local",
+      firstDay: 1,
+      height: "auto",
+      headerToolbar: {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay",
+      },
+
+      // === ЧЕК-ЛИСТ: окно и шаг записи ===
+      slotDuration: "00:15:00",
+      snapDuration: "00:15:00",
+      slotMinTime: "09:00:00",
+      slotMaxTime: "21:00:00",
+      businessHours: {
+        daysOfWeek: [1, 2, 3, 4, 5, 6], // пн–сб; если нужна вс — добавь 0
+        startTime: "09:00",
+        endTime: "21:00",
+      },
+
+      editable: true,
+      eventDurationEditable: true,
+      eventStartEditable: true,
+      eventOverlap: true,
+
+      events: (fetchInfo, success, failure) => {
+        const params = new URLSearchParams({
+          start: fetchInfo.startStr,
+          end: fetchInfo.endStr,
+        });
+        const doctorSel = $("#doctorFilter");
+        const serviceSel = $("#serviceFilter");
+        const cabinetSel = $("#cabinetFilter");
+        if (doctorSel?.value) params.set("doctor_id", doctorSel.value);
+        if (serviceSel?.value) params.set("service_id", serviceSel.value);
+        // cabinetFilter отдаёт ИМЯ кабинета
+        if (cabinetSel?.value) params.set("room_name", cabinetSel.value);
+
+        fetch("/api/events?" + params.toString())
+          .then((r) => r.json())
+          .then((data) => success(data))
+          .catch((err) => {
+            console.error("events load error", err);
+            failure(err);
+          });
+      },
+
+      eventDidMount(info) {
+        const p = info.event.extendedProps || {};
+        info.el.title = [p.service, p.patient, p.status]
+          .filter(Boolean)
+          .join(" • ");
+      },
+
+      eventDrop: saveMoveOrResize,
+      eventResize: saveMoveOrResize,
+
+      eventClick: async (info) => {
+        await openQuickModal(info.event.id);
+      },
+    });
+    calendar.render();
+
+    async function saveMoveOrResize(info) {
+      const payload = {
+        id: info.event.id,
+        start: info.event.startStr,
+        end: info.event.endStr || info.event.startStr,
+      };
+      try {
+        const r = await fetch("/api/appointments/update_time", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await r.json();
+        if (!data.ok) {
+          alert(
+            data.error === "room_conflict"
+              ? "Конфликт: кабинет занят"
+              : "Ошибка сохранения"
+          );
+          info.revert();
+          return;
+        }
+        calendar.refetchEvents();
+        if (typeof refreshRoomBar === "function") refreshRoomBar();
+      } catch (e) {
+        alert("Сеть недоступна");
+        info.revert();
+      }
+    }
+
+    // ---------- Открытие/заполнение модалки ----------
+    async function openQuickModal(id) {
+      try {
+        const d = await loadDictsOnce();
+
+        // наполняем селекты
+        if (qm.doctor)
+          qm.doctor.innerHTML = d.doctors
+            .map((x) => `<option value="${x.id}">${x.name}</option>`)
+            .join("");
+        if (qm.patient)
+          qm.patient.innerHTML = d.patients
+            .map((x) => `<option value="${x.id}">${x.name}</option>`)
+            .join("");
+        if (qm.service)
+          qm.service.innerHTML = d.services
+            .map((x) => `<option value="${x.id}">${x.name}</option>`)
+            .join("");
+        if (qm.room)
+          qm.room.innerHTML = d.rooms
+            .map((x) => `<option value="${x.id}">${x.name}</option>`)
+            .join("");
+
+        const r = await fetch(`/api/appointments/${id}`);
+        const data = await r.json();
+        if (!data.ok) {
+          alert("Не удалось получить запись");
+          return;
+        }
+        const it = data.item;
+
+        if (qm.id) qm.id.value = it.id || "";
+        if (qm.doctor) qm.doctor.value = it.doctor_id || "";
+        if (qm.patient) qm.patient.value = it.patient_id || "";
+        if (qm.service) qm.service.value = it.service_id || "";
+        if (qm.room) qm.room.value = it.room_id || "";
+        if (qm.status) qm.status.value = it.status_key || "scheduled";
+        if (qm.comment) qm.comment.value = it.comment || "";
+        if (qm.start) qm.start.value = it.start || "";
+        if (qm.end) qm.end.value = it.end || "";
+
+        // пересчёт и предупреждение
+        qm.service?.addEventListener(
+          "change",
+          () => {
+            recalcEndByService();
+            checkDoctorWorking();
+          },
+          { once: true }
+        );
+        qm.start?.addEventListener(
+          "change",
+          () => {
+            recalcEndByService();
+            checkDoctorWorking();
+          },
+          { once: true }
+        );
+        qm.end?.addEventListener("change", checkDoctorWorking, { once: true });
+        qm.doctor?.addEventListener("change", checkDoctorWorking, {
+          once: true,
+        });
+
+        await recalcEndByService();
+        await checkDoctorWorking();
+        openModal();
+      } catch (e) {
+        console.error(e);
+        alert("Ошибка открытия модалки: " + (e?.message || ""));
+      }
+    }
+
+    // ---------- Сохранение / Удаление ----------
+    qm.form?.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const payload = {
+        doctor_id: qm.doctor?.value || "",
+        patient_id: qm.patient?.value || "",
+        service_id: qm.service?.value || "",
+        room_id: qm.room?.value || "",
+        start: qm.start?.value || "",
+        end: qm.end?.value || "",
+        status_key: qm.status?.value || "scheduled",
+        comment: qm.comment?.value || "",
+      };
+      try {
+        const r = await fetch(`/api/appointments/${qm.id?.value}/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await r.json();
+        if (!data.ok) {
+          alert(
+            data.error === "room_conflict"
+              ? "Конфликт: кабинет занят"
+              : "Ошибка сохранения"
+          );
+          return;
+        }
+        closeModal();
+        calendar.refetchEvents();
+        if (typeof refreshRoomBar === "function") refreshRoomBar();
+      } catch (e) {
+        alert("Сеть недоступна");
+      }
+    });
+
+    qm.btnDel?.addEventListener("click", async () => {
+      if (!confirm("Удалить запись?")) return;
+      try {
+        const r = await fetch(`/delete_appointment/${qm.id?.value}`, {
+          method: "POST",
+        });
+        const data = await r.json();
+        if (!data.ok) {
+          alert("Не удалось удалить");
+          return;
+        }
+        closeModal();
+        calendar.refetchEvents();
+        if (typeof refreshRoomBar === "function") refreshRoomBar();
+      } catch (e) {
+        alert("Сеть недоступна");
+      }
+    });
+  }); // DOMContentLoaded
 </script>
 
 {% endblock %}
