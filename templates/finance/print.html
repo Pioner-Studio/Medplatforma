@@ -1,0 +1,64 @@
+{% extends "_layout.html" %} {% block content %}
+<h1 class="h1">Финансовые операции — печать</h1>
+
+<style>
+  @media print {
+    .noprint {
+      display: none;
+    }
+    body {
+      background: #fff;
+    }
+  }
+  table.print {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  table.print th,
+  table.print td {
+    border: 1px solid #e5e7eb;
+    padding: 6px 8px;
+  }
+  table.print th {
+    background: #f8fafc;
+    text-align: left;
+  }
+</style>
+
+<div class="noprint" style="margin-bottom: 10px">
+  <a class="cs-btn" href="#" onclick="window.print()">Печать</a>
+  <a class="cs-link" href="/finance">Назад в «Финансы»</a>
+</div>
+
+<table class="print">
+  <thead>
+    <tr>
+      <th>Время</th>
+      <th>Тип</th>
+      <th>Источник</th>
+      <th>Сумма</th>
+      <th>Услуга</th>
+      <th>Категория</th>
+      <th>Комментарий</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for it in (items or []) %}
+    <tr>
+      <td>{{ it.ts }}</td>
+      <td>{{ it.type }}</td>
+      <td>{{ it.source }}</td>
+      <td>{{ it.amount }} ₽</td>
+      <td>{{ it.service_name }}</td>
+      <td>{{ it.category_ru }}</td>
+      <td>{{ it.note }}</td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="7" class="cs-empty">Записей нет</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

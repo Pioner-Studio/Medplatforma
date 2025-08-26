@@ -47,12 +47,34 @@
 
 <button class="cs-btn" type="submit">Фильтр</button>
 
-  <span style="margin-left:8px">Быстрые расходы:</span>
+<a class="cs-link" href="/finance/export/csv?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">Экспорт CSV</a>
+· <a class="cs-link" href="/finance/export/json?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">JSON</a>
+· <a class="cs-link" href="/finance/export/zip?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">ZIP</a>
+· <a class="cs-link" href="/finance/print?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}" target="_blank">Печать</a>
+
+<form method="post" action="/finance/import/json" enctype="multipart/form-data" style="display:inline-block; margin-left:10px">
+  <label class="cs-link" style="cursor:pointer">
+    Импорт JSON
+    <input type="file" name="file" accept=".json,application/json" style="display:none" onchange="this.form.submit()">
+  </label>
+</form>
+
+
+  <span style="margin-left:8px">Быстрые операции:</span>
   <a class="cs-link" href="/finance/add?type=expense&category=rent">Аренда</a>
   <a class="cs-link" href="/finance/add?type=expense&category=marketing">Маркетинг</a>
   <a class="cs-link" href="/finance/add?type=expense&category=dividends">Дивиденды</a>
   <a class="cs-link" href="/finance/add?type=purchase">Касса</a>
+  <a class="cs-link" href="/finance/add?type=salary">ЗП</a>
+  <a class="cs-link" href="/finance/add?type=deposit">Депозит</a>
 </form>
+
+{% if deposits or salaries %}
+  <div class="muted" style="margin:6px 0">
+    {% if deposits %}<span class="pill">Депозиты — {{ deposits }} ₽</span>{% endif %}
+    {% if salaries %}<span class="pill">ЗП — {{ salaries }} ₽</span>{% endif %}
+  </div>
+{% endif %}
 
   <div class="cs-table-wrap">
     <table class="cs-table">
@@ -67,8 +89,9 @@
             <td>{{ it.type }}</td>
             <td>{{ it.source }}</td>
             <td>{{ it.amount }} ₽</td>
+            {% set RU = {"purchase":"Закупка","marketing":"Маркетинг","dividends":"Дивиденды","rent":"Аренда"} %}
             <td>{{ it.service_name }}</td>
-            <td>{{ it.category or '—' }}</td>
+            <td>{{ it.category_ru }}</td>
             <td>{{ it.note }}</td>
           </tr>
         {% else %}

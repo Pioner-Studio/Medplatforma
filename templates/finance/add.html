@@ -1,5 +1,4 @@
-{% extends "_layout.html" %}
-{% block content %}
+{% extends "_layout.html" %} {% block content %}
 <div class="cs-wrap">
   <h1 class="cs-h1">Внести операцию</h1>
   <form method="post" action="/finance/add" class="cs-form" id="financeAddForm">
@@ -14,16 +13,28 @@
       </select>
     </div>
 
-{% if preset_type %}
-<script>
-  window.__preset_type__ = "{{ preset_type }}";
-</script>
-{% endif %}
-<input type="hidden" name="category" id="hiddenCategory" value="{{ preset_category or '' }}">
+    {% if preset_type %}
+    <script>
+      window.__preset_type__ = "{{ preset_type }}";
+    </script>
+    {% endif %}
+    <input
+      type="hidden"
+      name="category"
+      id="hiddenCategory"
+      value="{{ preset_category or '' }}"
+    />
 
-    <div class="cs-row" id="amountRow" style="display:none">
+    <div class="cs-row" id="amountRow" style="display: none">
       <label class="cs-label">Сумма</label>
-      <input type="number" min="0" step="1" name="amount" class="cs-input" placeholder="0">
+      <input
+        type="number"
+        min="0"
+        step="1"
+        name="amount"
+        class="cs-input"
+        placeholder="0"
+      />
     </div>
 
     <div class="cs-row">
@@ -41,7 +52,9 @@
       <select name="service_id" class="cs-input" id="svcSel">
         <option value="">—</option>
         {% for s in (services or []) %}
-          <option value="{{ s._id }}" data-price="{{ s.price|default(0) }}">{{ s.name }} — {{ s.price|default(0) }} ₽</option>
+        <option value="{{ s._id }}" data-price="{{ s.price|default(0) }}">
+          {{ s.name }} — {{ s.price|default(0) }} ₽
+        </option>
         {% endfor %}
       </select>
       <div class="cs-hint" id="priceHint">Цена: —</div>
@@ -49,7 +62,12 @@
 
     <div class="cs-row">
       <label class="cs-label">Комментарий</label>
-      <input type="text" name="note" class="cs-input" placeholder="необязательно">
+      <input
+        type="text"
+        name="note"
+        class="cs-input"
+        placeholder="необязательно"
+      />
     </div>
 
     <div class="cs-actions">
@@ -60,55 +78,95 @@
 </div>
 
 <script>
-(function(){
-  const PRESET_TYPE = "{{ preset_type or '' }}";
-  const PRESET_CATEGORY = "{{ preset_category or '' }}";
+  (function () {
+    const PRESET_TYPE = "{{ preset_type or '' }}";
+    const PRESET_CATEGORY = "{{ preset_category or '' }}";
 
-  const params = new URLSearchParams(location.search);
-  const typeSel = document.getElementById('typeSel');
-  const amountRow = document.getElementById('amountRow');
-  const hiddenCategory = document.getElementById('hiddenCategory');
+    const params = new URLSearchParams(location.search);
+    const typeSel = document.getElementById("typeSel");
+    const amountRow = document.getElementById("amountRow");
+    const hiddenCategory = document.getElementById("hiddenCategory");
 
-  // тип из query или пресета
-  if (params.get('type')) typeSel.value = params.get('type');
-  if (PRESET_TYPE) typeSel.value = PRESET_TYPE;
+    // тип из query или пресета
+    if (params.get("type")) typeSel.value = params.get("type");
+    if (PRESET_TYPE) typeSel.value = PRESET_TYPE;
 
-  // категория из query или пресета
-  const cat = PRESET_CATEGORY || params.get('category') || '';
-  if (hiddenCategory) hiddenCategory.value = cat;
+    // категория из query или пресета
+    const cat = PRESET_CATEGORY || params.get("category") || "";
+    if (hiddenCategory) hiddenCategory.value = cat;
 
-  function toggleRows(){
-    const isIncome = typeSel.value === 'income';
-    // сумма видна для НЕ доходов
-    if (amountRow) amountRow.style.display = isIncome ? 'none' : '';
-    // услуга видна только для доходов
-    const svcRow = document.getElementById('svcSel')?.closest('.cs-row');
-    if (svcRow) svcRow.style.display = isIncome ? '' : 'none';
-  }
-  typeSel.addEventListener('change', toggleRows);
-  toggleRows();
+    function toggleRows() {
+      const isIncome = typeSel.value === "income";
+      // сумма видна для НЕ доходов
+      if (amountRow) amountRow.style.display = isIncome ? "none" : "";
+      // услуга видна только для доходов
+      const svcRow = document.getElementById("svcSel")?.closest(".cs-row");
+      if (svcRow) svcRow.style.display = isIncome ? "" : "none";
+    }
+    typeSel.addEventListener("change", toggleRows);
+    toggleRows();
 
-  // подсказка цены услуги
-  const svcSel = document.getElementById('svcSel');
-  const hint = document.getElementById('priceHint');
-  function updateHint(){
-    const opt = svcSel?.options[svcSel.selectedIndex];
-    const p = opt ? opt.getAttribute('data-price') : null;
-    if (hint) hint.textContent = p ? ('Цена: ' + p + ' ₽') : 'Цена: —';
-  }
-  if (svcSel && hint){ svcSel.addEventListener('change', updateHint); updateHint(); }
-})();
+    // подсказка цены услуги
+    const svcSel = document.getElementById("svcSel");
+    const hint = document.getElementById("priceHint");
+    function updateHint() {
+      const opt = svcSel?.options[svcSel.selectedIndex];
+      const p = opt ? opt.getAttribute("data-price") : null;
+      if (hint) hint.textContent = p ? "Цена: " + p + " ₽" : "Цена: —";
+    }
+    if (svcSel && hint) {
+      svcSel.addEventListener("change", updateHint);
+      updateHint();
+    }
+  })();
 </script>
 
 <style>
-.cs-wrap{max-width:720px;margin:0 auto;padding:8px 12px 28px}
-.cs-h1{font-size:28px;margin:10px 0 14px}
-.cs-form{display:flex;flex-direction:column;gap:12px}
-.cs-row{display:flex;flex-direction:column;gap:6px}
-.cs-label{font-size:13px;color:#555}
-.cs-input{padding:8px 10px;border:1px solid #d6d7dc;border-radius:10px}
-.cs-actions{display:flex;gap:12px;align-items:center;margin-top:8px}
-.cs-btn{background:#2e6cff;color:#fff;border:0;border-radius:10px;padding:10px 18px;cursor:pointer}
-.cs-hint{font-size:12px;color:#666}
+  .cs-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8px 12px 28px;
+  }
+  .cs-h1 {
+    font-size: 28px;
+    margin: 10px 0 14px;
+  }
+  .cs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cs-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cs-label {
+    font-size: 13px;
+    color: #555;
+  }
+  .cs-input {
+    padding: 8px 10px;
+    border: 1px solid #d6d7dc;
+    border-radius: 10px;
+  }
+  .cs-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .cs-btn {
+    background: #2e6cff;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 18px;
+    cursor: pointer;
+  }
+  .cs-hint {
+    font-size: 12px;
+    color: #666;
+  }
 </style>
 {% endblock %}
