@@ -1,6 +1,6 @@
 # Flask routes map
 
-_generated: 2025-08-26 16:05:41_
+_generated: 2025-08-29 05:22:58_
 
 | Rule | Endpoint | Methods |
 |------|----------|---------|
@@ -17,8 +17,11 @@ _generated: 2025-08-26 16:05:41_
 | `/api/appointments/update_time` | `api_appointments_update_time` | `POST` |
 | `/api/busy_slots` | `api_busy_slots` | `POST` |
 | `/api/chat/<id>/send` | `api_chat_send` | `POST` |
+| `/api/dicts` | `api.api_dicts` | `GET` |
 | `/api/dicts` | `api_dicts` | `GET` |
+| `/api/doctor_schedule` | `api.api_doctor_schedule` | `POST` |
 | `/api/doctor_schedule` | `doctor_schedule` | `POST` |
+| `/api/events` | `api.api_events` | `GET` |
 | `/api/events` | `api_events` | `GET` |
 | `/api/finance/record` | `api_finance_record` | `POST` |
 | `/api/free_slots` | `api_free_slots` | `POST` |
@@ -72,9 +75,9 @@ _generated: 2025-08-26 16:05:41_
 | `/profile` | `profile` | `GET` |
 | `/roadmap` | `roadmap_view` | `GET` |
 | `/rooms` | `rooms_list` | `GET` |
-| `/schedule/` | `schedule.list_view` | `GET` |
-| `/schedule/add` | `schedule.add_appointment` | `POST` |
-| `/schedule/free_slots` | `schedule.free_slots` | `GET` |
+| `/schedule/api/create` | `schedule.schedule_api_create` | `POST` |
+| `/schedule/api/delete` | `schedule.schedule_api_delete` | `POST` |
+| `/schedule/api/move` | `schedule.schedule_api_move` | `POST` |
 | `/services` | `services_list` | `GET` |
 | `/settings` | `settings` | `GET` |
 | `/static/<path:filename>` | `static` | `GET` |
@@ -138,12 +141,24 @@ _generated: 2025-08-26 16:05:41_
 - methods: `POST`
 
 ### `/api/dicts`
+- endpoint: `api.api_dicts`
+- methods: `GET`
+
+### `/api/dicts`
 - endpoint: `api_dicts`
 - methods: `GET`
 
 ### `/api/doctor_schedule`
+- endpoint: `api.api_doctor_schedule`
+- methods: `POST`
+
+### `/api/doctor_schedule`
 - endpoint: `doctor_schedule`
 - methods: `POST`
+
+### `/api/events`
+- endpoint: `api.api_events`
+- methods: `GET`
 
 ### `/api/events`
 - endpoint: `api_events`
@@ -357,17 +372,17 @@ _generated: 2025-08-26 16:05:41_
 - endpoint: `rooms_list`
 - methods: `GET`
 
-### `/schedule/`
-- endpoint: `schedule.list_view`
-- methods: `GET`
-
-### `/schedule/add`
-- endpoint: `schedule.add_appointment`
+### `/schedule/api/create`
+- endpoint: `schedule.schedule_api_create`
 - methods: `POST`
 
-### `/schedule/free_slots`
-- endpoint: `schedule.free_slots`
-- methods: `GET`
+### `/schedule/api/delete`
+- endpoint: `schedule.schedule_api_delete`
+- methods: `POST`
+
+### `/schedule/api/move`
+- endpoint: `schedule.schedule_api_move`
+- methods: `POST`
 
 ### `/services`
 - endpoint: `services_list`

@@ -1,0 +1,9 @@
+.\main.py
+.\routes_schedule.py
+.\routes_patients.py
+.\templates\sidebar.html
+.\templates\calendar.html
+.\templates\patients.html
+.\templates\add_patient.html
+.\templates\edit_patient.html
+.\templates\patient_card.html

@@ -1,318 +1,24 @@
 {% extends "base.html" %} {% block content %}
 
-<!-- Метрики и действия -->
-<div
-  style="
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    padding: 6px 0 6px 12px;
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 1px 8px #e3eaf9b7;
-    margin-bottom: 10px;
-  "
->
-  <span title="Всего кабинетов">
-    <i class="fa-solid fa-house-chimney-medical" style="color: #467fe3"></i>
-    <b>{{ metrics.total_rooms }}</b>
-  </span>
-  <span title="Свободные">
-    <i class="fa-solid fa-circle-check" style="color: #21ba45"></i>
-    <b>{{ metrics.free_rooms }}</b>
-  </span>
-  <span style="margin-left: auto; display: flex; gap: 12px">
-    <a
-      href="{{ url_for('add_event') }}"
-      class="btn-main"
-      style="
-        background: #1976d2;
-        color: #fff;
-        font-weight: 600;
-        border-radius: 8px;
-        padding: 8px 22px;
-        font-size: 1.07em;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-      "
-    >
-      <i class="fa-solid fa-plus"></i> Добавить запись
-    </a>
-    <a
-      href="{{ url_for('export_calendar') }}"
-      class="btn-main btn-export"
-      style="
-        background: #fff;
-        color: #3185cb;
-        border: 1.5px solid #dbeafd;
-        font-weight: 600;
-        border-radius: 8px;
-        padding: 8px 18px;
-        font-size: 1.07em;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-      "
-    >
-      <i class="fa-solid fa-file-arrow-down"></i> Выгрузка
-    </a>
-  </span>
-</div>
-
-<!-- Кабинеты и их статус -->
-<div
-  id="roomsBar"
-  style="display: flex; gap: 36px; margin: 14px 0 12px 8px; flex-wrap: wrap"
->
-  {% for cab in cabinets %} {% set info = room_info.get(cab) %}
-  <span
-    data-room-name="{{ cab }}"
-    style="font-size: 1.12em; font-weight: 600; cursor: default"
-  >
-    {{ cab }} —
-    <b
-      class="room-status-text"
-      style="color:{{ info.color if info else 'inherit' }}"
-    >
-      {{ (info.text if info else '—') }}
-    </b>
-    <span
-      class="room-next"
-      style="opacity: 0.7; font-weight: 500; margin-left: 8px"
-    >
-      {% if info and info.state == 'available' and info.next %} {% set t =
-      info.next.start.split('T')[1] if info.next.start else '' %} Ближайший: {{
-      t }} {% if info.next.in_minutes is not none %} (через {% if
-      info.next.in_minutes < 0 %}0 мин {% elif info.next.in_minutes < 60 %}{{
-      info.next.in_minutes }} мин {% else %}{{ (info.next.in_minutes // 60)|int
-      }} ч {{ (info.next.in_minutes % 60)|int }} мин {% endif %} ) {% endif %}
-      {% if info.next.service or info.next.patient %} • {{ info.next.service
-      }}{% if info.next.service and info.next.patient %} — {% endif %}{{
-      info.next.patient }} {% endif %} {% endif %}
-    </span>
-  </span>
-  {% endfor %}
-</div>
-
-<!-- Tooltip для списка приёмов кабинета -->
-<div
-  id="roomTip"
-  style="
-    position: fixed;
-    display: none;
-    z-index: 9999;
-    background: #fff;
-    border: 1px solid #e6eefb;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
-    padding: 10px 12px;
-    min-width: 340px;
-    max-width: 460px;
-    font-size: 14px;
-    line-height: 1.35;
-  "
->
-  <div id="roomTipTitle" style="font-weight: 700; margin-bottom: 8px"></div>
-  <div id="roomTipBody">
-    <div style="opacity: 0.6">Загрузка…</div>
-  </div>
-</div>
-
-<!-- Быстрые действия по времени -->
-<div
-  style="
-    grid-column: 1/-1;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: -4px;
-  "
->
+<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px">
   <button
-    type="button"
+    id="btnAdd"
     class="btn"
-    id="btn_plus_15"
-    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
+    style="
+      background: #1976d2;
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 16px;
+    "
   >
-    +15 мин
+    Добавить запись
   </button>
-  <button
-    type="button"
-    class="btn"
-    id="btn_plus_30"
-    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
-  >
-    +30 мин
-  </button>
-  <button
-    type="button"
-    class="btn"
-    id="btn_plus_60"
-    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
-  >
-    +60 мин
-  </button>
-  <span style="opacity: 0.6; margin: 0 6px">|</span>
-  <button
-    type="button"
-    class="btn"
-    id="btn_move_tomorrow"
-    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
-  >
-    На завтра (то же время)
-  </button>
-  <span style="opacity: 0.6; margin: 0 6px">|</span>
-  <button
-    type="button"
-    class="btn"
-    id="btn_first_free"
-    style="border: 1px solid #dbeafd; border-radius: 8px; padding: 6px 10px"
-  >
-    Первый свободный слот (кабинет)
-  </button>
-</div>
-<small id="e_warn" style="grid-column: 1/-1; color: #b45309; display: none"
-  >Предупреждение</small
->
-
-<!-- Легенда статусов -->
-<div
-  style="
-    display: flex;
-    gap: 30px;
-    align-items: center;
-    font-size: 1.01em;
-    margin-bottom: 12px;
-    margin-left: 8px;
-  "
->
-  <span
-    ><span
-      style="
-        background: #a2c6fa;
-        border: 1.5px solid #dde7f7;
-        width: 18px;
-        height: 18px;
-        display: inline-block;
-        border-radius: 4px;
-        margin-right: 6px;
-      "
-    ></span
-    >Первичный</span
-  >
-  <span
-    ><span
-      style="
-        background: #fbc7c0;
-        border: 1.5px solid #fde7e7;
-        width: 18px;
-        height: 18px;
-        display: inline-block;
-        border-radius: 4px;
-        margin-right: 6px;
-      "
-    ></span
-    >Отказ</span
-  >
-  <span
-    ><span
-      style="
-        background: #fde8a5;
-        border: 1.5px solid #f7e9c5;
-        width: 18px;
-        height: 18px;
-        display: inline-block;
-        border-radius: 4px;
-        margin-right: 6px;
-      "
-    ></span
-    >Повторный</span
-  >
-  <span
-    ><span
-      style="
-        background: #b4f0c0;
-        border: 1.5px solid #cefad5;
-        width: 18px;
-        height: 18px;
-        display: inline-block;
-        border-radius: 4px;
-        margin-right: 6px;
-      "
-    ></span
-    >Оплачен</span
+  <span id="legend" style="opacity: 0.6"
+    >Клик по пустой ячейке — создать • Перетаскивание — перенос • Клик по записи
+    — редактировать</span
   >
 </div>
 
-<!-- Фильтры -->
-<div
-  class="calendar-filters"
-  style="display: flex; gap: 12px; align-items: center; margin-bottom: 18px"
->
-  <select id="doctorFilter" class="filter-select">
-    <option value="">Все врачи</option>
-    {% for doc in doctors %}
-    <option value="{{ doc._id }}">{{ doc.full_name }}</option>
-    {% endfor %}
-  </select>
-
-  <!-- Поиск пациента — UI оставляем, но логика не мешает drag&drop -->
-  <div style="position: relative">
-    <input
-      type="text"
-      id="patientSearch"
-      class="filter-input"
-      placeholder="Поиск пациента..."
-      style="
-        padding: 7px 18px;
-        border-radius: 8px;
-        border: 1px solid #dde7f7;
-        min-width: 180px;
-      "
-    />
-    <ul
-      id="patientSearchList"
-      class="search-list"
-      style="
-        display: none;
-        position: absolute;
-        z-index: 1000;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 2px 12px #eee;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        max-height: 250px;
-        overflow-y: auto;
-        left: 0;
-        top: 36px;
-        width: 100%;
-      "
-    ></ul>
-  </div>
-
-  <!-- Фильтр по услуге: оставляем общий, без списка (список можем добавить позже) -->
-  <select id="serviceFilter" class="filter-select">
-    <option value="">Все услуги</option>
-  </select>
-
-  <!-- Важно: используем cabinets (имена), а не rooms -->
-  <select id="cabinetFilter" class="filter-select">
-    <option value="">Все кабинеты</option>
-    {% for cab in cabinets %}
-    <option value="{{ cab }}">{{ cab }}</option>
-    <!-- value = NAME -->
-    {% endfor %}
-  </select>
-
-  <button id="resetFilters" style="margin-left: 10px">Сбросить</button>
-</div>
-
-<!-- Календарь -->
 <div
   id="calendar"
   style="
@@ -324,9 +30,9 @@
   "
 ></div>
 
-<!-- Модалка быстрого редактирования (Готовая разметка) -->
+<!-- Модал: новая запись -->
 <div
-  id="quickModal"
+  id="mCreate"
   style="
     display: none;
     position: fixed;
@@ -338,225 +44,143 @@
   <div
     style="
       background: #fff;
-      max-width: 640px;
+      max-width: 560px;
       margin: 7vh auto;
-      padding: 18px;
+      padding: 16px;
       border-radius: 12px;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
     "
   >
-    <div
-      style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px"
-    >
-      <h3 style="margin: 0; flex: 1">Редактировать запись</h3>
-      <button
-        id="qmClose"
-        type="button"
-        style="
-          border: none;
-          background: #eee;
-          border-radius: 8px;
-          padding: 6px 10px;
-          cursor: pointer;
-        "
-      >
-        ×
-      </button>
-    </div>
+    <h3 style="margin: 0 0 10px">Новая запись</h3>
 
-    <form
-      id="qmForm"
-      style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
-    >
-      <input type="hidden" id="qm_id" />
-
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
       <label
-        >Врач
-        <select
-          id="qm_doctor"
-          class="filter-select"
-          required
+        >Начало
+        <input
+          id="c_start"
+          type="datetime-local"
+          step="300"
           style="width: 100%"
-        ></select>
+        />
+      </label>
+      <label
+        >Окончание
+        <input
+          id="c_end"
+          type="datetime-local"
+          step="300"
+          style="width: 100%"
+        />
       </label>
 
       <label
+        >Врач
+        <select id="c_doctor" style="width: 100%"></select>
+      </label>
+      <label
         >Пациент
-        <select
-          id="qm_patient"
-          class="filter-select"
-          required
-          style="width: 100%"
-        ></select>
+        <select id="c_patient" style="width: 100%"></select>
       </label>
 
       <label
         >Услуга
-        <select
-          id="qm_service"
-          class="filter-select"
-          required
-          style="width: 100%"
-        ></select>
-        <small id="qm_service_hint" style="opacity: 0.7"></small>
+        <select id="c_service" style="width: 100%"></select>
+        <small id="c_service_hint" style="opacity: 0.7"></small>
       </label>
-
       <label
         >Кабинет
-        <select
-          id="qm_room"
-          class="filter-select"
-          required
-          style="width: 100%"
-        ></select>
+        <select id="c_room" style="width: 100%"></select>
       </label>
+    </div>
 
+    <div style="display: flex; gap: 8px; align-items: center; margin: 10px 0">
+      <button type="button" class="btn" data-s="+15">+15</button>
+      <button type="button" class="btn" data-s="+30">+30</button>
+      <button type="button" class="btn" data-s="+60">+60</button>
+      <button type="button" class="btn" id="c_tomorrow">Завтра</button>
+      <button type="button" class="btn" id="c_firstfree">
+        Первый свободный слот
+      </button>
+      <small
+        id="c_warn"
+        style="color: #b45309; display: none; margin-left: 8px"
+      ></small>
+    </div>
+
+    <div style="display: flex; gap: 8px; justify-content: flex-end">
+      <button id="c_save" class="btn btn-primary">Создать</button>
+      <button id="c_close" class="btn">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модал: быстрое редактирование -->
+<div
+  id="mQuick"
+  style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 9999;
+  "
+>
+  <div
+    style="
+      background: #fff;
+      max-width: 520px;
+      margin: 10vh auto;
+      padding: 16px;
+      border-radius: 12px;
+    "
+  >
+    <h3 style="margin: 0 0 10px">Редактировать запись</h3>
+    <input type="hidden" id="q_id" />
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
       <label
         >Начало
         <input
+          id="q_start"
           type="datetime-local"
-          id="qm_start"
-          required
           step="300"
           style="width: 100%"
         />
       </label>
-
       <label
         >Окончание
         <input
+          id="q_end"
           type="datetime-local"
-          id="qm_end"
           step="300"
           style="width: 100%"
         />
       </label>
+    </div>
 
-      <label
-        >Статус
-        <select
-          id="qm_status"
-          class="filter-select"
-          required
-          style="width: 100%"
-        >
-          <option value="scheduled">Запланирован</option>
-          <option value="arrived">Прибыл</option>
-          <option value="done">Завершён</option>
-          <option value="cancelled">Отменён</option>
-        </select>
-      </label>
-
-      <label style="grid-column: 1 / -1"
-        >Комментарий
-        <textarea id="qm_comment" rows="3" style="width: 100%"></textarea>
-      </label>
-
-      <div
-        style="
-          grid-column: 1/-1;
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          margin-top: -4px;
-        "
-      >
-        <button
-          type="button"
-          class="btn"
-          id="btn_plus_15"
-          style="
-            border: 1px solid #dbeafd;
-            border-radius: 8px;
-            padding: 6px 10px;
-          "
-        >
-          +15 мин
-        </button>
-        <button
-          type="button"
-          class="btn"
-          id="btn_plus_30"
-          style="
-            border: 1px solid #dbeafd;
-            border-radius: 8px;
-            padding: 6px 10px;
-          "
-        >
-          +30 мин
-        </button>
-        <button
-          type="button"
-          class="btn"
-          id="btn_plus_60"
-          style="
-            border: 1px solid #dbeafd;
-            border-radius: 8px;
-            padding: 6px 10px;
-          "
-        >
-          +60 мин
-        </button>
-        <span style="opacity: 0.6; margin: 0 6px">|</span>
-        <button
-          type="button"
-          class="btn"
-          id="btn_move_tomorrow"
-          style="
-            border: 1px solid #dbeafd;
-            border-radius: 8px;
-            padding: 6px 10px;
-          "
-        >
-          На завтра (то же время)
-        </button>
-        <span style="opacity: 0.6; margin: 0 6px">|</span>
-        <button
-          type="button"
-          class="btn"
-          id="btn_first_free"
-          style="
-            border: 1px solid #dbeafd;
-            border-radius: 8px;
-            padding: 6px 10px;
-          "
-        >
-          Первый свободный слот (кабинет)
-        </button>
-      </div>
+    <div style="display: flex; gap: 8px; align-items: center; margin: 10px 0">
+      <button type="button" class="btn" data-q="+15">+15</button>
+      <button type="button" class="btn" data-q="+30">+30</button>
+      <button type="button" class="btn" data-q="+60">+60</button>
       <small
-        id="qm_warn"
-        style="grid-column: 1/-1; color: #b45309; display: none"
-        >Предупреждение</small
-      >
+        id="q_warn"
+        style="color: #b45309; display: none; margin-left: 8px"
+      ></small>
+    </div>
 
-      <div
-        style="
-          grid-column: 1 / -1;
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-        "
+    <div style="display: flex; gap: 8px; justify-content: flex-end">
+      <button
+        id="q_delete"
+        class="btn"
+        style="background: #fee2e2; border: 1px solid #fecaca"
       >
-        <button
-          type="button"
-          id="qmDelete"
-          class="btn"
-          style="background: #fee2e2; border: 1px solid #fecaca"
-        >
-          Удалить
-        </button>
-        <button type="submit" class="btn btn-primary">Сохранить</button>
-      </div>
-    </form>
+        Удалить
+      </button>
+      <button id="q_save" class="btn btn-primary">Сохранить</button>
+      <button id="q_close" class="btn">Отмена</button>
+    </div>
   </div>
 </div>
 
 {% endblock %} {% block scripts %}
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-/>
 <link
   href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css"
   rel="stylesheet"
@@ -565,426 +189,298 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // ---------- helpers ----------
+    // ------------- helpers -------------
     const $ = (s) => document.querySelector(s);
+    const pad = (n) => String(n).padStart(2, "0");
     const addMin = (d, m) => new Date(d.getTime() + m * 60000);
-    const fmtISO = (d) => {
-      const pad = (n) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-        d.getDate()
-      )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    };
+    const fmtISO = (d) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+        d.getHours()
+      )}:${pad(d.getMinutes())}`;
 
-    // Глобально-совместимый кэш словарей (чтобы не конфликтовать с другими скриптами)
-    window.__DICT_CACHE__ = window.__DICT_CACHE__ || null;
-    async function loadDictsOnce() {
-      if (window.__DICT_CACHE__) return window.__DICT_CACHE__;
+    let dicts = null;
+    async function loadDicts() {
+      if (dicts) return dicts;
       const r = await fetch("/api/dicts");
-      const data = await r.json();
-      if (!data.ok) throw new Error("dicts load failed");
-      window.__DICT_CACHE__ = data;
-      return data;
+      const j = await r.json();
+      if (!j.ok) throw new Error("dicts failed");
+      dicts = j;
+      return j;
+    }
+    function fillOptions(el, arr) {
+      el.innerHTML = (arr || [])
+        .map((x) => `<option value="${x.id}">${x.name}</option>`)
+        .join("");
     }
 
-    // ---------- ссылки на элементы модалки (разметка уже есть в шаблоне) ----------
-    const qm = {
-      modal: $("#quickModal"),
-      close: $("#qmClose"),
-      form: $("#qmForm"),
-      id: $("#qm_id"),
-      doctor: $("#qm_doctor"),
-      patient: $("#qm_patient"),
-      service: $("#qm_service"),
-      serviceHint: $("#qm_service_hint"),
-      room: $("#qm_room"),
-      start: $("#qm_start"),
-      end: $("#qm_end"),
-      status: $("#qm_status"),
-      comment: $("#qm_comment"),
-      warn: $("#qm_warn"),
-      btnDel: $("#qmDelete"),
-      btnPlus15: $("#btn_plus_15"),
-      btnPlus30: $("#btn_plus_30"),
-      btnPlus60: $("#btn_plus_60"),
-      btnTomorrow: $("#btn_move_tomorrow"),
-      btnFirstFree: $("#btn_first_free"),
+    // ------------- CREATE modal -------------
+    const mC = $("#mCreate");
+    const c_start = $("#c_start"),
+      c_end = $("#c_end");
+    const c_doctor = $("#c_doctor"),
+      c_patient = $("#c_patient"),
+      c_service = $("#c_service"),
+      c_room = $("#c_room");
+    const c_hint = $("#c_service_hint"),
+      c_warn = $("#c_warn");
+
+    async function openCreateAt(dateStr) {
+      const d = await loadDicts();
+      fillOptions(c_doctor, d.doctors);
+      fillOptions(c_patient, d.patients);
+      fillOptions(c_service, d.services);
+      fillOptions(c_room, d.rooms);
+
+      c_start.value = fmtISO(new Date(dateStr));
+      // авто-длительность по услуге
+      const svc = d.services.find((s) => s.id === c_service.value);
+      const dur = parseInt(svc?.duration_min ?? 30, 10);
+      c_end.value = fmtISO(addMin(new Date(c_start.value), dur));
+      c_hint.textContent = `Длительность услуги: ${dur} мин.`;
+
+      c_service.onchange = () => {
+        const s = d.services.find((s) => s.id === c_service.value);
+        const dd = parseInt(s?.duration_min ?? 30, 10);
+        c_end.value = fmtISO(addMin(new Date(c_start.value), dd));
+        c_hint.textContent = `Длительность услуги: ${dd} мин.`;
+      };
+
+      mC.style.display = "block";
+    }
+    function closeCreate() {
+      mC.style.display = "none";
+    }
+
+    $("#c_close").onclick = closeCreate;
+    document.querySelectorAll("#mCreate [data-s]").forEach((b) => {
+      b.onclick = () => {
+        const m = parseInt(b.getAttribute("data-s").replace("+", ""), 10);
+        const s = new Date(c_start.value);
+        const e = new Date(c_end.value || s);
+        const dur = Math.max(5, Math.round((e - s) / 60000));
+        const ns = addMin(s, m);
+        c_start.value = fmtISO(ns);
+        c_end.value = fmtISO(addMin(ns, dur));
+      };
+    });
+    $("#c_tomorrow").onclick = () => {
+      const s = new Date(c_start.value);
+      s.setDate(s.getDate() + 1);
+      c_start.value = fmtISO(s);
+      const svc = dicts.services.find((x) => x.id === c_service.value);
+      const dur = parseInt(svc?.duration_min ?? 30, 10);
+      c_end.value = fmtISO(addMin(s, dur));
+    };
+    $("#c_firstfree").onclick = async () => {
+      const roomId = c_room.value;
+      const start = new Date(c_start.value);
+      const day = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(
+        start.getDate()
+      )}`;
+      const r = await fetch(
+        `/api/rooms/busy?room_id=${encodeURIComponent(roomId)}&date=${day}`
+      );
+      const j = await r.json();
+      if (!j.ok) return alert("Не удалось проверить занятость");
+      const svc = dicts.services.find((x) => x.id === c_service.value);
+      const dur = parseInt(svc?.duration_min ?? 30, 10);
+
+      const busy = (j.items || [])
+        .map((i) => {
+          const [sh, sm] = i.start.split(":").map(Number);
+          const [eh, em] = i.end.split(":").map(Number);
+          return { s: sh * 60 + sm, e: eh * 60 + em };
+        })
+        .sort((a, b) => a.s - b.s);
+
+      let cursor = start.getHours() * 60 + start.getMinutes();
+      const endDay = 21 * 60;
+      while (cursor + dur <= endDay) {
+        const overlap = busy.some(
+          (b) => !(cursor + dur <= b.s || cursor >= b.e)
+        );
+        if (!overlap) {
+          const base = new Date(start);
+          base.setHours(Math.floor(cursor / 60), cursor % 60, 0, 0);
+          c_start.value = fmtISO(base);
+          c_end.value = fmtISO(addMin(base, dur));
+          return;
+        }
+        cursor += 5;
+      }
+      alert("Свободных слотов сегодня нет");
     };
 
-    function openModal() {
-      if (qm.modal) qm.modal.style.display = "block";
-    }
-    function closeModal() {
-      if (qm.modal) qm.modal.style.display = "none";
-    }
-    qm.close?.addEventListener("click", closeModal);
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeModal();
-    });
-
-    // ---------- общий помощник для времени ----------
-    function setStartEnd(ns, ne) {
-      if (qm.start) qm.start.value = fmtISO(ns);
-      if (qm.end) qm.end.value = fmtISO(ne);
-    }
-
-    function shiftAppointment(minutes) {
-      if (!qm.start?.value) return;
-      const s = new Date(qm.start.value);
-      const e = qm.end?.value ? new Date(qm.end.value) : s;
-      const dur = Math.max(5, Math.round((e - s) / 60000));
-      const ns = addMin(s, minutes);
-      const ne = addMin(ns, dur);
-      setStartEnd(ns, ne);
-    }
-
-    // быстрые кнопки в модалке
-    qm.btnPlus15?.addEventListener("click", () => shiftAppointment(15));
-    qm.btnPlus30?.addEventListener("click", () => shiftAppointment(30));
-    qm.btnPlus60?.addEventListener("click", () => shiftAppointment(60));
-    qm.btnTomorrow?.addEventListener("click", () => {
-      if (!qm.start?.value) return;
-      const s = new Date(qm.start.value);
-      const e = qm.end?.value ? new Date(qm.end.value) : s;
-      const dur = Math.max(5, Math.round((e - s) / 60000));
-      s.setDate(s.getDate() + 1);
-      setStartEnd(s, addMin(s, dur));
-    });
-
-    // первый свободный слот в кабинете
-    async function moveToFirstFreeInRoom() {
-      const roomId = qm.room?.value;
-      const sid = qm.service?.value;
-      if (!roomId || !sid || !qm.start?.value) {
-        alert("Выберите кабинет, услугу и начало");
+    $("#c_save").onclick = async () => {
+      const body = {
+        start: c_start.value,
+        end: c_end.value,
+        doctor_id: c_doctor.value || null,
+        patient_id: c_patient.value || null,
+        service_id: c_service.value || null,
+        room_id: c_room.value,
+        note: "",
+      };
+      const r = await fetch("/schedule/api/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (!j.ok) {
+        alert(j.error || "Не удалось создать");
         return;
       }
-      const d = await loadDictsOnce();
-      const sRec = d.services.find((x) => x.id === sid);
-      const dur = parseInt(sRec?.duration_min ?? 30, 10);
+      calendar.refetchEvents();
+      closeCreate();
+    };
 
-      let cursor = new Date(qm.start.value);
-      const limit = new Date();
-      limit.setDate(limit.getDate() + 7);
-
-      while (cursor < limit) {
-        const day = `${cursor.getFullYear()}-${String(
-          cursor.getMonth() + 1
-        ).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
-        const resp = await fetch(
-          `/api/rooms/busy?room_id=${encodeURIComponent(roomId)}&date=${day}`
-        );
-        const data = await resp.json();
-        if (!data.ok) {
-          alert("Не удалось проверить занятость кабинета");
-          return;
-        }
-
-        const busy = (data.items || [])
-          .map((i) => {
-            const [sh, sm] = i.start.split(":").map(Number);
-            const [eh, em] = i.end.split(":").map(Number);
-            return { s: sh * 60 + sm, e: eh * 60 + em };
-          })
-          .sort((a, b) => a.s - b.s);
-
-        const st = cursor.getHours() * 60 + cursor.getMinutes();
-        const en = st + dur;
-        const overlap = busy.some((b) => !(en <= b.s || st >= b.e));
-
-        if (!overlap) {
-          setStartEnd(cursor, addMin(cursor, dur));
-          return;
-        }
-        cursor = addMin(cursor, 5);
-      }
-      alert("Не найден свободный слот в ближайшие 7 дней.");
+    // ------------- QUICK modal -------------
+    const mQ = $("#mQuick");
+    const q_id = $("#q_id"),
+      q_start = $("#q_start"),
+      q_end = $("#q_end"),
+      q_warn = $("#q_warn");
+    function openQuick(id, startStr, endStr) {
+      q_id.value = id;
+      q_start.value = fmtISO(new Date(startStr));
+      q_end.value = fmtISO(new Date(endStr));
+      q_warn.style.display = "none";
+      mQ.style.display = "block";
     }
-    qm.btnFirstFree?.addEventListener("click", moveToFirstFreeInRoom);
-
-    // автоподстановка окончания по услуге
-    async function recalcEndByService() {
-      if (!qm.service?.value || !qm.start?.value) return;
-      const d = await loadDictsOnce();
-      const srv = d.services.find((s) => s.id === qm.service.value);
-      const dur = parseInt(srv?.duration_min ?? 30, 10);
-      const s = new Date(qm.start.value);
-      setStartEnd(s, addMin(s, dur));
-      if (qm.serviceHint)
-        qm.serviceHint.textContent = `Длительность услуги: ${dur} мин.`;
+    function closeQuick() {
+      mQ.style.display = "none";
     }
-
-    // мягкое предупреждение по графику врача
-    async function checkDoctorWorking() {
-      const start = qm.start?.value;
-      if (!qm.doctor?.value || !start) {
-        if (qm.warn) qm.warn.style.display = "none";
+    $("#q_close").onclick = closeQuick;
+    document.querySelectorAll("#mQuick [data-q]").forEach((b) => {
+      b.onclick = () => {
+        const m = parseInt(b.getAttribute("data-q").replace("+", ""), 10);
+        const s = new Date(q_start.value);
+        const e = new Date(q_end.value || s);
+        const dur = Math.max(5, Math.round((e - s) / 60000));
+        const ns = addMin(s, m);
+        q_start.value = fmtISO(ns);
+        q_end.value = fmtISO(addMin(ns, dur));
+      };
+    });
+    $("#q_save").onclick = async () => {
+      const body = { id: q_id.value, start: q_start.value, end: q_end.value };
+      const r = await fetch("/schedule/api/move", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (!j.ok) {
+        alert(j.error || "Не удалось сохранить");
         return;
       }
-      try {
-        const r = await fetch("/api/doctor_schedule", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ doctor_id: qm.doctor.value }),
-        });
-        if (!r.ok) {
-          if (qm.warn) qm.warn.style.display = "none";
-          return;
-        }
-        const data = await r.json();
-        const sched = data?.schedule || {};
-        const s = new Date(start),
-          e = qm.end?.value ? new Date(qm.end.value) : new Date(start);
-        const dow = (s.getDay() + 6) % 7;
-        const day = sched[String(dow)];
-        if (!day || !day.start || !day.end) {
-          if (qm.warn) qm.warn.style.display = "none";
-          return;
-        }
-        const hm2m = (hm) => {
-          const [h, m] = hm.split(":").map(Number);
-          return h * 60 + m;
-        };
-        const st = s.getHours() * 60 + s.getMinutes(),
-          en = e.getHours() * 60 + e.getMinutes();
-        const outside = st < hm2m(day.start) || en > hm2m(day.end);
-        if (outside) {
-          if (qm.warn) {
-            qm.warn.textContent = `Время вне графика врача (${day.start}–${day.end}). Сохранение возможно.`;
-            qm.warn.style.display = "block";
-          }
-        } else {
-          if (qm.warn) qm.warn.style.display = "none";
-        }
-      } catch (_) {
-        if (qm.warn) qm.warn.style.display = "none";
+      calendar.refetchEvents();
+      closeQuick();
+    };
+    $("#q_delete").onclick = async () => {
+      if (!confirm("Удалить запись?")) return;
+      const r = await fetch("/schedule/api/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: q_id.value }),
+      });
+      const j = await r.json();
+      if (!j.ok) {
+        alert(j.error || "Не удалось удалить");
+        return;
       }
-    }
+      calendar.refetchEvents();
+      closeQuick();
+    };
 
-    // ---------- Календарь ----------
+    // ------------- FullCalendar -------------
     const calEl = document.getElementById("calendar");
     const calendar = new FullCalendar.Calendar(calEl, {
       initialView: "timeGridWeek",
       locale: "ru",
       timeZone: "local",
       firstDay: 1,
-      height: "auto",
       headerToolbar: {
         left: "prev,next today",
         center: "title",
         right: "dayGridMonth,timeGridWeek,timeGridDay",
       },
-
-      // === ЧЕК-ЛИСТ: окно и шаг записи ===
       slotDuration: "00:15:00",
       snapDuration: "00:15:00",
       slotMinTime: "09:00:00",
       slotMaxTime: "21:00:00",
       businessHours: {
-        daysOfWeek: [1, 2, 3, 4, 5, 6], // пн–сб; если нужна вс — добавь 0
+        daysOfWeek: [1, 2, 3, 4, 5, 6],
         startTime: "09:00",
         endTime: "21:00",
       },
-
+      selectable: true,
       editable: true,
-      eventDurationEditable: true,
-      eventStartEditable: true,
       eventOverlap: true,
+
+      select: (info) => {
+        // открыть модал создания
+        openCreateAt(info.startStr);
+        calendar.unselect();
+      },
 
       events: (fetchInfo, success, failure) => {
         const params = new URLSearchParams({
           start: fetchInfo.startStr,
           end: fetchInfo.endStr,
         });
-        const doctorSel = $("#doctorFilter");
-        const serviceSel = $("#serviceFilter");
-        const cabinetSel = $("#cabinetFilter");
-        if (doctorSel?.value) params.set("doctor_id", doctorSel.value);
-        if (serviceSel?.value) params.set("service_id", serviceSel.value);
-        // cabinetFilter отдаёт ИМЯ кабинета
-        if (cabinetSel?.value) params.set("room_name", cabinetSel.value);
-
         fetch("/api/events?" + params.toString())
           .then((r) => r.json())
-          .then((data) => success(data))
-          .catch((err) => {
-            console.error("events load error", err);
-            failure(err);
-          });
+          .then(success)
+          .catch(failure);
       },
 
-      eventDidMount(info) {
-        const p = info.event.extendedProps || {};
-        info.el.title = [p.service, p.patient, p.status]
-          .filter(Boolean)
-          .join(" • ");
+      eventClick: (info) => {
+        info.jsEvent.preventDefault();
+        openQuick(info.event.id, info.event.startStr, info.event.endStr);
       },
 
-      eventDrop: saveMoveOrResize,
-      eventResize: saveMoveOrResize,
+      eventDrop: async (info) => {
+        const body = {
+          id: info.event.id,
+          start: info.event.startStr,
+          end: info.event.endStr,
+        };
+        const r = await fetch("/schedule/api/move", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const j = await r.json();
+        if (!j.ok) {
+          alert(j.error || "Конфликт/ошибка");
+          info.revert();
+        }
+      },
 
-      eventClick: async (info) => {
-        await openQuickModal(info.event.id);
+      eventResize: async (info) => {
+        const body = {
+          id: info.event.id,
+          start: info.event.startStr,
+          end: info.event.endStr,
+        };
+        const r = await fetch("/schedule/api/move", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const j = await r.json();
+        if (!j.ok) {
+          alert(j.error || "Конфликт/ошибка");
+          info.revert();
+        }
       },
     });
     calendar.render();
 
-    async function saveMoveOrResize(info) {
-      const payload = {
-        id: info.event.id,
-        start: info.event.startStr,
-        end: info.event.endStr || info.event.startStr,
-      };
-      try {
-        const r = await fetch("/api/appointments/update_time", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await r.json();
-        if (!data.ok) {
-          alert(
-            data.error === "room_conflict"
-              ? "Конфликт: кабинет занят"
-              : "Ошибка сохранения"
-          );
-          info.revert();
-          return;
-        }
-        calendar.refetchEvents();
-        if (typeof refreshRoomBar === "function") refreshRoomBar();
-      } catch (e) {
-        alert("Сеть недоступна");
-        info.revert();
-      }
-    }
-
-    // ---------- Открытие/заполнение модалки ----------
-    async function openQuickModal(id) {
-      try {
-        const d = await loadDictsOnce();
-
-        // наполняем селекты
-        if (qm.doctor)
-          qm.doctor.innerHTML = d.doctors
-            .map((x) => `<option value="${x.id}">${x.name}</option>`)
-            .join("");
-        if (qm.patient)
-          qm.patient.innerHTML = d.patients
-            .map((x) => `<option value="${x.id}">${x.name}</option>`)
-            .join("");
-        if (qm.service)
-          qm.service.innerHTML = d.services
-            .map((x) => `<option value="${x.id}">${x.name}</option>`)
-            .join("");
-        if (qm.room)
-          qm.room.innerHTML = d.rooms
-            .map((x) => `<option value="${x.id}">${x.name}</option>`)
-            .join("");
-
-        const r = await fetch(`/api/appointments/${id}`);
-        const data = await r.json();
-        if (!data.ok) {
-          alert("Не удалось получить запись");
-          return;
-        }
-        const it = data.item;
-
-        if (qm.id) qm.id.value = it.id || "";
-        if (qm.doctor) qm.doctor.value = it.doctor_id || "";
-        if (qm.patient) qm.patient.value = it.patient_id || "";
-        if (qm.service) qm.service.value = it.service_id || "";
-        if (qm.room) qm.room.value = it.room_id || "";
-        if (qm.status) qm.status.value = it.status_key || "scheduled";
-        if (qm.comment) qm.comment.value = it.comment || "";
-        if (qm.start) qm.start.value = it.start || "";
-        if (qm.end) qm.end.value = it.end || "";
-
-        // пересчёт и предупреждение
-        qm.service?.addEventListener(
-          "change",
-          () => {
-            recalcEndByService();
-            checkDoctorWorking();
-          },
-          { once: true }
-        );
-        qm.start?.addEventListener(
-          "change",
-          () => {
-            recalcEndByService();
-            checkDoctorWorking();
-          },
-          { once: true }
-        );
-        qm.end?.addEventListener("change", checkDoctorWorking, { once: true });
-        qm.doctor?.addEventListener("change", checkDoctorWorking, {
-          once: true,
-        });
-
-        await recalcEndByService();
-        await checkDoctorWorking();
-        openModal();
-      } catch (e) {
-        console.error(e);
-        alert("Ошибка открытия модалки: " + (e?.message || ""));
-      }
-    }
-
-    // ---------- Сохранение / Удаление ----------
-    qm.form?.addEventListener("submit", async (ev) => {
-      ev.preventDefault();
-      const payload = {
-        doctor_id: qm.doctor?.value || "",
-        patient_id: qm.patient?.value || "",
-        service_id: qm.service?.value || "",
-        room_id: qm.room?.value || "",
-        start: qm.start?.value || "",
-        end: qm.end?.value || "",
-        status_key: qm.status?.value || "scheduled",
-        comment: qm.comment?.value || "",
-      };
-      try {
-        const r = await fetch(`/api/appointments/${qm.id?.value}/update`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await r.json();
-        if (!data.ok) {
-          alert(
-            data.error === "room_conflict"
-              ? "Конфликт: кабинет занят"
-              : "Ошибка сохранения"
-          );
-          return;
-        }
-        closeModal();
-        calendar.refetchEvents();
-        if (typeof refreshRoomBar === "function") refreshRoomBar();
-      } catch (e) {
-        alert("Сеть недоступна");
-      }
-    });
-
-    qm.btnDel?.addEventListener("click", async () => {
-      if (!confirm("Удалить запись?")) return;
-      try {
-        const r = await fetch(`/delete_appointment/${qm.id?.value}`, {
-          method: "POST",
-        });
-        const data = await r.json();
-        if (!data.ok) {
-          alert("Не удалось удалить");
-          return;
-        }
-        closeModal();
-        calendar.refetchEvents();
-        if (typeof refreshRoomBar === "function") refreshRoomBar();
-      } catch (e) {
-        alert("Сеть недоступна");
-      }
-    });
-  }); // DOMContentLoaded
+    // «Плюс» сверху
+    $("#btnAdd").onclick = () => openCreateAt(new Date().toISOString());
+  });
 </script>
-
 {% endblock %}
