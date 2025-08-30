@@ -552,6 +552,20 @@
   </div>
 </div>
 
+<!-- Toasts -->
+<div
+  id="toastStack"
+  style="
+    position: fixed;
+    right: 16px;
+    top: 16px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  "
+></div>
+
 {% endblock %} {% block scripts %}
 <link
   rel="stylesheet"
@@ -564,29 +578,84 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
 <script>
+  // --- простой toast ---
+  function showToast(msg, type = "info", ms = 2200) {
+    const stack = document.getElementById("toastStack");
+    if (!stack) return alert(msg);
+    const el = document.createElement("div");
+    el.textContent = msg;
+    el.style.cssText = `
+      background:${
+        type === "error" ? "#fee2e2" : type === "ok" ? "#e6ffed" : "#eef2ff"
+      };
+      color:${
+        type === "error" ? "#991b1b" : type === "ok" ? "#065f46" : "#1e40af"
+      };
+      border:1px solid ${
+        type === "error" ? "#fecaca" : type === "ok" ? "#bbf7d0" : "#c7d2fe"
+      };
+      box-shadow:0 6px 18px rgba(0,0,0,.08); padding:10px 14px; border-radius:10px; font-weight:600; max-width:420px;
+    `;
+    stack.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = "opacity .25s";
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), 260);
+    }, ms);
+  }
+  // демо-ошибка один раз
+  window.addEventListener("load", () =>
+    showToast("⚠️ Тестовый тост: пример ошибки сохранения", "error", 1600)
+  );
+</script>
+
+<script>
   document.addEventListener("DOMContentLoaded", () => {
     // ---------- helpers ----------
     const $ = (s) => document.querySelector(s);
     const addMin = (d, m) => new Date(d.getTime() + m * 60000);
     const fmtISO = (d) => {
-      const pad = (n) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-        d.getDate()
-      )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const p = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(
+        d.getHours()
+      )}:${p(d.getMinutes())}`;
     };
 
-    // Глобально-совместимый кэш словарей (чтобы не конфликтовать с другими скриптами)
+    // нормализация словарей (поддержит твой формат с _id/full_name)
+    const idOf = (x) => x?.id ?? x?._id ?? x?.value ?? "";
+    const nameOf = (x) => x?.name ?? x?.full_name ?? x?.title ?? x?.label ?? "";
+
     window.__DICT_CACHE__ = window.__DICT_CACHE__ || null;
     async function loadDictsOnce() {
       if (window.__DICT_CACHE__) return window.__DICT_CACHE__;
       const r = await fetch("/api/dicts");
-      const data = await r.json();
-      if (!data.ok) throw new Error("dicts load failed");
-      window.__DICT_CACHE__ = data;
-      return data;
+      const raw = await r.json(); // у тебя уже ok:true
+      const data = raw?.ok ? raw : { ok: true, ...raw };
+      const norm = {
+        ok: true,
+        doctors: (data.doctors || []).map((x) => ({
+          id: idOf(x),
+          name: nameOf(x),
+        })),
+        patients: (data.patients || []).map((x) => ({
+          id: idOf(x),
+          name: nameOf(x),
+        })),
+        services: (data.services || []).map((x) => ({
+          id: idOf(x),
+          name: nameOf(x),
+          duration_min: x.duration_min ?? x.duration ?? 30,
+        })),
+        rooms: (data.rooms || []).map((x) => ({
+          id: idOf(x),
+          name: nameOf(x),
+        })),
+      };
+      window.__DICT_CACHE__ = norm;
+      return norm;
     }
 
-    // ---------- ссылки на элементы модалки (разметка уже есть в шаблоне) ----------
+    // ---------- ссылки на элементы модалки ----------
     const qm = {
       modal: $("#quickModal"),
       close: $("#qmClose"),
@@ -603,12 +672,29 @@
       comment: $("#qm_comment"),
       warn: $("#qm_warn"),
       btnDel: $("#qmDelete"),
-      btnPlus15: $("#btn_plus_15"),
-      btnPlus30: $("#btn_plus_30"),
-      btnPlus60: $("#btn_plus_60"),
-      btnTomorrow: $("#btn_move_tomorrow"),
-      btnFirstFree: $("#btn_first_free"),
+      // В модалке дублируются id «+15/+30/+60» — берём именно из модалки
+      btnPlus15: $("#quickModal")?.querySelector("#btn_plus_15"),
+      btnPlus30: $("#quickModal")?.querySelector("#btn_plus_30"),
+      btnPlus60: $("#quickModal")?.querySelector("#btn_plus_60"),
+      btnTomorrow: $("#quickModal")?.querySelector("#btn_move_tomorrow"),
+      btnFirstFree: $("#quickModal")?.querySelector("#btn_first_free"),
     };
+
+    // заголовок и состояние кнопки «Удалить»
+    const qmTitle = document.querySelector("#quickModal h3");
+    const qmDeleteBtn = document.getElementById("qmDelete");
+    function setModalMode(mode) {
+      if (!qmTitle) return;
+      if (mode === "create") {
+        qmTitle.textContent = "Новая запись";
+        qmDeleteBtn?.setAttribute("disabled", "disabled");
+        qmDeleteBtn?.classList.add("disabled");
+      } else {
+        qmTitle.textContent = "Редактировать запись";
+        qmDeleteBtn?.removeAttribute("disabled");
+        qmDeleteBtn?.classList.remove("disabled");
+      }
+    }
 
     function openModal() {
       if (qm.modal) qm.modal.style.display = "block";
@@ -621,23 +707,20 @@
       if (e.key === "Escape") closeModal();
     });
 
-    // ---------- общий помощник для времени ----------
+    // ---------- время ----------
     function setStartEnd(ns, ne) {
       if (qm.start) qm.start.value = fmtISO(ns);
       if (qm.end) qm.end.value = fmtISO(ne);
     }
-
     function shiftAppointment(minutes) {
       if (!qm.start?.value) return;
       const s = new Date(qm.start.value);
       const e = qm.end?.value ? new Date(qm.end.value) : s;
       const dur = Math.max(5, Math.round((e - s) / 60000));
-      const ns = addMin(s, minutes);
-      const ne = addMin(ns, dur);
+      const ns = addMin(s, minutes),
+        ne = addMin(ns, dur);
       setStartEnd(ns, ne);
     }
-
-    // быстрые кнопки в модалке
     qm.btnPlus15?.addEventListener("click", () => shiftAppointment(15));
     qm.btnPlus30?.addEventListener("click", () => shiftAppointment(30));
     qm.btnPlus60?.addEventListener("click", () => shiftAppointment(60));
@@ -652,10 +735,10 @@
 
     // первый свободный слот в кабинете
     async function moveToFirstFreeInRoom() {
-      const roomId = qm.room?.value;
-      const sid = qm.service?.value;
+      const roomId = qm.room?.value,
+        sid = qm.service?.value;
       if (!roomId || !sid || !qm.start?.value) {
-        alert("Выберите кабинет, услугу и начало");
+        showToast("Выберите кабинет, услугу и начало", "error");
         return;
       }
       const d = await loadDictsOnce();
@@ -675,7 +758,7 @@
         );
         const data = await resp.json();
         if (!data.ok) {
-          alert("Не удалось проверить занятость кабинета");
+          showToast("Не удалось проверить занятость кабинета", "error");
           return;
         }
 
@@ -687,21 +770,20 @@
           })
           .sort((a, b) => a.s - b.s);
 
-        const st = cursor.getHours() * 60 + cursor.getMinutes();
-        const en = st + dur;
+        const st = cursor.getHours() * 60 + cursor.getMinutes(),
+          en = st + dur;
         const overlap = busy.some((b) => !(en <= b.s || st >= b.e));
-
         if (!overlap) {
           setStartEnd(cursor, addMin(cursor, dur));
           return;
         }
         cursor = addMin(cursor, 5);
       }
-      alert("Не найден свободный слот в ближайшие 7 дней.");
+      showToast("Не найден свободный слот в ближайшие 7 дней", "error");
     }
     qm.btnFirstFree?.addEventListener("click", moveToFirstFreeInRoom);
 
-    // автоподстановка окончания по услуге
+    // подсказка длительности и мягкая проверка графика
     async function recalcEndByService() {
       if (!qm.service?.value || !qm.start?.value) return;
       const d = await loadDictsOnce();
@@ -712,8 +794,6 @@
       if (qm.serviceHint)
         qm.serviceHint.textContent = `Длительность услуги: ${dur} мин.`;
     }
-
-    // мягкое предупреждение по графику врача
     async function checkDoctorWorking() {
       const start = qm.start?.value;
       if (!qm.doctor?.value || !start) {
@@ -727,7 +807,7 @@
           body: JSON.stringify({ doctor_id: qm.doctor.value }),
         });
         if (!r.ok) {
-          if (qm.warn) qm.warn.style.display = "none";
+          qm.warn.style.display = "none";
           return;
         }
         const data = await r.json();
@@ -737,7 +817,7 @@
         const dow = (s.getDay() + 6) % 7;
         const day = sched[String(dow)];
         if (!day || !day.start || !day.end) {
-          if (qm.warn) qm.warn.style.display = "none";
+          qm.warn.style.display = "none";
           return;
         }
         const hm2m = (hm) => {
@@ -748,19 +828,15 @@
           en = e.getHours() * 60 + e.getMinutes();
         const outside = st < hm2m(day.start) || en > hm2m(day.end);
         if (outside) {
-          if (qm.warn) {
-            qm.warn.textContent = `Время вне графика врача (${day.start}–${day.end}). Сохранение возможно.`;
-            qm.warn.style.display = "block";
-          }
-        } else {
-          if (qm.warn) qm.warn.style.display = "none";
-        }
-      } catch (_) {
-        if (qm.warn) qm.warn.style.display = "none";
+          qm.warn.textContent = `Время вне графика врача (${day.start}–${day.end}). Сохранение возможно.`;
+          qm.warn.style.display = "block";
+        } else qm.warn.style.display = "none";
+      } catch {
+        qm.warn.style.display = "none";
       }
     }
 
-    // ---------- Календарь ----------
+    // ---------- FullCalendar ----------
     const calEl = document.getElementById("calendar");
     const calendar = new FullCalendar.Calendar(calEl, {
       initialView: "timeGridWeek",
@@ -773,14 +849,12 @@
         center: "title",
         right: "dayGridMonth,timeGridWeek,timeGridDay",
       },
-
-      // === ЧЕК-ЛИСТ: окно и шаг записи ===
       slotDuration: "00:15:00",
       snapDuration: "00:15:00",
       slotMinTime: "09:00:00",
       slotMaxTime: "21:00:00",
       businessHours: {
-        daysOfWeek: [1, 2, 3, 4, 5, 6], // пн–сб; если нужна вс — добавь 0
+        daysOfWeek: [1, 2, 3, 4, 5, 6],
         startTime: "09:00",
         endTime: "21:00",
       },
@@ -795,14 +869,12 @@
           start: fetchInfo.startStr,
           end: fetchInfo.endStr,
         });
-        const doctorSel = $("#doctorFilter");
-        const serviceSel = $("#serviceFilter");
-        const cabinetSel = $("#cabinetFilter");
+        const doctorSel = $("#doctorFilter"),
+          serviceSel = $("#serviceFilter"),
+          cabinetSel = $("#cabinetFilter");
         if (doctorSel?.value) params.set("doctor_id", doctorSel.value);
         if (serviceSel?.value) params.set("service_id", serviceSel.value);
-        // cabinetFilter отдаёт ИМЯ кабинета
-        if (cabinetSel?.value) params.set("room_name", cabinetSel.value);
-
+        if (cabinetSel?.value) params.set("room_name", cabinetSel.value); // фильтр по имени кабинета
         fetch("/api/events?" + params.toString())
           .then((r) => r.json())
           .then((data) => success(data))
@@ -824,6 +896,52 @@
 
       eventClick: async (info) => {
         await openQuickModal(info.event.id);
+      }, // редактирование
+
+      dateClick: async (arg) => {
+        // СОЗДАНИЕ
+        try {
+          const d = await loadDictsOnce();
+          const roundTo15 = (date) => {
+            const dt = new Date(date);
+            const m = dt.getMinutes();
+            const snap = Math.round(m / 15) * 15;
+            dt.setMinutes(snap, 0, 0);
+            return dt;
+          };
+          const s = roundTo15(arg.date);
+          const e = new Date(s.getTime() + 30 * 60000);
+
+          if (qm.doctor) {
+            const doctorSel = document.getElementById("doctorFilter");
+            qm.doctor.innerHTML = d.doctors
+              .map((x) => `<option value="${x.id}">${x.name}</option>`)
+              .join("");
+            if (doctorSel?.value) qm.doctor.value = doctorSel.value;
+          }
+          if (qm.patient)
+            qm.patient.innerHTML = d.patients
+              .map((x) => `<option value="${x.id}">${x.name}</option>`)
+              .join("");
+          if (qm.service)
+            qm.service.innerHTML = d.services
+              .map((x) => `<option value="${x.id}">${x.name}</option>`)
+              .join("");
+          if (qm.room)
+            qm.room.innerHTML = d.rooms
+              .map((x) => `<option value="${x.id}">${x.name}</option>`)
+              .join("");
+
+          if (qm.id) qm.id.value = ""; // режим создания
+          setStartEnd(s, e);
+          await recalcEndByService();
+          await checkDoctorWorking();
+          setModalMode("create");
+          openModal();
+        } catch (e) {
+          console.error(e);
+          showToast("Не удалось открыть форму создания", "error");
+        }
       },
     });
     calendar.render();
@@ -852,18 +970,16 @@
         }
         calendar.refetchEvents();
         if (typeof refreshRoomBar === "function") refreshRoomBar();
-      } catch (e) {
+      } catch {
         alert("Сеть недоступна");
         info.revert();
       }
     }
 
-    // ---------- Открытие/заполнение модалки ----------
+    // ---------- открыть существующую ----------
     async function openQuickModal(id) {
       try {
         const d = await loadDictsOnce();
-
-        // наполняем селекты
         if (qm.doctor)
           qm.doctor.innerHTML = d.doctors
             .map((x) => `<option value="${x.id}">${x.name}</option>`)
@@ -884,7 +1000,7 @@
         const r = await fetch(`/api/appointments/${id}`);
         const data = await r.json();
         if (!data.ok) {
-          alert("Не удалось получить запись");
+          showToast("Не удалось получить запись", "error");
           return;
         }
         const it = data.item;
@@ -894,12 +1010,11 @@
         if (qm.patient) qm.patient.value = it.patient_id || "";
         if (qm.service) qm.service.value = it.service_id || "";
         if (qm.room) qm.room.value = it.room_id || "";
+        if (qm.start) qm.start.value = (it.start || "").slice(0, 16);
+        if (qm.end) qm.end.value = (it.end || "").slice(0, 16);
         if (qm.status) qm.status.value = it.status_key || "scheduled";
         if (qm.comment) qm.comment.value = it.comment || "";
-        if (qm.start) qm.start.value = it.start || "";
-        if (qm.end) qm.end.value = it.end || "";
 
-        // пересчёт и предупреждение
         qm.service?.addEventListener(
           "change",
           () => {
@@ -923,17 +1038,18 @@
 
         await recalcEndByService();
         await checkDoctorWorking();
+        setModalMode("edit");
         openModal();
       } catch (e) {
         console.error(e);
-        alert("Ошибка открытия модалки: " + (e?.message || ""));
+        showToast("Ошибка открытия модалки", "error");
       }
     }
 
-    // ---------- Сохранение / Удаление ----------
+    // ---------- submit / delete ----------
     qm.form?.addEventListener("submit", async (ev) => {
       ev.preventDefault();
-      const payload = {
+      const base = {
         doctor_id: qm.doctor?.value || "",
         patient_id: qm.patient?.value || "",
         service_id: qm.service?.value || "",
@@ -944,47 +1060,85 @@
         comment: qm.comment?.value || "",
       };
       try {
-        const r = await fetch(`/api/appointments/${qm.id?.value}/update`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await r.json();
-        if (!data.ok) {
-          alert(
-            data.error === "room_conflict"
-              ? "Конфликт: кабинет занят"
-              : "Ошибка сохранения"
-          );
-          return;
+        let r, data;
+        if (!qm.id?.value) {
+          r = await fetch("/schedule/api/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              start: base.start,
+              end: base.end,
+              room_id: base.room_id,
+              doctor_id: base.doctor_id,
+              patient_id: base.patient_id,
+              service_id: base.service_id,
+              note: base.comment || "",
+            }),
+          });
+          data = await r.json();
+          if (!r.ok || !data.ok) {
+            showToast(
+              data?.error === "conflict"
+                ? "Конфликт: кабинет/врач занят"
+                : "Ошибка создания",
+              "error"
+            );
+            return;
+          }
+          showToast("Запись создана", "ok");
+        } else {
+          r = await fetch(`/api/appointments/${qm.id.value}/update`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(base),
+          });
+          data = await r.json();
+          if (!r.ok || !data.ok) {
+            showToast(
+              data?.error === "room_conflict"
+                ? "Конфликт: кабинет занят"
+                : "Ошибка сохранения",
+              "error"
+            );
+            return;
+          }
+          showToast("Изменения сохранены", "ok");
         }
         closeModal();
         calendar.refetchEvents();
         if (typeof refreshRoomBar === "function") refreshRoomBar();
-      } catch (e) {
-        alert("Сеть недоступна");
+      } catch {
+        showToast("Сеть недоступна", "error");
       }
     });
 
+    // удаление через /schedule/api/delete
     qm.btnDel?.addEventListener("click", async () => {
+      const id = qm.id?.value;
+      if (!id) {
+        showToast("Эта запись ещё не сохранена", "error");
+        return;
+      }
       if (!confirm("Удалить запись?")) return;
       try {
-        const r = await fetch(`/delete_appointment/${qm.id?.value}`, {
+        const r = await fetch("/schedule/api/delete", {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
         });
         const data = await r.json();
-        if (!data.ok) {
-          alert("Не удалось удалить");
+        if (!r.ok || !data.ok) {
+          showToast("Не удалось удалить", "error");
           return;
         }
         closeModal();
         calendar.refetchEvents();
         if (typeof refreshRoomBar === "function") refreshRoomBar();
-      } catch (e) {
-        alert("Сеть недоступна");
+        showToast("Запись удалена", "ok");
+      } catch {
+        showToast("Сеть недоступна", "error");
       }
     });
-  }); // DOMContentLoaded
+  });
 </script>
-
 {% endblock %}

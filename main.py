@@ -88,6 +88,9 @@ if not MONGO_URI:
     raise RuntimeError("MONGO_URI is not set. Put it into .env")
 
 client = MongoClient(MONGO_URI)
+db = client[DB_NAME]
+app.config["DB"] = db  # важно: до register_blueprint и до описания маршрутов
+
 
 # Быстрая проверка соединения/авторизации
 try:
@@ -96,15 +99,18 @@ except Exception as e:
     # Выведет понятное сообщение в консоль, если доступ не настроен
     raise RuntimeError(f"MongoDB auth/connection failed: {e}")
 
-db = client[DB_NAME]
 
-# Регистрируем блюпринты
-from routes_schedule import bp as schedule_bp
+# блюпринт расписания (create/move/delete)
+from routes_schedule import schedule_bp
 
 app.register_blueprint(schedule_bp, url_prefix="/schedule")
 
-# ВАЖНО: отдаём DB блюпринтам/роутам
-app.config["DB"] = db
+
+# здоровье
+@app.route("/healthz")
+def healthz():
+    return "ok", 200
+
 
 # --- финмодуль: импорт и регистрация блюпринта ---
 try:
@@ -311,16 +317,6 @@ def main():
                 report += "\n".join(f"- {p}" for p in problems) + "\n"
             (DOCS / "LINT.md").write_text(report, encoding="utf-8")
             print(f"[OK] docs/LINT.md создан ({count} проблем)")
-
-
-# --- быстрая health‑проверка (смок-тест)
-@app.route("/healthz")
-def healthz():
-    try:
-        client.admin.command("ping")
-        return jsonify({"ok": True, "db": MONGO_DB})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 @app.route("/roadmap")
@@ -1580,50 +1576,39 @@ def api_service_get(id):
 
 
 # 1) Справочники для модалки (РАСШИРЕНО: +patients, +rooms)
-@app.route("/api/dicts", methods=["GET"])
+from flask import current_app, jsonify
+
+
+@app.get("/api/dicts")
 def api_dicts():
-    db = (
-        app.config["DB"] if "DB" in app.config else db
-    )  # на случай, если у тебя DB кладётся в app.config
+    """
+    Словари для календаря: комнаты, врачи, пациенты, услуги.
+    Возвращает JSON, который читает calendar.html при инициализации.
+    """
+    # Берём БД строго из app context:
+    d = current_app.config.get("DB")
+    if d is None:
+        # Чёткая ошибка вместо KeyError, чтобы сразу было видно причину
+        return jsonify(ok=False, error="DB is not configured on app.config['DB']"), 500
 
-    # Врачи
-    docs = list(db.doctors.find({}, {"full_name": 1}))
-    doctors = [{"id": str(x["_id"]), "name": x.get("full_name", "")} for x in docs]
+    rooms = list(d.rooms.find({}, {"_id": 1, "name": 1}))
+    doctors = list(d.doctors.find({}, {"_id": 1, "full_name": 1}))
+    patients = list(d.patients.find({}, {"_id": 1, "full_name": 1}))
+    services = list(d.services.find({}, {"_id": 1, "name": 1}))
 
-    # Услуги
-    srvs = list(db.services.find({}, {"name": 1, "duration_min": 1, "price": 1}))
-    services = [
-        {
-            "id": str(x["_id"]),
-            "name": x.get("name", ""),
-            "duration_min": int(x.get("duration_min") or 30),
-            "price": x.get("price", 0),
-        }
-        for x in srvs
-    ]
-
-    # Пациенты
-    pats = list(db.patients.find({}, {"full_name": 1, "birthdate": 1}))
-    patients = [
-        {
-            "id": str(p["_id"]),
-            "name": p.get("full_name", "Без имени"),
-            "birthdate": p.get("birthdate"),
-        }
-        for p in pats
-    ]
-
-    # Кабинеты
-    rms = list(db.rooms.find({}, {"name": 1}))
-    rooms = [{"id": str(r["_id"]), "name": r.get("name", "Кабинет")} for r in rms]
+    # Приводим ObjectId -> str
+    def _norm(items):
+        for it in items:
+            it["_id"] = str(it["_id"])
+        return items
 
     return jsonify(
         {
             "ok": True,
-            "doctors": doctors,
-            "services": services,
-            "patients": patients,
-            "rooms": rooms,
+            "rooms": _norm(rooms),
+            "doctors": _norm(doctors),
+            "patients": _norm(patients),
+            "services": _norm(services),
         }
     )
 
