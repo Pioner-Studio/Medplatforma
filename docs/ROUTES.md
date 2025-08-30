@@ -1,6 +1,10 @@
 # Flask routes map
 
+<<<<<<< Updated upstream
 _generated: 2025-08-29 05:22:58_
+=======
+_generated: 2025-08-21 19:26:25_
+>>>>>>> Stashed changes
 
 | Rule | Endpoint | Methods |
 |------|----------|---------|
