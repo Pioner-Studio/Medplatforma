@@ -24,7 +24,6 @@ from markupsafe import Markup
 from pymongo import MongoClient, ReturnDocument
 import urllib
 from dotenv import load_dotenv
-from routes_schedule import schedule_bp, api_bp
 
 load_dotenv()
 
@@ -99,14 +98,10 @@ except Exception as e:
 
 db = client[DB_NAME]
 
+# Регистрируем блюпринты
+from routes_schedule import bp as schedule_bp
+
 app.register_blueprint(schedule_bp, url_prefix="/schedule")
-app.register_blueprint(api_bp, url_prefix="/api")
-
-
-@app.get("/healthz")
-def healthz():
-    return "ok", 200
-
 
 # ВАЖНО: отдаём DB блюпринтам/роутам
 app.config["DB"] = db
@@ -316,6 +311,16 @@ def main():
                 report += "\n".join(f"- {p}" for p in problems) + "\n"
             (DOCS / "LINT.md").write_text(report, encoding="utf-8")
             print(f"[OK] docs/LINT.md создан ({count} проблем)")
+
+
+# --- быстрая health‑проверка (смок-тест)
+@app.route("/healthz")
+def healthz():
+    try:
+        client.admin.command("ping")
+        return jsonify({"ok": True, "db": MONGO_DB})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 @app.route("/roadmap")
@@ -1006,28 +1011,22 @@ from flask import jsonify, request
 
 @app.route("/api/doctor_schedule", methods=["POST"])
 def doctor_schedule():
-    data = request.get_json(force=True, silent=True) or {}
-    doctor_id = (data.get("doctor_id") or "").strip()
-    try:
-        doc_oid = ObjectId(doctor_id)
-    except Exception:
-        # не валидный id — отдаём дефолтный график, чтобы фронт не падал
-        return jsonify(
-            {"ok": True, "schedule": {str(i): {"start": "09:00", "end": "21:00"} for i in range(6)}}
-        )
-
-    doctor = db.doctors.find_one({"_id": doc_oid}, {"schedule": 1})
-    # ожидается структура {"0":{"start":"09:00","end":"18:00"}, ...}
-    schedule = doctor.get("schedule", {}) if doctor else {}
-
-    # занятость врача берём из приёмов (appointments), а не из events
-    busy = []
-    for a in db.appointments.find({"doctor_id": doc_oid}, {"start": 1, "end": 1}):
-        busy.append(
-            {"start": a["start"].isoformat(), "end": (a.get("end") or a["start"]).isoformat()}
-        )
-
-    return jsonify({"ok": True, "schedule": schedule, "busy_slots": busy})
+    data = request.get_json()
+    doctor_id = data["doctor_id"]
+    doctor = db.doctors.find_one({"_id": doctor_id})
+    if not doctor:
+        return jsonify({"error": "not found"}), 404
+    # Пример структуры расписания: {"0": {"start": "08:00", "end": "18:00"}, ...}
+    schedule = doctor.get("schedule", {})
+    # Находим все события по врачу за нужную дату (или диапазон)
+    events = list(db.events.find({"doctor_id": doctor_id}))
+    busy_slots = [{"start": e["start"], "end": e.get("end", e["start"])} for e in events]
+    return jsonify(
+        {
+            "schedule": schedule,  # dict с днями недели, когда врач работает
+            "busy_slots": busy_slots,  # список {"start": "...", "end": "..."}
+        }
+    )
 
 
 # ======= ФИНАНСЫ =======
@@ -1581,27 +1580,50 @@ def api_service_get(id):
 
 
 # 1) Справочники для модалки (РАСШИРЕНО: +patients, +rooms)
-@app.route("/api/dicts")
+@app.route("/api/dicts", methods=["GET"])
 def api_dicts():
+    db = (
+        app.config["DB"] if "DB" in app.config else db
+    )  # на случай, если у тебя DB кладётся в app.config
+
+    # Врачи
     docs = list(db.doctors.find({}, {"full_name": 1}))
+    doctors = [{"id": str(x["_id"]), "name": x.get("full_name", "")} for x in docs]
+
+    # Услуги
     srvs = list(db.services.find({}, {"name": 1, "duration_min": 1, "price": 1}))
-    pats = list(db.patients.find({}, {"full_name": 1}))
+    services = [
+        {
+            "id": str(x["_id"]),
+            "name": x.get("name", ""),
+            "duration_min": int(x.get("duration_min") or 30),
+            "price": x.get("price", 0),
+        }
+        for x in srvs
+    ]
+
+    # Пациенты
+    pats = list(db.patients.find({}, {"full_name": 1, "birthdate": 1}))
+    patients = [
+        {
+            "id": str(p["_id"]),
+            "name": p.get("full_name", "Без имени"),
+            "birthdate": p.get("birthdate"),
+        }
+        for p in pats
+    ]
+
+    # Кабинеты
     rms = list(db.rooms.find({}, {"name": 1}))
+    rooms = [{"id": str(r["_id"]), "name": r.get("name", "Кабинет")} for r in rms]
 
     return jsonify(
         {
             "ok": True,
-            "doctors": [{"id": str(x["_id"]), "name": x.get("full_name", "")} for x in docs],
-            "services": [
-                {
-                    "id": str(x["_id"]),
-                    "name": x.get("name", ""),
-                    "duration_min": int(x.get("duration_min") or 30),
-                }
-                for x in srvs
-            ],
-            "patients": [{"id": str(x["_id"]), "name": x.get("full_name", "")} for x in pats],
-            "rooms": [{"id": str(x["_id"]), "name": x.get("name", "")} for x in rms],
+            "doctors": doctors,
+            "services": services,
+            "patients": patients,
+            "rooms": rooms,
         }
     )
 
