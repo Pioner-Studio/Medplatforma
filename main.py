@@ -27,6 +27,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _to_oid(v):
+    try:
+        return ObjectId(v) if v else None
+    except Exception:
+        return None
+
+
 # --- optional (markdown может отсутствовать)
 try:
     import pandas as pd  # для экспортов/отчётов
@@ -136,24 +144,38 @@ def parse_iso(dt_str):
         )
 
 
+
 def to_dt(s):
-    """Парсит 'YYYY-MM-DDTHH:MM' или datetime -> datetime | None"""
+    """Parse various user date strings -> datetime | None.
+    Supports: 'YYYY-MM-DDTHH:MM', 'YYYY-MM-DD HH:MM', 'MM/DD/YYYY hh:mm AM/PM', 'DD.MM.YYYY HH:MM'.
+    If a datetime is passed, returns as is.
+    """
     if isinstance(s, datetime):
         return s
     if not s:
         return None
-    try:
-        # допускаем обе формы: '2025-08-14T17:05' и '2025-08-14 17:05'
-        s = s.replace(" ", "T")
-        return datetime.strptime(s[:16], "%Y-%m-%dT%H:%M")
-    except Exception:
-        return None
-
-
-def add_minutes(dt, mins):
-    return dt + timedelta(minutes=int(mins))
-
-
+    if isinstance(s, (int, float)):
+        try:
+            return datetime.fromtimestamp(s)
+        except Exception:
+            return None
+    ss = str(s).strip()
+    # normalize common separators
+    try_formats = [
+        "%Y-%m-%dT%H:%M",
+        "%Y-%m-%d %H:%M",
+        "%m/%d/%Y %I:%M %p",
+        "%d.%m.%Y %H:%M",
+    ]
+    for fmt in try_formats:
+        try:
+            if fmt == "%Y-%m-%dT%H:%M":
+                s2 = ss.replace(" ", "T")
+                return datetime.strptime(s2[:16], fmt)
+            return datetime.strptime(ss[:16] if "I" not in fmt else ss, fmt)
+        except Exception:
+            continue
+    return None
 def parse_local_dt(s: str) -> datetime | None:
     """Принимает 'YYYY-MM-DDTHH:MM' или 'YYYY-MM-DD HH:MM', возвращает datetime (naive)."""
     if not s:
@@ -1011,22 +1033,21 @@ from flask import jsonify, request
 
 @app.route("/api/doctor_schedule", methods=["POST"])
 def doctor_schedule():
-    data = request.get_json()
-    doctor_id = data["doctor_id"]
-    doctor = db.doctors.find_one({"_id": doctor_id})
-    if not doctor:
-        return jsonify({"error": "not found"}), 404
-    # Пример структуры расписания: {"0": {"start": "08:00", "end": "18:00"}, ...}
-    schedule = doctor.get("schedule", {})
-    # Находим все события по врачу за нужную дату (или диапазон)
-    events = list(db.events.find({"doctor_id": doctor_id}))
-    busy_slots = [{"start": e["start"], "end": e.get("end", e["start"])} for e in events]
-    return jsonify(
-        {
-            "schedule": schedule,  # dict с днями недели, когда врач работает
-            "busy_slots": busy_slots,  # список {"start": "...", "end": "..."}
-        }
-    )
+    """
+    Вход:  { doctor_id }
+    Выход: { ok: true, schedule: { "0": {"start":"09:00","end":"21:00"}, ..., "6": {...} } }
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    did = _to_oid(payload.get("doctor_id"))
+    if not did:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    doc = db.doctors.find_one({"_id": did}, {"schedule": 1})
+    if not doc:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    schedule = doc.get("schedule", {})  # ожидаемый словарь с ключами "0"..."6"
+    return jsonify(ok=True, schedule=schedule)
 
 
 # ======= ФИНАНСЫ =======
@@ -1582,9 +1603,8 @@ def api_service_get(id):
 # 1) Справочники для модалки (РАСШИРЕНО: +patients, +rooms)
 @app.route("/api/dicts", methods=["GET"])
 def api_dicts():
-    db = (
-        app.config["DB"] if "DB" in app.config else db
-    )  # на случай, если у тебя DB кладётся в app.config
+    _db = app.config.get("DB", db)
+# на случай, если у тебя DB кладётся в app.config
 
     # Врачи
     docs = list(db.doctors.find({}, {"full_name": 1}))
@@ -1698,14 +1718,15 @@ def delete_appointment(id):
 
     db.appointments.delete_one({"_id": oid})
 
-    # Пересчитать статус кабинета
     try:
-        if room_id:
-            recalc_room_status(room_id)
+        write_log("delete_appointment", obj=str(oid))
     except Exception:
         pass
 
+# Пересчитать статус...
+
     return jsonify({"ok": True})
+
 
 
 # --- 2.3.1: получить запись для модалки ---
@@ -1745,6 +1766,7 @@ def api_appointment_get(id):
 
 
 # --- 2.3.2: полное обновление записи из модалки ---
+
 @app.route("/api/appointments/<id>/update", methods=["POST"])
 def api_appointment_update(id):
     data = request.get_json(force=True, silent=True) or {}
@@ -1757,54 +1779,43 @@ def api_appointment_update(id):
     if not a:
         return jsonify({"ok": False, "error": "not_found"}), 404
 
-    # собрать обновления
     updates = {}
 
-    # привязки
-    def as_oid(key):
-        v = data.get(key)
-        if not v:
+    def as_oid(val):
+        if not val:
             return None
         try:
-            return ObjectId(v)
+            return ObjectId(val)
         except Exception:
             return None
 
-    doc_oid = as_oid("doctor_id")
-    pat_oid = as_oid("patient_id")
-    srv_oid = as_oid("service_id")
-    room_oid = as_oid("room_id") or a.get("room_id")
+    doc_oid = as_oid(data.get("doctor_id"))
+    pat_oid = as_oid(data.get("patient_id"))
+    srv_oid = as_oid(data.get("service_id"))
+    room_oid = as_oid(data.get("room_id")) or a.get("room_id")
 
-    if doc_oid:
-        updates["doctor_id"] = doc_oid
-    if pat_oid:
-        updates["patient_id"] = pat_oid
-    if srv_oid:
-        updates["service_id"] = srv_oid
-    if room_oid:
-        updates["room_id"] = room_oid
+    if doc_oid: updates["doctor_id"] = doc_oid
+    if pat_oid: updates["patient_id"] = pat_oid
+    if srv_oid: updates["service_id"] = srv_oid
+    if room_oid: updates["room_id"] = room_oid
 
-    # статус/коммент
     if "status_key" in data:
         updates["status_key"] = (data.get("status_key") or "scheduled").strip()
     if "comment" in data:
         updates["comment"] = (data.get("comment") or "").strip()
 
-    # время
     start_dt = to_dt(data.get("start")) or a.get("start")
-    end_dt = to_dt(data.get("end")) or a.get("end")
+    end_dt   = to_dt(data.get("end"))   or a.get("end")
 
-    # если конец не задан — вычислим по услуге (или 30 мин)
     if not end_dt:
         dur = 30
         if srv_oid:
-            srv = db.services.find_one({"_id": srv_oid}, {"duration_min": 1})
-            if srv:
-                try:
-                    dur = int(srv.get("duration_min", 30))
-                except Exception:
-                    dur = 30
-        end_dt = add_minutes(start_dt, dur)
+            srv = db.services.find_one({"_id": srv_oid}, {"duration_min": 1}) or {}
+            try:
+                dur = int(srv.get("duration_min", 30))
+            except Exception:
+                dur = 30
+        end_dt = start_dt + timedelta(minutes=dur)
 
     if not isinstance(start_dt, datetime) or not isinstance(end_dt, datetime) or end_dt <= start_dt:
         return jsonify({"ok": False, "error": "bad_dates"}), 400
@@ -1812,75 +1823,89 @@ def api_appointment_update(id):
     updates["start"] = start_dt
     updates["end"] = end_dt
 
-    # конфликт по кабинету
     if room_oid:
-        conflict = db.appointments.find_one(
-            {
-                "_id": {"$ne": oid},
-                "room_id": room_oid,
-                "start": {"$lt": end_dt},
-                "end": {"$gt": start_dt},
-            }
-        )
+        conflict = db.appointments.find_one({
+            "_id": {"$ne": oid},
+            "room_id": room_oid,
+            "start": {"$lt": end_dt},
+            "end": {"$gt": start_dt},
+        })
         if conflict:
             return jsonify({"ok": False, "error": "room_conflict"}), 409
 
     db.appointments.update_one({"_id": oid}, {"$set": updates})
     try:
         recalc_room_status(room_oid)
+        write_log("update_appointment", obj=str(oid),
+                  extra={"start": start_dt.isoformat(), "end": end_dt.isoformat()})
     except Exception:
         pass
-
     return jsonify({"ok": True})
 
-
-# --- 2.3.3: перенос/растягивание события мышкой (DnD/resize) ---
 @app.route("/api/appointments/update_time", methods=["POST"])
 def api_appointments_update_time():
     data = request.get_json(force=True, silent=True) or {}
     appt_id = data.get("id")
     start_s = data.get("start")
-    end_s = data.get("end")
-
+    end_s   = data.get("end")
     if not appt_id or not start_s or not end_s:
         return jsonify({"ok": False, "error": "bad_params"}), 400
-
     try:
         oid = ObjectId(appt_id)
     except Exception:
         return jsonify({"ok": False, "error": "bad_id"}), 400
-
     start_dt = to_dt(start_s)
-    end_dt = to_dt(end_s)
+    end_dt   = to_dt(end_s)
     if not isinstance(start_dt, datetime) or not isinstance(end_dt, datetime) or end_dt <= start_dt:
-        return jsonify({"ok": False, "error": "bad_dates"}), 400
-
+        return jsonify({"ok": False, "error": "bad_datetime"}), 400
     appt = db.appointments.find_one({"_id": oid}, {"room_id": 1})
     if not appt:
         return jsonify({"ok": False, "error": "not_found"}), 404
-
     room_id = appt.get("room_id")
-
-    # конфликт по кабинету
+    # conflict by room
     if room_id:
-        conflict = db.appointments.find_one(
-            {
-                "_id": {"$ne": oid},
-                "room_id": room_id,
-                "start": {"$lt": end_dt},
-                "end": {"$gt": start_dt},
-            }
-        )
+        conflict = db.appointments.find_one({
+            "_id": {"$ne": oid},
+            "room_id": room_id,
+            "start": {"$lt": end_dt},
+            "end": {"$gt": start_dt},
+        })
         if conflict:
             return jsonify({"ok": False, "error": "room_conflict"}), 409
-
     db.appointments.update_one({"_id": oid}, {"$set": {"start": start_dt, "end": end_dt}})
     try:
-        recalc_room_status(room_id)
+        if room_id:
+            recalc_room_status(room_id)
+        write_log("move_appointment", obj=str(oid),
+                  extra={"start": start_dt.isoformat(), "end": end_dt.isoformat()})
     except Exception:
         pass
-
     return jsonify({"ok": True})
+
+@app.route("/schedule/api/create", methods=["POST"])
+def schedule_api_create_proxy():
+    return api_appointments_create()
+
+
+# --- DELETE appointment (все совместимые варианты) ---
+@app.route("/api/appointments/<id>", methods=["DELETE"])
+def api_appointments_delete_by_id(id):
+    oid = _to_oid(id)
+    if not oid:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+    db.appointments.delete_one({"_id": oid})
+    return jsonify({"ok": True})
+
+
+@app.route("/api/appointments/delete", methods=["POST"])
+def api_appointments_delete_post():
+    payload = request.get_json(force=True, silent=True) or {}
+    return api_appointments_delete_by_id(payload.get("id"))
+
+
+@app.route("/schedule/api/delete", methods=["POST"])
+def schedule_api_delete_proxy():
+    return api_appointments_delete_post()
 
 
 # лёгкие справочники для фронта
@@ -2648,3 +2673,58 @@ def api_patient_full(id):
 # ======= ЗАПУСК =======
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+def api_appointments_create():
+    payload = request.get_json(force=True, silent=True) or {}
+
+    start_str = payload.get("start")
+    end_str   = payload.get("end")
+    room_id   = _to_oid(payload.get("room_id"))
+    doctor_id = _to_oid(payload.get("doctor_id"))
+    patient_id= _to_oid(payload.get("patient_id"))
+    service_id= _to_oid(payload.get("service_id"))
+    status_key= (payload.get("status_key") or "scheduled").strip()
+    note      = (payload.get("note") or payload.get("comment") or "").strip()
+
+    if not start_str or not end_str or not room_id:
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
+
+    start = to_dt(start_str)
+    end   = to_dt(end_str)
+    if not isinstance(start, datetime) or not isinstance(end, datetime) or end <= start:
+        return jsonify({"ok": False, "error": "bad_datetime"}), 400
+
+    conflict = {"start": {"$lt": end}, "end": {"$gt": start}}
+    filters = [{"room_id": room_id, **conflict}]
+    if doctor_id:
+        filters.append({"doctor_id": doctor_id, **conflict})
+    if db.appointments.find_one({"$or": filters}):
+        return jsonify({"ok": False, "error": "conflict"}), 409
+
+    ins = db.appointments.insert_one({
+        "start": start, "end": end, "room_id": room_id,
+        "doctor_id": doctor_id, "patient_id": patient_id, "service_id": service_id,
+        "status_key": status_key, "comment": note,
+        "created_at": datetime.utcnow(), "updated_at": datetime.utcnow(),
+    })
+
+    try:
+        p_name = (db.patients.find_one({"_id": patient_id}, {"full_name": 1}) or {}).get("full_name", "")
+        s_name = (db.services.find_one({"_id": service_id}, {"name": 1}) or {}).get("name", "")
+        write_log("create_appointment", obj=str(ins.inserted_id),
+                  extra={"patient": p_name, "service": s_name})
+    except Exception:
+        pass
+
+    return jsonify({"ok": True, "id": str(ins.inserted_id)})
+
+@app.route("/api/appointments", methods=["POST"])
+def api_appointments_create_route():
+    return api_appointments_create()
+
+
+@app.route("/api/appointments/create", methods=["POST"])
+def api_appointments_create_alias():
+    return api_appointments_create()
