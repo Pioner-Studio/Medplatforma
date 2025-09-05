@@ -1,0 +1,253 @@
+﻿### main.py (часть 3/12)
+```python
+        next_info = None
+        if state == "available":
+            a = get_next_event_for_room(r["_id"], now)
+            if a:
+                sdt = a.get("start")
+                in_min = minutes_until(sdt, now)
+                srv = (
+                    db.services.find_one({"_id": a.get("service_id")}, {"name": 1})
+                    if a.get("service_id")
+                    else None
+                )
+                pat = (
+                    db.patients.find_one({"_id": a.get("patient_id")}, {"full_name": 1})
+                    if a.get("patient_id")
+                    else None
+                )
+                next_info = {
+                    "start": sdt.strftime("%Y-%m-%dT%H:%M") if isinstance(sdt, datetime) else "",
+                    "service": (srv or {}).get("name", ""),
+                    "patient": (pat or {}).get("full_name", ""),
+                    "in_minutes": in_min,
+                }
+
+        room_info[r["name"]] = {"state": state, "text": text, "color": color, "next": next_info}
+
+    total_rooms = len(cabinets)
+    free_rooms = sum(1 for nfo in room_info.values() if nfo["state"] == "available")
+
+    return render_template(
+        "calendar.html",
+        metrics={"total_rooms": total_rooms, "free_rooms": free_rooms},
+        room_info=room_info,
+        cabinets=cabinets,
+        doctors=doctors,
+        patients=patients,
+    )
+
+
+@app.route("/api/rooms/status_now")
+def api_rooms_status_now():
+    now = datetime.now()
+    rooms = list(db.rooms.find({}, {"name": 1, "status": 1}))
+    result = {}
+    for r in rooms:
+        state = calc_room_status_now(r, now)
+        text = (
+            "Обслуживание"
+            if state == "maintenance"
+            else ("Занят" if state == "occupied" else "Свободен")
+        )
+        color = (
+            "#d97706" if state == "maintenance" else ("#cc0000" if state == "occupied" else "green")
+        )
+
+        next_info = None
+        if state == "available":
+            a = get_next_event_for_room(r["_id"], now)
+            if a:
+                sdt = a.get("start")
+                in_min = minutes_until(sdt, now)
+                srv = (
+                    db.services.find_one({"_id": a.get("service_id")}, {"name": 1})
+                    if a.get("service_id")
+                    else None
+                )
+                pat = (
+                    db.patients.find_one({"_id": a.get("patient_id")}, {"full_name": 1})
+                    if a.get("patient_id")
+                    else None
+                )
+                next_info = {
+                    "start": sdt.strftime("%Y-%m-%dT%H:%M") if isinstance(sdt, datetime) else "",
+                    "service": (srv or {}).get("name", ""),
+                    "patient": (pat or {}).get("full_name", ""),
+                    "in_minutes": in_min,
+                }
+        result[r["name"]] = {"state": state, "text": text, "color": color, "next": next_info}
+    return jsonify(result)
+
+
+@app.route("/api/rooms/today_details")
+def api_rooms_today_details():
+    room_name = request.args.get("room", "").strip()
+    if not room_name:
+        return jsonify({"ok": False, "error": "no_room"}), 400
+
+    room = db.rooms.find_one({"name": room_name}, {"_id": 1, "name": 1})
+    if not room:
+        return jsonify({"ok": False, "error": "room_not_found"}), 404
+
+    now = datetime.now()
+    start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = start_of_day + timedelta(days=1)
+
+    appts = list(
+        db.appointments.find(
+            {"room_id": room["_id"], "start": {"$lt": end_of_day}, "end": {"$gt": start_of_day}}
+        ).sort("start", 1)
+    )
+
+    d_ids, p_ids, s_ids = set(), set(), set()
+    for a in appts:
+        if a.get("doctor_id"):
+            d_ids.add(a["doctor_id"])
+        if a.get("patient_id"):
+            p_ids.add(a["patient_id"])
+        if a.get("service_id"):
+            s_ids.add(a["service_id"])
+
+    doctors = (
+        {d["_id"]: d for d in db.doctors.find({"_id": {"$in": list(d_ids)}}, {"full_name": 1})}
+        if d_ids
+        else {}
+    )
+    patients = (
+        {p["_id"]: p for p in db.patients.find({"_id": {"$in": list(p_ids)}}, {"full_name": 1})}
+        if p_ids
+        else {}
+    )
+    services = (
+        {s["_id"]: s for s in db.services.find({"_id": {"$in": list(s_ids)}}, {"name": 1})}
+        if s_ids
+        else {}
+    )
+
+    items = []
+    for a in appts:
+        sdt = a.get("start")
+        edt = a.get("end")
+        items.append(
+            {
+                "start": fmt_hm(sdt),
+                "end": fmt_hm(edt),
+                "doctor": doctors.get(a.get("doctor_id"), {}).get("full_name", "—"),
+                "patient": patients.get(a.get("patient_id"), {}).get("full_name", "—"),
+                "service": services.get(a.get("service_id"), {}).get("name", "—"),
+                "status": a.get("status_key", "scheduled"),
+                "is_now": is_now_between(sdt, edt, now),
+            }
+        )
+
+    return jsonify({"ok": True, "room": room_name, "items": items})
+
+
+@app.route("/update_event_time", methods=["POST"])
+def update_event_time():
+    data = request.get_json()
+    event_id = data.get("id")
+    new_datetime = data.get("new_datetime")
+    if event_id and new_datetime:
+        db.events.update_one({"_id": ObjectId(event_id)}, {"$set": {"datetime": new_datetime}})
+        return jsonify({"ok": True})
+    return jsonify({"ok": False})
+
+
+@app.route("/export_calendar")
+def export_calendar():
+    write_log("export", comment="Экспорт календаря", obj="Календарь")
+
+    appts = list(db.appointments.find())
+    doctors = {str(d["_id"]): d for d in db.doctors.find({}, {"full_name": 1})}
+    patients = {str(p["_id"]): p for p in db.patients.find({}, {"full_name": 1})}
+    services = {str(s["_id"]): s for s in db.services.find({}, {"name": 1})}
+    rooms = {str(r["_id"]): r for r in db.rooms.find({}, {"name": 1})}
+
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=";")
+    writer.writerow(
+        ["start", "end", "doctor", "patient", "service", "room", "sum", "status", "comment"]
+    )
+
+    for a in appts:
+        did = str(a.get("doctor_id", "") or "")
+        pid = str(a.get("patient_id", "") or "")
+        sid = str(a.get("service_id", "") or "")
+        rid = str(a.get("room_id", "") or "")
+
+        start = to_dt(a.get("start"))
+        end = to_dt(a.get("end"))
+
+        writer.writerow(
+            [
+                start.strftime("%Y-%m-%d %H:%M") if start else "",
+                end.strftime("%Y-%m-%d %H:%M") if end else "",
+                doctors.get(did, {}).get("full_name", ""),
+                patients.get(pid, {}).get("full_name", ""),
+                services.get(sid, {}).get("name", ""),
+                rooms.get(rid, {}).get("name", ""),
+                a.get("sum", ""),
+                a.get("status_key", ""),
+                a.get("comment", ""),
+            ]
+        )
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=calendar.csv"},
+    )
+
+
+def get_status_color(status):
+    return {
+        "Первичный": "#82B4FF",
+        "Повторный": "#FFD366",
+        "Оплачен": "#B4F0C0",
+        "Отказ": "#FF7474",
+        "Новый": "#D4D4D4",
+    }.get(status, "#D4D4D4")
+
+
+# --- Маршрут: Добавление события ---
+@app.route("/add_event", methods=["GET", "POST"])
+def add_event():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # Справочники для формы
+    doctors = list(db.doctors.find({}, {"full_name": 1}).sort("full_name", 1))
+    patients = list(db.patients.find({}, {"full_name": 1}).sort("full_name", 1))
+    services = list(
+        db.services.find({"is_active": True}, {"name": 1, "duration_min": 1}).sort("name", 1)
+    )
+    rooms = list(db.rooms.find({}, {"name": 1, "status": 1}).sort("name", 1))
+
+    if request.method == "POST":
+        # 1) Читаем поля
+        doctor_id_s = request.form.get("doctor_id") or ""
+        patient_id_s = request.form.get("patient_id") or ""
+        service_id_s = request.form.get("service_id") or ""
+        room_id_s = request.form.get("room_id") or ""
+        start_s = request.form.get("start") or ""  # datetime-local
+        end_s = request.form.get("end") or ""  # опционально
+
+        comment = (request.form.get("comment") or "").strip()
+        status_key = (request.form.get("status_key") or "scheduled").strip()
+
+        # 2) Преобразуем ID
+        try:
+            doctor_id = ObjectId(doctor_id_s) if doctor_id_s else None
+        except:
+            doctor_id = None
+        try:
+            patient_id = ObjectId(patient_id_s) if patient_id_s else None
+        except:
+            patient_id = None
+        try:
+            service_id = ObjectId(service_id_s) if service_id_s else None
+        except:
+            service_id = None
+```

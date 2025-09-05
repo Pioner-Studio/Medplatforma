@@ -1,0 +1,253 @@
+﻿### main.py (часть 4/12)
+```python
+        try:
+            room_id = ObjectId(room_id_s) if room_id_s else None
+        except:
+            room_id = None
+
+        # 3) Валидация обязательных полей
+        errors = []
+        if not room_id:
+            errors.append("Выберите кабинет.")
+        if not service_id:
+            errors.append("Выберите услугу.")
+        if not doctor_id:
+            errors.append("Выберите врача.")
+        if not patient_id:
+            errors.append("Выберите пациента.")
+        start_dt = parse_local_dt(start_s)
+        if not start_dt:
+            errors.append("Укажите дату и время начала.")
+
+        # 4) Длительность и конец приёма
+        end_dt = parse_local_dt(end_s) if end_s else None
+        if not end_dt and start_dt and service_id:
+            srv = db.services.find_one({"_id": service_id}, {"duration_min": 1}) or {}
+            dur = int(srv.get("duration_min") or 30)
+            end_dt = add_minutes(start_dt, dur)
+
+        if not end_dt or (start_dt and end_dt <= start_dt):
+            errors.append("Некорректный интервал приёма.")
+
+        if errors:
+            for e in errors:
+                flash(e, "danger")
+            return render_template(
+                "add_event.html", doctors=doctors, patients=patients, services=services, rooms=rooms
+            )
+
+        # 5) Проверка конфликта по кабинету
+        conflict = db.appointments.find_one(
+            {"room_id": room_id, "start": {"$lt": end_dt}, "end": {"$gt": start_dt}}
+        )
+        if conflict:
+            flash("В этот интервал кабинет занят.", "danger")
+            return render_template(
+                "add_event.html", doctors=doctors, patients=patients, services=services, rooms=rooms
+            )
+
+        # 6) Создаём приём
+        appt = {
+            "doctor_id": doctor_id,
+            "patient_id": patient_id,
+            "service_id": service_id,
+            "room_id": room_id,
+            "start": start_dt,
+            "end": end_dt,
+            "status_key": status_key,
+            "comment": comment,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+        }
+        db.appointments.insert_one(appt)
+
+        # 7) Обновим статус кабинета (если используешь эту функцию)
+        try:
+            recalc_room_status(room_id)
+        except Exception:
+            pass
+
+        flash("Запись создана.", "success")
+        return redirect(url_for("calendar_view"))
+
+    # GET — отрисовка формы
+    return render_template(
+        "add_event.html", doctors=doctors, patients=patients, services=services, rooms=rooms
+    )
+
+
+@app.route("/edit_event/<event_id>", methods=["GET", "POST"])
+def edit_event(event_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    appt = db.appointments.find_one({"_id": ObjectId(event_id)})
+    if not appt:
+        flash("Запись не найдена.", "danger")
+        return redirect(url_for("calendar_view"))
+
+    doctors = list(db.doctors.find().sort("full_name", 1))
+    patients = list(db.patients.find().sort("full_name", 1))
+    rooms = list(db.rooms.find({}, {"name": 1}).sort("name", 1))
+    services = list(db.services.find({}, {"name": 1, "duration_min": 1}).sort("name", 1))
+
+    if request.method == "POST":
+        doctor_id = request.form["doctor_id"]
+        patient_id = request.form["patient_id"]
+        room_name = request.form["cabinet"]
+        service_id = request.form.get("service_id") or None
+
+        # дата/время
+        start_raw = request.form["datetime"][:16]
+        start_dt = to_dt(start_raw)
+        if not start_dt:
+            flash("Некорректная дата/время.", "danger")
+            return render_template(
+                "edit_event.html",
+                event=appt,
+                doctors=doctors,
+                patients=patients,
+                cabinets=[r["name"] for r in rooms],
+                services=services,
+            )
+
+        room = db.rooms.find_one({"name": room_name})
+        if not room:
+            flash("Кабинет не найден.", "danger")
+            return render_template(
+                "edit_event.html",
+                event=appt,
+                doctors=doctors,
+                patients=patients,
+                cabinets=[r["name"] for r in rooms],
+                services=services,
+            )
+
+        srv = db.services.find_one({"_id": ObjectId(service_id)}) if service_id else None
+        duration = int(srv.get("duration_min", 30)) if srv else 30
+        end_dt = add_minutes(start_dt, duration)
+
+        # Проверка занятости кабинета (исключая текущую запись)
+        busy = db.appointments.find_one(
+            {
+                "_id": {"$ne": appt["_id"]},
+                "room_id": room["_id"],
+                "start": {"$lt": end_dt},
+                "end": {"$gt": start_dt},
+            }
+        )
+        if busy:
+            flash("Кабинет занят на это время.", "danger")
+            return render_template(
+                "edit_event.html",
+                event=appt,
+                doctors=doctors,
+                patients=patients,
+                cabinets=[r["name"] for r in rooms],
+                services=services,
+            )
+
+        db.appointments.update_one(
+            {"_id": appt["_id"]},
+            {
+                "$set": {
+                    "doctor_id": ObjectId(doctor_id),
+                    "patient_id": ObjectId(patient_id),
+                    "room_id": room["_id"],
+                    "service_id": ObjectId(service_id) if service_id else None,
+                    "start": start_dt,
+                    "end": end_dt,
+                    "status_key": request.form.get(
+                        "status_key", appt.get("status_key", "scheduled")
+                    ),
+                    "comment": request.form.get("comment", appt.get("comment", "")),
+                    "sum": int(request.form.get("sum", appt.get("sum", 0)) or 0),
+                }
+            },
+        )
+
+        flash("Запись обновлена.", "success")
+        return redirect(url_for("calendar_view"))
+
+    # GET — подготовим данные для формы
+    # Преобразуем для шаблона datetime-local
+    start_val = appt.get("start")
+    start_local = (
+        start_val.strftime("%Y-%m-%dT%H:%M")
+        if isinstance(start_val, datetime)
+        else (to_dt(start_val) or datetime.now()).strftime("%Y-%m-%dT%H:%M")
+    )
+
+    # Текущие значения
+    current_room_name = ""
+    if appt.get("room_id"):
+        r = db.rooms.find_one({"_id": appt["room_id"]})
+        current_room_name = r["name"] if r else ""
+
+    return render_template(
+        "edit_event.html",
+        event=appt,
+        start_local=start_local,
+        doctors=doctors,
+        patients=patients,
+        cabinets=[r["name"] for r in rooms],
+        services=services,
+        current_room_name=current_room_name,
+    )
+
+
+@app.route("/api/busy_slots", methods=["POST"])
+def api_busy_slots():
+    data = request.get_json()
+    doctor_id = data.get("doctor_id")
+    date = data.get("date")
+    # Получаем все события этого врача на эту дату
+    slots = []
+    for ev in db.events.find({"doctor_id": doctor_id}):
+        ev_date = ev["start"][:10] if "start" in ev else ""
+        if ev_date == date:
+            # пример: если 'start': "2025-07-10T15:00"
+            time_part = ev["start"].split("T")[1][:5]
+            slots.append(time_part)
+    return jsonify({"slots": slots})
+
+
+@app.route("/busy_slots/<doctor_id>")
+def busy_slots(doctor_id):
+    # Получаем все записи врача за сегодня/неделю (или за весь календарь)
+    from datetime import datetime, timedelta
+
+    start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + timedelta(days=14)  # например, 2 недели вперёд
+
+    events = list(
+        db.events.find(
+            {"doctor_id": doctor_id, "start": {"$gte": start.isoformat(), "$lt": end.isoformat()}}
+        )
+    )
+    # Возвращаем список интервалов (начало и конец)
+    busy = []
+    for e in events:
+        busy.append({"start": e["start"], "end": e.get("end", e["start"])})
+    return jsonify(busy)
+
+
+# ======= ВРАЧИ =======
+@app.route("/doctors")
+def doctors():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    doctors = list(db.doctors.find())
+    for d in doctors:
+        d["_id"] = str(d["_id"])
+    return render_template("doctors.html", doctors=doctors)
+
+
+@app.route("/add_doctor", methods=["GET", "POST"])
+def add_doctor():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if request.method == "POST":
+        doctor = {
+            "full_name": request.form.get("full_name", ""),
+```

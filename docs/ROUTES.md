@@ -1,6 +1,6 @@
 # Flask routes map
 
-_generated: 2025-09-01 12:16:52_
+_generated: 2025-09-05 21:26:56_
 
 
 | Rule | Endpoint | Methods |
@@ -13,11 +13,9 @@ _generated: 2025-09-01 12:16:52_
 | `/add_service` | `add_service` | `GET,POST` |
 | `/add_task` | `add_task` | `POST` |
 | `/add_ztl` | `add_ztl` | `GET,POST` |
-| `/api/appointments` | `api_appointments_create` | `POST` |
 | `/api/appointments/<id>` | `api_appointment_get` | `GET` |
 | `/api/appointments/<id>` | `api_appointments_delete_by_id` | `DELETE` |
 | `/api/appointments/<id>/update` | `api_appointment_update` | `POST` |
-| `/api/appointments/create` | `api_appointments_create` | `POST` |
 | `/api/appointments/delete` | `api_appointments_delete_post` | `POST` |
 | `/api/appointments/update_time` | `api_appointments_update_time` | `POST` |
 | `/api/busy_slots` | `api_busy_slots` | `POST` |
@@ -27,8 +25,10 @@ _generated: 2025-09-01 12:16:52_
 | `/api/events` | `api_events` | `GET` |
 | `/api/finance/record` | `api_finance_record` | `POST` |
 | `/api/free_slots` | `api_free_slots` | `POST` |
+| `/api/patients/<id>` | `api_patient_get` | `GET` |
 | `/api/patients/<id>/full` | `api_patient_full` | `GET` |
 | `/api/patients/<id>/generate_card_no` | `api_patient_generate_card_no` | `POST` |
+| `/api/patients/<id>/update` | `api_patient_update` | `POST` |
 | `/api/patients/<id>/update_info` | `api_patient_update_info` | `POST` |
 | `/api/patients/<id>/update_questionary` | `api_patient_update_questionary` | `POST` |
 | `/api/rooms/busy` | `api_room_busy` | `GET` |
@@ -64,7 +64,6 @@ _generated: 2025-09-01 12:16:52_
 | `/finance/report/cashbox` | `finance.report_cashbox` | `GET` |
 | `/finance_report` | `finance_report` | `GET` |
 | `/finance_report/export` | `finance_report_export` | `GET` |
-| `/healthz` | `healthz` | `GET` |
 | `/import_data` | `import_data` | `POST` |
 | `/login` | `login` | `GET,POST` |
 | `/logout` | `logout` | `GET` |
@@ -74,12 +73,12 @@ _generated: 2025-09-01 12:16:52_
 | `/partners` | `partners` | `GET` |
 | `/patient_card/<id>` | `patient_card` | `GET` |
 | `/patients` | `patients_list` | `GET` |
+| `/patients/<id>` | `patient_card_page` | `GET` |
 | `/profile` | `profile` | `GET` |
 | `/roadmap` | `roadmap_view` | `GET` |
 | `/rooms` | `rooms_list` | `GET` |
 | `/schedule/` | `schedule.list_view` | `GET` |
 | `/schedule/add` | `schedule.add_appointment` | `POST` |
-| `/schedule/api/create` | `schedule_api_create_proxy` | `POST` |
 | `/schedule/api/delete` | `schedule_api_delete_proxy` | `POST` |
 | `/schedule/free_slots` | `schedule.free_slots` | `GET` |
 | `/services` | `services_list` | `GET` |

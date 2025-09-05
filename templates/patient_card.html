@@ -1,323 +1,122 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 
-<div id="patient-card" data-patient-id="{{ patient_id }}" style="display:grid;grid-template-columns: 1.1fr .9fr; gap:16px;">
+<h2 style="margin: 8px 0 12px 0">Карточка пациента</h2>
+<a href="/patients" class="btn" style="margin-bottom: 10px">↩︎ К списку</a>
 
-  <!-- ЛЕВАЯ КОЛОНКА -->
-  <div>
+<div
+  style="
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px #e3eaf9b7;
+    padding: 12px;
+    max-width: 760px;
+  "
+>
+  <form id="f" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+    <label style="grid-column: 1/-1"
+      >ФИО
+      <input
+        type="text"
+        id="full_name"
+        class="filter-input"
+        required
+        style="width: 100%"
+      />
+    </label>
 
-    <!-- Шапка -->
-    <div style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-      <img src="{{ url_for('static', filename='investor_avatar.png') }}" alt="" style="width:44px;height:44px;border-radius:50%;">
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:1.2em" id="pc_name">Пациент</div>
-        <div style="opacity:.7" id="pc_cardnum">Карта № —</div>
-      </div>
-      <a class="btn-main" href="{{ url_for('add_event') }}" style="text-decoration:none;background:#1976d2;color:#fff;border-radius:8px;padding:8px 14px;">Новая запись</a>
+    <label
+      >Телефон
+      <input
+        type="tel"
+        id="phone"
+        class="filter-input"
+        placeholder="+79991234567"
+      />
+    </label>
+
+    <label
+      >Дата рождения
+      <input type="date" id="birth_date" class="filter-input" />
+    </label>
+
+    <label
+      >№ карты
+      <input
+        type="number"
+        id="card_no"
+        class="filter-input"
+        min="1"
+        step="1"
+        placeholder="авто"
+      />
+    </label>
+
+    <div
+      style="
+        grid-column: 1/-1;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 4px;
+      "
+    >
+      <a href="/patients" class="btn">Отмена</a>
+      <button type="submit" class="btn btn-primary">Сохранить</button>
     </div>
-
-    <!-- Финансы по пациенту -->
-    <div style="margin-top:12px;background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #eef3fb;">
-        <strong style="font-size:1.06em;">Финансы пациента</strong>
-        <span style="margin-left:auto;display:flex;gap:8px;">
-          <button class="btn" id="btnFinanceAdd"  style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Внести</button>
-          <button class="btn" id="btnFinanceExpense" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Расход</button>
-          <button class="btn" id="btnFinancePayroll" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">ЗП врачу</button>
-          <button class="btn" id="btnFinanceProc"    style="border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Деньги на закупку</button>
-        </span>
-      </div>
-
-      <!-- Итоги -->
-      <div style="display:flex;gap:18px;padding:12px 14px;flex-wrap:wrap;">
-        <div><b>Долг:</b> <span id="pc_debt">0</span> ₽</div>
-        <div><b>Депозит:</b> <span id="pc_deposit">0</span> ₽</div>
-        <div><b>В кассе (пациент):</b> <span id="pc_incash">0</span> ₽</div>
-      </div>
-
-      <!-- Книга операций -->
-      <div style="padding:0 14px 14px 14px;">
-        <table style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr style="background:#f8fbff">
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #eef3fb;">Дата</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #eef3fb;">Тип</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #eef3fb;">Сумма</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #eef3fb;">Источник</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #eef3fb;">Услуга</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #eef3fb;">Комментарий</th>
-            </tr>
-          </thead>
-          <tbody id="pc_ledger">
-            <tr><td colspan="6" style="padding:10px;opacity:.6;">Загрузка…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Планы лечения -->
-    <div style="margin-top:12px;background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #eef3fb;">
-        <strong>План лечения</strong>
-        <button class="btn" id="btnPlanAdd" style="margin-left:auto;border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Добавить</button>
-      </div>
-      <div id="pc_plans" style="padding:10px 14px;opacity:.8;">Нет записей</div>
-    </div>
-
-    <!-- История визитов -->
-    <div style="margin-top:12px;background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;">
-      <div style="padding:12px 14px;border-bottom:1px solid #eef3fb;"><strong>История визитов</strong></div>
-      <div id="pc_appts" style="padding:10px 14px;opacity:.8;">Нет визитов</div>
-    </div>
-
-  </div>
-
-  <!-- ПРАВАЯ КОЛОНКА -->
-  <div>
-
-    <!-- Анкета пациента -->
-    <div style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #eef3fb;">
-        <strong>Анкета</strong>
-        <button class="btn" id="btnSurveyEdit" style="margin-left:auto;border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Редактировать</button>
-      </div>
-      <div id="pc_survey" style="padding:10px 14px;opacity:.9;">—</div>
-    </div>
-
-    <!-- Задачи -->
-    <div style="margin-top:12px;background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #eef3fb;">
-        <strong>Задачи</strong>
-        <button class="btn" id="btnTaskAdd" style="margin-left:auto;border:1px solid #dbeafd;border-radius:8px;padding:6px 10px;">Добавить</button>
-      </div>
-      <div id="pc_tasks" style="padding:10px 14px;opacity:.9;">Нет задач</div>
-    </div>
-
-    <!-- Чат (админ/куратор ↔ пациент) -->
-    <div style="margin-top:12px;background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;">
-      <div style="padding:12px 14px;border-bottom:1px solid #eef3fb;"><strong>Чат</strong></div>
-      <div id="pc_chat" style="padding:10px 14px;max-height:240px;overflow:auto;opacity:.95;"></div>
-      <div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid #eef3fb;">
-        <input id="chat_input" type="text" placeholder="Сообщение…" style="flex:1;border:1px solid #dbeafd;border-radius:8px;padding:8px;">
-        <button id="chat_send" class="btn" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 12px;">Отправить</button>
-      </div>
-    </div>
-
-  </div>
+  </form>
 </div>
 
-<!-- Модалка: Финансовая операция -->
-<div id="finModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;">
-  <div style="background:#fff;max-width:560px;margin:8vh auto;padding:18px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.08);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-      <h3 style="margin:0;flex:1;">Финансовая операция</h3>
-      <button id="finClose" type="button" style="border:none;background:#eee;border-radius:8px;padding:6px 10px;cursor:pointer">×</button>
-    </div>
-    <form id="finForm" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <label>Тип
-        <select id="fin_kind" required>
-          <option value="payment">Оплата услуги</option>
-          <option value="deposit">Депозит</option>
-          <option value="expense">Расход</option>
-          <option value="payroll">ЗП врачу</option>
-          <option value="procurement">Деньги на закупку</option>
-        </select>
-      </label>
-      <label>Источник
-        <select id="fin_source" required>
-          <option value="alpha">Альфа</option>
-          <option value="sber">Сбер</option>
-          <option value="cash">Наличка</option>
-        </select>
-      </label>
-      <label style="grid-column:1/3;">Услуга из прайса
-        <select id="fin_service"></select>
-      </label>
-      <label>Сумма (₽)
-        <input type="number" id="fin_amount" min="0" step="1" required>
-      </label>
-      <label>Доктор
-        <select id="fin_doctor"></select>
-      </label>
-      <label style="grid-column:1/3;">Категория расхода
-        <select id="fin_expense_cat">
-          <option value="">—</option>
-          <option value="rent">Аренда</option>
-          <option value="procurement">Закупка</option>
-          <option value="marketing">Маркетинг</option>
-          <option value="dividends">Дивиденды</option>
-          <option value="other">Другое</option>
-        </select>
-      </label>
-      <label style="grid-column:1/3;">Комментарий
-        <input type="text" id="fin_comment" placeholder="Детализация: 'Закупка — материалы, фирма ХХХ'">
-      </label>
-      <div style="grid-column:1/3;display:flex;justify-content:flex-end;gap:8px;">
-        <button type="submit" class="btn" style="border:1px solid #dbeafd;border-radius:8px;padding:6px 12px;">Сохранить</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-  const root = document.getElementById('patient-card');
-  const patientId = root?.dataset.patientId;
-  if (!patientId) return;
+  (function () {
+    const pid = "{{ pid }}";
+    const $ = (s) => document.querySelector(s);
+    const f = $("#f");
 
-  // --- элементы
-  const el = {
-    name:    document.getElementById('pc_name'),
-    cardnum: document.getElementById('pc_cardnum'),
-    debt:    document.getElementById('pc_debt'),
-    deposit: document.getElementById('pc_deposit'),
-    incash:  document.getElementById('pc_incash'),
-    ledger:  document.getElementById('pc_ledger'),
-    plans:   document.getElementById('pc_plans'),
-    appts:   document.getElementById('pc_appts'),
-    survey:  document.getElementById('pc_survey'),
-    tasks:   document.getElementById('pc_tasks'),
-    chat:    document.getElementById('pc_chat'),
-    chatInput: document.getElementById('chat_input'),
-    chatSend:  document.getElementById('chat_send'),
-    // фин.модалка
-    finWrap:  document.getElementById('finModal'),
-    finClose: document.getElementById('finClose'),
-    finForm:  document.getElementById('finForm'),
-    finKind:  document.getElementById('fin_kind'),
-    finSource:document.getElementById('fin_source'),
-    finService:document.getElementById('fin_service'),
-    finAmount: document.getElementById('fin_amount'),
-    finDoctor: document.getElementById('fin_doctor'),
-    finCat:    document.getElementById('fin_expense_cat'),
-    finComment:document.getElementById('fin_comment'),
-    btnAdd:    document.getElementById('btnFinanceAdd'),
-    btnExp:    document.getElementById('btnFinanceExpense'),
-    btnPay:    document.getElementById('btnFinancePayroll'),
-    btnProc:   document.getElementById('btnFinanceProc'),
-  };
+    async function load() {
+      try {
+        const r = await fetch(`/api/patients/${pid}`);
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error || "error");
+        const it = data.item;
+        $("#full_name").value = it.full_name || "";
+        $("#phone").value = it.phone || "";
+        $("#birth_date").value = (it.birthdate || "").toString().slice(0, 10);
+        $("#card_no").value = it.card_no ?? "";
+      } catch (e) {
+        alert("Не удалось загрузить карточку");
+        location.href = "/patients";
+      }
+    }
 
-  // --- helpers
-  const openFin = (presetKind=null) => {
-    if (presetKind) el.finKind.value = presetKind;
-    el.finWrap.style.display='block';
-  };
-  const closeFin = ()=> el.finWrap.style.display='none';
+    f.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const payload = {
+        full_name: $("#full_name").value.trim(),
+        phone: $("#phone").value.trim(),
+        birth_date: $("#birth_date").value || "",
+        card_no:
+          $("#card_no").value === "" ? null : Number($("#card_no").value),
+      };
+      try {
+        const r = await fetch(`/api/patients/${pid}/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await r.json();
+        if (!r.ok || !data.ok) {
+          alert(data.error || "Ошибка сохранения");
+          return;
+        }
+        alert("Сохранено");
+        location.href = "/patients";
+      } catch {
+        alert("Сеть недоступна");
+      }
+    });
 
-  el.finClose?.addEventListener('click', closeFin);
-  window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeFin(); });
-
-  el.btnAdd?.addEventListener('click', ()=>openFin('payment'));
-  el.btnExp?.addEventListener('click', ()=>openFin('expense'));
-  el.btnPay?.addEventListener('click', ()=>openFin('payroll'));
-  el.btnProc?.addEventListener('click',()=>openFin('procurement'));
-
-  // --- загрузка словарей
-  const dicts = await (await fetch('/api/dicts')).json();
-  if (!dicts.ok) { alert('Не удалось загрузить словари'); return; }
-
-  // услуги (строго из прайса)
-  el.finService.innerHTML = ['<option value="">—</option>']
-    .concat( (dicts.services||[]).map(s=>`<option value="${s.id}" data-price="${s.price||0}">${s.name} — ${s.price||0} ₽</option>`) )
-    .join('');
-
-  // доктора
-  el.finDoctor.innerHTML = ['<option value="">—</option>']
-    .concat( (dicts.doctors||[]).map(d=>`<option value="${d.id}">${d.name}</option>`) )
-    .join('');
-
-  // автоцена из прайса
-  el.finService.addEventListener('change', ()=>{
-    const opt = el.finService.options[el.finService.selectedIndex];
-    const price = parseInt(opt?.dataset?.price || 0, 10);
-    if (price>0 && el.finKind.value==='payment') el.finAmount.value = price;
-  });
-
-  // --- загрузка пациента (агрегат)
-  async function loadFull(){
-    const r = await fetch(`/api/patients/${patientId}/full`);
-    const j = await r.json();
-    if (!j.ok) { alert('Пациент не найден'); return; }
-
-    const p = j.patient || {};
-    el.name.textContent = p.full_name || 'Пациент';
-    el.cardnum.textContent = `Карта № ${p.card_number || '—'}`;
-
-    el.debt.textContent    = j.stats?.debt ?? 0;
-    el.deposit.textContent = j.stats?.deposit ?? 0;
-    el.incash.textContent  = j.stats?.incash ?? 0;
-
-    // операции
-    el.ledger.innerHTML = (j.ledger||[]).map(x=>`
-      <tr>
-        <td style="padding:8px;border-bottom:1px solid #eef3fb;">${(x.ts||'').replace('T',' ')}</td>
-        <td style="padding:8px;border-bottom:1px solid #eef3fb;">${x.kind||''}</td>
-        <td style="padding:8px;border-bottom:1px solid #eef3fb;">${x.amount||0}</td>
-        <td style="padding:8px;border-bottom:1px solid #eef3fb;">${x.source||''}</td>
-        <td style="padding:8px;border-bottom:1px solid #eef3fb;">${x.service_name||''}</td>
-        <td style="padding:8px;border-bottom:1px solid #eef3fb;">${x.comment||''}</td>
-      </tr>`).join('') || `<tr><td colspan="6" style="padding:10px;opacity:.6;">Нет операций</td></tr>`;
-
-    // планы
-    el.plans.innerHTML = (j.plans||[]).map(pl=>`<div style="padding:6px 0;border-bottom:1px dashed #eef3fb;"><b>${pl.title||'План'}</b><br><small>${pl.comment||''}</small></div>`).join('') || 'Нет записей';
-
-    // визиты
-    el.appts.innerHTML = (j.appts||[]).map(a=>`<div style="padding:6px 0;border-bottom:1px dashed #eef3fb;">${a.start||''} — ${a.title||''}</div>`).join('') || 'Нет визитов';
-
-    // анкета
-    const s = j.survey || {};
-    el.survey.innerHTML = `
-      <div><b>Аллергии:</b> ${s.allergy||'—'}</div>
-      <div><b>Хронические болезни:</b> ${s.chronic||'—'}</div>
-      <div><b>Операции:</b> ${s.surgeries||'—'}</div>
-      <div><b>Прочее:</b> ${s.other||'—'}</div>
-    `;
-
-    // задачи
-    el.tasks.innerHTML = (j.tasks||[]).map(t=>`<div style="padding:6px 0;border-bottom:1px dashed #eef3fb;">
-        <b>${t.title||'Задача'}</b> — ${t.status||'в работе'} (до ${t.deadline||'—'})
-      </div>`).join('') || 'Нет задач';
-
-    // чат
-    el.chat.innerHTML = (j.chat||[]).map(m=>`<div style="margin:4px 0;">
-      <small style="opacity:.6;">${m.ts||''} • ${m.from||''}</small><br>${m.text||''}
-    </div>`).join('');
-  }
-
-  await loadFull();
-
-  // отправка операции
-  el.finForm?.addEventListener('submit', async (ev)=>{
-    ev.preventDefault();
-    const payload = {
-      patient_id: patientId,
-      kind:   el.finKind.value,        // payment | deposit | expense | payroll | procurement
-      amount: parseInt(el.finAmount.value||0,10),
-      source: el.finSource.value,      // alpha | sber | cash
-      service_id: el.finService.value || null,
-      doctor_id:  el.finDoctor.value  || null,
-      expense_cat: el.finCat.value    || null,
-      comment: el.finComment.value    || ''
-    };
-    const r = await fetch('/api/finance/record', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-    const j = await r.json();
-    if (!j.ok) { alert('Ошибка сохранения'); return; }
-    closeFin();
-    el.finForm.reset();
-    await loadFull();
-  });
-
-  // чат — отправка
-  el.chatSend?.addEventListener('click', async ()=>{
-    const text = (el.chatInput.value||'').trim();
-    if (!text) return;
-    const r = await fetch(`/api/chat/${patientId}/send`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
-    const j = await r.json();
-    if (j.ok){ el.chatInput.value=''; await loadFull(); }
-  });
-});
+    load();
+  })();
 </script>
 {% endblock %}

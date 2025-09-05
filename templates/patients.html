@@ -1,68 +1,139 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="page-header">
-  <h2>Пациенты</h2>
-  <div style="display:flex;gap:10px;align-items:center;">
-    <form method="get" action="{{ url_for('patients_list') }}" style="display:flex;gap:5px;">
-      <input type="text" name="q" value="{{ search or '' }}" placeholder="Поиск по ФИО, телефону, email">
-      <button type="submit">Поиск</button>
-    </form>
-    <a href="{{ url_for('add_patient') }}" class="btn btn-primary">Добавить пациента</a>
+{% extends "base.html" %} {% block content %}
+
+<h2 style="margin: 8px 0 12px 0">Пациенты</h2>
+
+<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px">
+  <input
+    id="q"
+    type="text"
+    placeholder="Поиск (ФИО / телефон / №карты)"
+    style="
+      padding: 8px 12px;
+      border: 1px solid #dde7f7;
+      border-radius: 8px;
+      min-width: 260px;
+    "
+  />
+  <button id="btnSearch" class="btn">Искать</button>
+  <span style="opacity: 0.6">|</span>
+  <a href="/calendar" class="btn">↩︎ В календарь</a>
+</div>
+
+<div
+  style="
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px #e3eaf9b7;
+    padding: 10px;
+  "
+>
+  <table style="width: 100%; border-collapse: collapse">
+    <thead>
+      <tr style="text-align: left; border-bottom: 1px solid #eef2ff">
+        <th style="padding: 8px">№ карты</th>
+        <th style="padding: 8px">ФИО</th>
+        <th style="padding: 8px">Телефон</th>
+        <th style="padding: 8px">Дата рождения</th>
+      </tr>
+    </thead>
+    <tbody id="tblBody">
+      <tr>
+        <td colspan="4" style="padding: 12px; opacity: 0.6">Загрузка…</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    id="pager"
+    style="display: flex; gap: 8px; align-items: center; margin-top: 10px"
+  >
+    <button id="prev" class="btn">‹ Назад</button>
+    <span id="pgInfo" style="opacity: 0.8"></span>
+    <button id="next" class="btn">Вперёд ›</button>
   </div>
 </div>
 
-{% if items %}
-  <table class="table" style="margin-top:15px;">
-    <thead>
-      <tr>
-        <th>Аватар</th>
-        <th>ФИО</th>
-        <th>Контакты</th>
-        <th>Адрес</th>
-        <th>Визитов</th>
-        <th>Действия</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in items %}
-        {% set contacts = p.get('contacts', {}) %}
-        {% set phone = contacts.get('phone', '') %}
-        {% set email = contacts.get('email', '') %}
-        {% set wa = contacts.get('whatsapp', '') %}
-        {% set tg = contacts.get('telegram', '') %}
-        {% set addr = p.get('address', {}) %}
-        {% set city = addr.get('city', '') %}
-        {% set street = addr.get('street', '') %}
-        {% set zipc = addr.get('zip', '') %}
-        {% set avatar = p.get('avatar', '/static/avatars/patients/default.jpg') %}
+{% endblock %} {% block scripts %}
+<script>
+  (function () {
+    let page = 1,
+      per_page = 50,
+      total = 0;
 
-        <tr>
-          <td>
-            <img src="{{ avatar }}" alt="avatar" style="width:40px;height:40px;border-radius:50%;">
-          </td>
-          <td>{{ p.get('full_name', '—') }}</td>
-          <td>
-            <div>📞 {{ phone or '—' }}</div>
-            <div>✉️ {{ email or '—' }}</div>
-            <div>🟢 WA: {{ wa or '—' }}</div>
-            <div>💬 TG: {{ tg or '—' }}</div>
-          </td>
-          <td>
-            {{ city }}{% if city and street %}, {% endif %}{{ street }}{% if zipc %}, {{ zipc }}{% endif %}
-          </td>
-          <td>{{ appts_count.get(p['_id'], 0) }}</td>
-          <td>
-            <a href="{{ url_for('patient_card', id=p['_id']) }}">Карточка</a> |
-            <a href="{{ url_for('edit_patient', id=p['_id']) }}">Редактировать</a> |
-            <form method="post" action="{{ url_for('delete_patient', id=p['_id']) }}" style="display:inline;">
-              <button type="submit" onclick="return confirm('Удалить пациента?')">Удалить</button>
-            </form>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-{% else %}
-  <p>Пациенты не найдены.</p>
-{% endif %}
+    const $ = (s) => document.querySelector(s);
+    const q = $("#q"),
+      tbody = $("#tblBody"),
+      pgInfo = $("#pgInfo");
+
+    async function load() {
+      const url = new URL("/api/patients", location.origin);
+      if (q.value.trim()) url.searchParams.set("q", q.value.trim());
+      url.searchParams.set("page", page);
+      url.searchParams.set("per_page", per_page);
+
+      tbody.innerHTML = `<tr><td colspan="4" style="padding:12px; opacity:.6">Загрузка…</td></tr>`;
+      try {
+        const r = await fetch(url);
+        const data = await r.json();
+        total = data.total || 0;
+
+        if (!data.items || !data.items.length) {
+          tbody.innerHTML = `<tr><td colspan="4" style="padding:12px; opacity:.6">Ничего не найдено</td></tr>`;
+        } else {
+          tbody.innerHTML = (data.items || [])
+            .map(
+              (it) => `
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:8px; width:110px">${it.card_no ?? "—"}</td>
+              <td style="padding:8px">
+                <a href="/patients/${
+                  it.id
+                }" style="text-decoration:none; color:#1f6feb">${
+                it.full_name || "—"
+              }</a>
+              </td>
+              <td style="padding:8px">${it.phone || "—"}</td>
+              <td style="padding:8px">${
+                (it.birthdate || "").toString().slice(0, 10) || "—"
+              }</td>
+            </tr>
+          `
+            )
+            .join("");
+        }
+
+        const pages = Math.max(1, Math.ceil(total / per_page));
+        pgInfo.textContent = `Стр. ${page} из ${pages} • всего ${total}`;
+        $("#prev").disabled = page <= 1;
+        $("#next").disabled = page >= pages;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="4" style="padding:12px; color:#991b1b; background:#fee2e2; border:1px solid #fecaca">Ошибка загрузки</td></tr>`;
+        pgInfo.textContent = "";
+      }
+    }
+
+    $("#btnSearch").addEventListener("click", () => {
+      page = 1;
+      load();
+    });
+    q.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        page = 1;
+        load();
+      }
+    });
+    $("#prev").addEventListener("click", () => {
+      if (page > 1) {
+        page--;
+        load();
+      }
+    });
+    $("#next").addEventListener("click", () => {
+      page++;
+      load();
+    });
+
+    load();
+  })();
+</script>
 {% endblock %}
