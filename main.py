@@ -9,6 +9,7 @@ import io
 import csv
 import calendar
 import argparse
+import click
 from collections import OrderedDict
 from datetime import datetime, timedelta, time
 from pathlib import Path
@@ -77,6 +78,40 @@ def oid(s):
         return None
 
 
+# --- contacts helpers ---------------------------------------------------------
+import re
+
+_PHONE_RE = re.compile(r"\D+")
+
+
+def _clean_phone(p: str) -> str:
+    if not p:
+        return ""
+    digits = _PHONE_RE.sub("", str(p))
+    if not digits:
+        return ""
+    if digits.startswith("8") and len(digits) == 11:
+        digits = "7" + digits[1:]
+    if not digits.startswith("+"):
+        digits = "+" + digits
+    return digits
+
+
+def _normalize_contacts(src: dict | None) -> dict:
+    src = src or {}
+    phone = _clean_phone(src.get("phone", ""))
+    return {
+        "phone": phone,
+        "email": (src.get("email") or "").strip(),
+        "whatsapp": _clean_phone(src.get("whatsapp") or phone),
+        "telegram": (src.get("telegram") or "").lstrip("@").strip(),  # username без @
+        "max": (src.get("max") or "").strip(),
+    }
+
+
+# -------------------------------------------------------------------------------
+
+
 def _serialize_patient(p):
     return {
         "id": str(p.get("_id")),
@@ -128,6 +163,26 @@ app.config.update(
     SEND_FILE_MAX_AGE_DEFAULT=0,
     JSON_AS_ASCII=False,  # ← добавь эту строку
 )
+
+# --- JSON UTF-8 ENFORCE (drop-in) -------------------------------------------
+# Flask<2.3 читает JSON_AS_ASCII, Flask>=2.3 — app.json.ensure_ascii
+app.config["JSON_AS_ASCII"] = False
+try:
+    app.json.ensure_ascii = False  # Flask 2.3+
+except Exception:
+    pass
+
+
+@app.after_request
+def _force_utf8_json(resp):
+    # Если это JSON-ответ — всегда укажем charset, чтобы клиенты (в т.ч. PS5) не путались
+    ctype = resp.headers.get("Content-Type", "")
+    if ctype.startswith("application/json") and "charset=" not in ctype.lower():
+        resp.headers["Content-Type"] = "application/json; charset=utf-8"
+    return resp
+
+
+# ---------------------------------------------------------------------------
 
 # Mongo (через .env)
 MONGO_URI = os.getenv("MONGO_URI")
@@ -205,6 +260,175 @@ def api_patient_update(id):
 
     p = db.patients.find_one({"_id": _id})
     return jsonify({"ok": True, "item": _serialize_patient(p)})
+
+
+# --- mini: контакты пациента для быстрых кнопок -------------------------------
+@app.get("/api/patients/<id>/contacts", endpoint="api_patient_contacts_min")
+def api_patient_contacts_min(id):
+    _id = oid(id)
+    if not _id:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    p = db.patients.find_one({"_id": _id}, {"full_name": 1, "phone": 1, "email": 1, "contacts": 1})
+    if not p:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    contacts = p.get("contacts") or {}
+    # совместимость: если email лежит в корне
+    if (not contacts.get("email")) and p.get("email"):
+        contacts["email"] = p.get("email")
+
+    return jsonify(
+        {
+            "ok": True,
+            "id": str(p["_id"]),
+            "full_name": p.get("full_name", ""),
+            "contacts": _normalize_contacts(
+                {
+                    "phone": contacts.get("phone") or p.get("phone"),
+                    "email": contacts.get("email"),
+                    "whatsapp": contacts.get("whatsapp"),
+                    "telegram": contacts.get("telegram"),
+                    "max": contacts.get("max"),
+                }
+            ),
+        }
+    )
+
+
+# -------------------------------------------------------------------------------
+
+
+# --- 2.2 MINI-API: пациенты (короткие словари для селектов/автокомплита) ---
+@app.get("/api/patients/min")
+def api_patients_min_list():
+    """
+    GET /api/patients/min?q=иванов&limit=20
+    Возвращает короткие карточки пациентов для выпадающих списков/поиска.
+    """
+    q = (request.args.get("q") or "").strip()
+    try:
+        limit = min(50, max(1, int(request.args.get("limit", 20))))
+    except Exception:
+        limit = 20
+
+    flt = {}
+    if q:
+        flt = {
+            "$or": [
+                {"full_name": {"$regex": re.escape(q), "$options": "i"}},
+                {"phone": {"$regex": re.escape(q), "$options": "i"}},
+                {"card_no": {"$regex": re.escape(q), "$options": "i"}},
+            ]
+        }
+
+    cur = (
+        db.patients.find(flt, {"full_name": 1, "phone": 1, "birthdate": 1, "card_no": 1})
+        .sort("full_name", 1)
+        .limit(limit)
+    )
+
+    items = [
+        {
+            "id": str(p["_id"]),
+            "name": p.get("full_name", ""),
+            "phone": p.get("phone", ""),
+            "birthdate": p.get("birthdate", ""),  # строкой 'YYYY-MM-DD' если есть
+            "card_no": p.get("card_no", ""),
+        }
+        for p in cur
+    ]
+
+    return jsonify({"ok": True, "items": items})
+
+
+@app.get("/api/patients/<id>/min")
+def api_patients_min_one(id):
+    """
+    GET /api/patients/<id>/min
+    Короткая карточка одного пациента (для быстрых подстановок).
+    """
+    _id = oid(id)
+    if not _id:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    p = db.patients.find_one(
+        {"_id": _id}, {"full_name": 1, "phone": 1, "birthdate": 1, "card_no": 1}
+    )
+    if not p:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    item = {
+        "id": str(p["_id"]),
+        "name": p.get("full_name", ""),
+        "phone": p.get("phone", ""),
+        "birthdate": p.get("birthdate", ""),
+        "card_no": p.get("card_no", ""),
+    }
+    return jsonify({"ok": True, "item": item})
+
+    # Забираем только поля контактов, + базовые для удобства фронта
+    proj = {
+        "full_name": 1,
+        "phone": 1,
+        "email": 1,
+        "telegram": 1,
+        "whatsapp": 1,
+        "max": 1,  # "Макс" как отдельный канал (по аналогии с WhatsApp)
+        "card_no": 1,
+    }
+    p = db.patients.find_one({"_id": _id}, proj)
+    if not p:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    # Нормализация — возвращаем только строки, пустые -> ""
+    item = {
+        "id": str(p["_id"]),
+        "full_name": s(p.get("full_name")),
+        "card_no": s(p.get("card_no")),
+        "phone": s(p.get("phone")),
+        "email": s(p.get("email")),
+        "telegram": s(p.get("telegram")),
+        "whatsapp": s(p.get("whatsapp")),
+        "max": s(p.get("max")),  # просто значение; ссылку уточним отдельно
+    }
+
+    # На стороне UI потом можно строить ссылки:
+    #  - tel: <phone>
+    #  - mailto: <email>
+    #  - WhatsApp: https://wa.me/<digits_only(phone)>
+    #  - Telegram: https://t.me/<handle_or_phone>
+    #  - Max: https://web.max.ru/  (глубокую ссылку уточним спецификацией)
+    return jsonify({"ok": True, "item": item})
+
+
+# --- /2.2 MINI-API ---
+
+
+# --- mini: один пациент (короткая карточка) -------------------------------
+@app.get("/api/patients/<id>/min", endpoint="api_patient_min_by_id")
+def api_patient_min_by_id(id):
+    _id = oid(id)
+    if not _id:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    p = db.patients.find_one(
+        {"_id": _id}, {"full_name": 1, "phone": 1, "birthdate": 1, "card_no": 1}
+    )
+    if not p:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    item = {
+        "id": str(p["_id"]),
+        "name": p.get("full_name", ""),
+        "phone": p.get("phone", ""),
+        "birthdate": p.get("birthdate", ""),
+        "card_no": p.get("card_no", ""),
+    }
+    return jsonify({"ok": True, "item": item})
+
+
+# --------------------------------------------------------------------------
 
 
 @app.route("/patients/<id>")
@@ -1414,9 +1638,6 @@ def messages():
     return render_template("messages.html", chats=chats, user_name=user_name)
 
 
-from bson import ObjectId
-
-
 @app.route("/ztl")
 def ztl():
     ztls = list(db.ztl.find({}))  # Забираем все лабораторные работы
@@ -1486,7 +1707,7 @@ def partners():
 @app.route("/logs")
 def logs():
     write_log("logs_view", comment="Просмотр журнала действий", obj="Логи")
-    logs = list(db.logs.find().sort("time", -1))  # Сортируем по дате
+    logs = list(db.logs.find().sort("datetime", -1))  # Сортируем по дате
     return render_template("journal.html", logs=logs)
 
 
@@ -2011,7 +2232,7 @@ def api_appointments_update_time():
         return jsonify({"ok": False, "error": "bad_datetime"}), 400
 
     # серверная валидация окна/шага
-    err = validate_slot_bounds(start, end)
+    err = validate_slot_bounds(start_dt, end_dt)
     if err:
         return jsonify({"ok": False, "error": err}), 400
 
@@ -2826,6 +3047,101 @@ def api_patient_full(id):
     return render_template("patient_card.html", p=p, visits=visits_view)
 
 
+# ============== ПАЦИЕНТ: просмотр/редактирование ==============
+
+
+@app.get("/patients/<pid>")
+def patient_view(pid):
+    p = db.patients.find_one({"_id": ObjectId(pid)})
+    if not p:
+        abort(404)
+    return render_template("patient_view.html", p=p)
+
+
+@app.get("/patients/<pid>/edit")
+def patient_edit_form(pid):
+    p = db.patients.find_one({"_id": ObjectId(pid)})
+    if not p:
+        abort(404)
+    return render_template("patient_edit.html", p=p)
+
+
+@app.post("/patients/<pid>/edit")
+def patient_edit_save(pid):
+    data = request.form.to_dict()
+    # нормализация
+    upd = {
+        "last_name": data.get("last_name", "").strip(),
+        "first_name": data.get("first_name", "").strip(),
+        "middle_name": data.get("middle_name", "").strip(),
+        "birth_date": data.get("birth_date") or None,
+        "sex": data.get("sex") or None,
+        "phone_mobile": data.get("phone_mobile", "").strip(),
+        "phone_home": data.get("phone_home", "").strip(),
+        "email": data.get("email", "").strip(),
+        "representative_name": data.get("representative_name", "").strip(),
+        "representative_phone": data.get("representative_phone", "").strip(),
+        "address": {
+            "region": data.get("addr_region", "").strip(),
+            "city": data.get("addr_city", "").strip(),
+            "street": data.get("addr_street", "").strip(),
+            "house": data.get("addr_house", "").strip(),
+            "apt": data.get("addr_apt", "").strip(),
+        },
+        "primary_doctor_id": data.get("primary_doctor_id") or None,
+        "coordinator_id": data.get("coordinator_id") or None,
+        "company_id": data.get("company_id") or None,
+        "tags": [t.strip() for t in (data.get("tags") or "").split(",") if t.strip()],
+        "updated_at": datetime.utcnow(),
+    }
+    # авто-№ карты если пуст
+    if not data.get("card_no"):
+        upd["card_no"] = next_card_no()
+    else:
+        upd["card_no"] = data["card_no"].strip()
+
+    db.patients.update_one({"_id": ObjectId(pid)}, {"$set": upd})
+    flash("Изменения сохранены", "ok")
+    return redirect(url_for("patient_view", pid=pid))
+
+
+def next_card_no():
+    # простой автоинкремент, без гонок для одиночной инстанции
+    last = (
+        db.patients.find({"card_no": {"$exists": True, "$ne": None}})
+        .sort([("card_no", -1)])
+        .limit(1)
+    )
+    last = list(last)
+    try:
+        n = int(last[0]["card_no"].lstrip("№").strip()) + 1 if last else 1
+    except Exception:
+        n = 1
+    return f"№{n}"
+
+
+# ============== АНКЕТА ==============
+
+
+@app.get("/patients/<pid>/questionnaire")
+def questionnaire_form(pid):
+    p = db.patients.find_one({"_id": ObjectId(pid)})
+    if not p:
+        abort(404)
+    qs = p.get("questionnaire") or {"version": 1, "answers": []}
+    return render_template("patient_questionnaire.html", p=p, qs=qs)
+
+
+@app.post("/patients/<pid>/questionnaire")
+def questionnaire_save(pid):
+    payload = request.get_json(force=True, silent=True) or {}
+    qs = {"version": 1, "answers": payload.get("answers", [])}
+    db.patients.update_one(
+        {"_id": ObjectId(pid)}, {"$set": {"questionnaire": qs, "updated_at": datetime.utcnow()}}
+    )
+    return jsonify(ok=True)
+
+
 # --- ROUTES.md auto-refresh on startup (write to docs/ and project root) --
 # DOCS dir exists
 DOCS = Path(app.root_path) / "docs"
@@ -2889,74 +3205,7 @@ def api_patients_create():
     return jsonify({"ok": True, "id": str(ins.inserted_id), "full_name": doc["full_name"]})
 
 
-def api_appointments_create():
-    payload = request.get_json(force=True, silent=True) or {}
-
-    start_str = payload.get("start")
-    end_str = payload.get("end")
-    room_id = _to_oid(payload.get("room_id"))
-    doctor_id = _to_oid(payload.get("doctor_id"))
-    patient_id = _to_oid(payload.get("patient_id"))
-    service_id = _to_oid(payload.get("service_id"))
-    status_key = (payload.get("status_key") or "scheduled").strip()
-    note = (payload.get("note") or payload.get("comment") or "").strip()
-
-    if not start_str or not end_str or not room_id:
-        return jsonify({"ok": False, "error": "missing_fields"}), 400
-
-    start = to_dt(start_str)
-    end = to_dt(end_str)
-    if not isinstance(start, datetime) or not isinstance(end, datetime) or end <= start:
-        return jsonify({"ok": False, "error": "bad_datetime"}), 400
-
-    conflict = {"start": {"$lt": end}, "end": {"$gt": start}}
-    filters = [{"room_id": room_id, **conflict}]
-    if doctor_id:
-        filters.append({"doctor_id": doctor_id, **conflict})
-    if db.appointments.find_one({"$or": filters}):
-        return jsonify({"ok": False, "error": "conflict"}), 409
-
-    ins = db.appointments.insert_one(
-        {
-            "start": start,
-            "end": end,
-            "room_id": room_id,
-            "doctor_id": doctor_id,
-            "patient_id": patient_id,
-            "service_id": service_id,
-            "status_key": status_key,
-            "comment": note,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-        }
-    )
-
-    try:
-        p_name = (db.patients.find_one({"_id": patient_id}, {"full_name": 1}) or {}).get(
-            "full_name", ""
-        )
-        s_name = (db.services.find_one({"_id": service_id}, {"name": 1}) or {}).get("name", "")
-        write_log(
-            "create_appointment",
-            obj=str(ins.inserted_id),
-            extra={"patient": p_name, "service": s_name},
-        )
-    except Exception:
-        pass
-
-    return jsonify({"ok": True, "id": str(ins.inserted_id)})
-
-
 # === API: создать запись (appointments.create) ===============================
-from datetime import datetime
-from bson import ObjectId
-
-
-def _to_oid(s):
-    try:
-        return ObjectId(s)
-    except Exception:
-        return None
 
 
 def _parse_dt(value: str) -> datetime:
@@ -3114,56 +3363,6 @@ def healthz():
 
 
 # === Patients: list, search, page ==================================================
-
-
-@app.route("/patients")
-def patients_page():
-    # простой рендер таблицы — дальше данными наполнит фронт через /api/patients
-    return render_template("patients.html")
-
-
-@app.route("/api/patients", methods=["GET"])
-def api_patients_list():
-    """
-    Список пациентов с поиском и пагинацией.
-    Параметры: q? (строка), page? (1..), per_page? (1..200)
-    """
-    q = (request.args.get("q") or "").strip()
-    try:
-        page = max(1, int(request.args.get("page", 1)))
-    except Exception:
-        page = 1
-    try:
-        per_page = min(200, max(1, int(request.args.get("per_page", 50))))
-    except Exception:
-        per_page = 50
-
-    flt = {}
-    if q:
-        # если только цифры — попробуем как card_no или телефон
-        if q.isdigit():
-            flt = {
-                "$or": [{"card_no": int(q)}, {"phone": {"$regex": re.escape(q), "$options": "i"}}]
-            }
-        else:
-            flt = {
-                "$or": [
-                    {"full_name": {"$regex": re.escape(q), "$options": "i"}},
-                    {"phone": {"$regex": re.escape(q), "$options": "i"}},
-                ]
-            }
-
-    total = db.patients.count_documents(flt)
-    cursor = (
-        db.patients.find(flt)
-        .sort([("full_name", 1), ("_id", -1)])
-        .skip((page - 1) * per_page)
-        .limit(per_page)
-    )
-    items = [_serialize_patient(x) for x in cursor]
-    return jsonify({"ok": True, "items": items, "total": total, "page": page, "per_page": per_page})
-
-
 @app.route("/api/patients/search", methods=["GET"])
 def api_patients_search():
     """
@@ -3217,7 +3416,51 @@ def backfill_card_nos_cmd():
         ensure_patient_card_nos()
 
 
-# === /Patients =====================================================================
+# === BEGIN: repair-patient-names (robust) =====================================
+@app.cli.command("repair-patient-names")
+@click.option("--apply", is_flag=True, help="Сохранить изменения (по умолчанию только показать)")
+@click.option("--limit", type=int, default=0, help="Ограничить кол-во записей (0 = все)")
+def repair_patient_names(apply: bool, limit: int):
+    """
+    Чинит mojibake в full_name, например 'Ð�Ð²Ð°Ð½' -> 'Иван'.
+    Логика:
+      1) Проходим по всем пациентам (или limit).
+      2) Пробуем name.encode('latin1').decode('utf-8').
+      3) Применяем только если результат содержит кириллицу и отличается от исходного.
+    """
+    import re
+
+    CYR = re.compile(r"[\u0400-\u04FF]")  # диапазон кириллицы
+
+    scanned = 0
+    fixed = 0
+
+    cur = db.patients.find({}, {"full_name": 1})
+    if limit and limit > 0:
+        cur = cur.limit(int(limit))
+
+    for p in cur:
+        name = p.get("full_name") or ""
+        if not isinstance(name, str) or not name:
+            continue
+        scanned += 1
+
+        try:
+            candidate = name.encode("latin1").decode("utf-8")
+        except Exception:
+            candidate = name
+
+        # исправляем только если реально стало «по-русски» и строка изменилась
+        if candidate != name and CYR.search(candidate):
+            click.echo(f"{p['_id']}: {name!r} -> {candidate!r}")
+            if apply:
+                db.patients.update_one({"_id": p["_id"]}, {"$set": {"full_name": candidate}})
+                fixed += 1
+
+    click.echo(f"Scanned: {scanned}, Fixed: {fixed}")
+
+
+# === END: repair-patient-names ===============================================
 
 # ======= ЗАПУСК =======
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Flask routes map
 
-_generated: 2025-09-05 21:26:56_
+_generated: 2025-09-06 15:34:22_
 
 
 | Rule | Endpoint | Methods |
@@ -26,11 +26,15 @@ _generated: 2025-09-05 21:26:56_
 | `/api/finance/record` | `api_finance_record` | `POST` |
 | `/api/free_slots` | `api_free_slots` | `POST` |
 | `/api/patients/<id>` | `api_patient_get` | `GET` |
+| `/api/patients/<id>/contacts` | `api_patient_contacts_min` | `GET` |
 | `/api/patients/<id>/full` | `api_patient_full` | `GET` |
 | `/api/patients/<id>/generate_card_no` | `api_patient_generate_card_no` | `POST` |
+| `/api/patients/<id>/min` | `api_patients_min_one` | `GET` |
+| `/api/patients/<id>/min` | `api_patient_min_by_id` | `GET` |
 | `/api/patients/<id>/update` | `api_patient_update` | `POST` |
 | `/api/patients/<id>/update_info` | `api_patient_update_info` | `POST` |
 | `/api/patients/<id>/update_questionary` | `api_patient_update_questionary` | `POST` |
+| `/api/patients/min` | `api_patients_min_list` | `GET` |
 | `/api/rooms/busy` | `api_room_busy` | `GET` |
 | `/api/rooms/status_now` | `api_rooms_status_now` | `GET` |
 | `/api/rooms/today_details` | `api_rooms_today_details` | `GET` |
@@ -74,6 +78,11 @@ _generated: 2025-09-05 21:26:56_
 | `/patient_card/<id>` | `patient_card` | `GET` |
 | `/patients` | `patients_list` | `GET` |
 | `/patients/<id>` | `patient_card_page` | `GET` |
+| `/patients/<pid>` | `patient_view` | `GET` |
+| `/patients/<pid>/edit` | `patient_edit_form` | `GET` |
+| `/patients/<pid>/edit` | `patient_edit_save` | `POST` |
+| `/patients/<pid>/questionnaire` | `questionnaire_form` | `GET` |
+| `/patients/<pid>/questionnaire` | `questionnaire_save` | `POST` |
 | `/profile` | `profile` | `GET` |
 | `/roadmap` | `roadmap_view` | `GET` |
 | `/rooms` | `rooms_list` | `GET` |
