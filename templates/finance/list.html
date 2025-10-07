@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+  <h1 class="cs-h1" style="margin: 0;">Финансы</h1>
+  <div style="display: flex; gap: 12px;">
+    <a href="/finance/add" class="cs-btn" style="background: #2e6cff; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+      + Добавить операцию
+    </a>
+    <a href="/finance/report/cashbox" class="btn btn-info ms-2">
+      <i class="fa fa-chart-bar"></i> Отчёт по кассам
+    </a>
+    <a href="/finance/transfer" class="cs-btn" style="background: #28a745; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+      ↔️ Переводы
+    </a>
+  </div>
+</div>
+
+<!-- Верхняя панель действий: скачать/импорт -->
+<div class="cs-toolbar" style="margin:8px 0; display:flex; gap:12px; align-items:center;">
+  <!-- Экспорт (учитываем текущие фильтры) -->
+  <a class="cs-link" href="/finance/export/csv?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">Скачать CSV</a>
+  <a class="cs-link" href="/finance/export/json?type={{ f_type }}&source={{ f_source }}&category={{ f_category }}">Скачать JSON</a>
+
+  <!-- Импорт JSON -->
+  <form method="post" action="/finance/import/json" enctype="multipart/form-data" style="display:flex; gap:6px;">
+    <input type="file" name="file" accept="application/json" class="cs-input" required>
+    <button class="cs-btn">Импорт JSON</button>
+  </form>
+</div>
+
+<!-- МЕТРИКИ -->
+<div class="cs-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
+  <div class="cs-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px;">
+    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Доходы</div>
+    <div style="font-size: 28px; font-weight: 700;">{{ income|default(0) }} ₽</div>
+  </div>
+
+  <div class="cs-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px;">
+    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Расходы</div>
+    <div style="font-size: 28px; font-weight: 700;">{{ expense|default(0) }} ₽</div>
+  </div>
+
+<!-- Карта Должники -->
+  <div class="cs-card" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; padding: 20px; border-radius: 12px;">
+    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Должники</div>
+    <div style="font-size: 28px; font-weight: 700;">{{ debtors_count|default(0) }}</div>
+    <div style="font-size: 14px; opacity: 0.85; margin-top: 4px;">
+      Сумма: {{ debtors_sum|default(0) }} ₽
+    </div>
+    <a href="/patients/debtors" style="
+      display: inline-block;
+      margin-top: 12px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.2s;
+    " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+      Смотреть список →
+    </a>
+  </div>
+
+  <div class="cs-card" style="background: #fff; border: 2px solid #e9ecef; padding: 20px; border-radius: 12px;">
+    <div style="font-size: 14px; color: #6c757d; margin-bottom: 12px; font-weight: 600;">Поступления</div>
+    <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px;">
+      <div><span style="background: #e3f2fd; padding: 2px 8px; border-radius: 4px; margin-right: 8px;">ALPHA</span>{{ by_source.alpha|default(0) }} ₽</div>
+      <div><span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; margin-right: 8px;">SBER</span>{{ by_source.sber|default(0) }} ₽</div>
+      <div><span style="background: #fff3e0; padding: 2px 8px; border-radius: 4px; margin-right: 8px;">CASH</span>{{ by_source.cash|default(0) }} ₽</div>
+    </div>
+  </div>
+</div>
+
+<!-- === ФИЛЬТРЫ (ОТДЕЛЬНАЯ ФОРМА!) === -->
+<form method="get" action="/finance" class="cs-toolbar">
+  <!-- Тип -->
+  <select name="type" class="cs-input" title="Тип">
+    <option value="">Все типы</option>
+    <option value="income"   {{ 'selected' if f_type=='income'   else '' }}>Доход</option>
+    <option value="expense"  {{ 'selected' if f_type=='expense'  else '' }}>Расход</option>
+    <option value="deposit"  {{ 'selected' if f_type=='deposit'  else '' }}>Депозит</option>
+    <option value="salary"   {{ 'selected' if f_type=='salary'   else '' }}>ЗП</option>
+    <option value="purchase" {{ 'selected' if f_type=='purchase' else '' }}>Закупка</option>
+  </select>
+
+  <!-- Категория расхода -->
+  <select name="category" class="cs-input" title="Категория">
+    <option value="">Любая категория</option>
+    <option value="purchase"  {{ 'selected' if f_category=='purchase'  else '' }}>Закупка</option>
+    <option value="rent"      {{ 'selected' if f_category=='rent'      else '' }}>Аренда</option>
+    <option value="marketing" {{ 'selected' if f_category=='marketing' else '' }}>Маркетинг</option>
+    <option value="dividends" {{ 'selected' if f_category=='dividends' else '' }}>Дивиденды</option>
+    <option value="other"     {{ 'selected' if f_category=='other'     else '' }}>Другие расходы</option>
+  </select>
+
+  <!-- Источник -->
+  <select name="source" class="cs-input" title="Источник">
+    <option value="">Любой источник</option>
+    <option value="alpha" {{ 'selected' if f_source=='alpha' else '' }}>Альфа</option>
+    <option value="sber"  {{ 'selected' if f_source=='sber'  else '' }}>Сбер</option>
+    <option value="cash"  {{ 'selected' if f_source=='cash'  else '' }}>Нал</option>
+  </select>
+
+  <button type="submit" class="cs-btn">Фильтр</button>
+
+  <div style="margin-left: auto; display: flex; gap: 8px;">
+    <span style="color: #6c757d; font-size: 14px; margin-right: 8px;">Быстрые действия:</span>
+    <a href="/finance/add?type=expense&category=rent" style="padding: 6px 12px; background: #f8f9fa; border-radius: 6px; text-decoration: none; color: #495057; font-size: 13px;">💸 Аренда</a>
+    <a href="/finance/add?type=expense&category=marketing" style="padding: 6px 12px; background: #f8f9fa; border-radius: 6px; text-decoration: none; color: #495057; font-size: 13px;">📢 Маркетинг</a>
+    <a href="/finance/add?type=salary" style="padding: 6px 12px; background: #f8f9fa; border-radius: 6px; text-decoration: none; color: #495057; font-size: 13px;">💰 ЗП</a>
+  </div>
+</form>
+
+<!-- ТАБЛИЦА -->
+<div class="cs-table-wrap">
+  <table class="cs-table">
+    <thead>
+      <tr>
+        <th>Время</th><th>Тип</th><th>Источник</th><th>Сумма</th><th>Услуга</th><th>Категория</th><th>Кассир</th><th>Комментарий</th><th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set CAT_RU = {"purchase":"Закупка","marketing":"Маркетинг","dividends":"Дивиденды","rent":"Аренда"} %}
+      {% for it in (items or []) %}
+      <tr data-type="{{ it.type }}">
+        <td>{{ it.ts }}</td>
+        <td>{{ it.type }}</td>
+        <td>{{ it.source }}</td>
+        <td>{{ it.amount }} ₽</td>
+        <td>{{ it.service_name }}</td>
+        <td>{{ CAT_RU.get(it.category, '—') }}</td>
+        <td>{{ it.cashier }}</td>
+        <td>{{ it.note }}</td>
+        <td>
+          {% if not it.appointment_id %}
+          <a
+            href="/finance/delete/{{ it.id }}"
+            onclick="return confirm('Удалить операцию на {{ it.amount }} ₽ из {{ it.source }}? Баланс кассы будет откатан.')"
+            class="btn btn-sm btn-danger"
+            style="text-decoration: none; color: white;"
+          >
+            🗑️ Удалить
+          </a>
+          {% else %}
+          <span style="color: #999; font-size: 12px;">Авто</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9" class="cs-empty">Записей нет</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<style>
+/* Улучшенные стили таблицы */
+.cs-table-wrap {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.cs-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.cs-table thead th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.cs-table tbody tr {
+  border-bottom: 1px solid #f1f3f5;
+  transition: background 0.15s;
+}
+
+.cs-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.cs-table td {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+/* Цвета для типов операций */
+.cs-table td:nth-child(2) {
+  font-weight: 500;
+}
+
+.cs-table tbody tr[data-type="income"] td:nth-child(4) {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.cs-table tbody tr[data-type="expense"] td:nth-child(4),
+.cs-table tbody tr[data-type="purchase"] td:nth-child(4),
+.cs-table tbody tr[data-type="salary"] td:nth-child(4) {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Бейджи для источников */
+.cs-table td:nth-child(3) {
+  text-transform: uppercase;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #6c757d;
+}
+</style>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 24px; border-radius: 12px; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    <h3 style="margin: 0 0 16px 0; color: #dc3545;">⚠️ Подтверждение удаления</h3>
+    <p id="deleteMessage" style="margin: 0 0 20px 0; color: #495057;"></p>
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button onclick="closeDeleteModal()" class="cs-btn" style="background: #6c757d;">Отмена</button>
+      <button onclick="executeDelete()" class="cs-btn" style="background: #dc3545; color: white;">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let deleteOperationId = null;
+
+function confirmDelete(id, amount, source) {
+  deleteOperationId = id;
+  const sourceNames = {
+    'alpha': 'Альфа-Банк',
+    'sber': 'Сбербанк',
+    'cash': 'Наличные',
+    'split': 'Комбинированная оплата'
+  };
+  const sourceName = sourceNames[source] || source;
+
+  document.getElementById('deleteMessage').textContent =
+    `Удалить операцию на сумму ${amount} ₽ из источника "${sourceName}"? Баланс кассы будет откатан.`;
+
+  const modal = document.getElementById('deleteModal');
+  modal.style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+  deleteOperationId = null;
+}
+
+function executeDelete() {
+  if (!deleteOperationId) return;
+
+  fetch(`/finance/delete/${deleteOperationId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      window.location.reload();
+    } else {
+      alert('Ошибка удаления: ' + (data.error || 'Неизвестная ошибка'));
+      closeDeleteModal();
+    }
+  })
+  .catch(error => {
+    alert('Ошибка удаления: ' + error);
+    closeDeleteModal();
+  });
+}
+</script>
+
+{% endblock %}

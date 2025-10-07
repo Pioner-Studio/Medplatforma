@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>События в {{ cabinet }}</h2>
+<ul>
+  {% for e in events %}
+    <li>
+      {{ e.start }} — {{ e.title or '' }}
+      <!-- можно добавить больше инфы: врач, пациент, статус -->
+    </li>
+  {% endfor %}
+</ul>
+<a href="/calendar" class="btn-main">← Назад к календарю</a>
+{% endblock %}

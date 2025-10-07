@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+    <h2 style="margin:0;flex:1;">ClubStom — Roadmap</h2>
+    <a href="{{ url_for('roadmap_view') }}" class="btn-main" style="text-decoration:none;background:#1976d2;color:#fff;border-radius:8px;padding:8px 14px;">Обновить</a>
+  </div>
+  <div id="roadmap-body">
+    {{ content|safe }}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+name: Arch Guard
+
+on:
+  workflow_dispatch:  # запуск вручную из Actions
+  push:               # запуск на каждый коммит
+    branches: [main, dev]
+  pull_request:       # запуск на PR (как было)
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    branches: [dev, main]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # чтобы можно было сравнить с предыдущим коммитом при push
+ 
+
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: List changed files
+        id: diff
+        run: |
+          set -e
+          if [ -n "${{ github.base_ref }}" ]; then
+            echo "PR detected; base=${{ github.base_ref }}"
+            git fetch origin ${{ github.base_ref }} --depth=1
+            git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          else
+            echo "No PR detected; using HEAD~1 diff"
+            git fetch --depth=2
+            git diff --name-only HEAD~1 > changed_files.txt || true
+          fi
+          echo "changed=$(tr '\n' ' ' < changed_files.txt)" >> $GITHUB_OUTPUT
+          echo "Changed files:"; cat changed_files.txt || true
+   
+
+      - name: Determine if code files changed
+        id: code_changed
+        run: |
+          if grep -E '\.(py|js|ts|html|jinja|jinja2|j2)$' changed_files.txt; then
+            echo "yes=true" >> $GITHUB_OUTPUT
+          else
+            echo "yes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bypass if override label is present
+        if: steps.prmeta.outputs.found == 'true'
+        run: |
+          echo "override label present → soft-pass with warning."
+          echo "::warning::Override label 'override-arch-guard' present. Skipping checks."
+          exit 0
+
+      - name: Ensure docs artifacts are present in PR
+        if: steps.code_changed.outputs.yes == 'true'
+        run: |
+          set -e
+          echo "Code changed → requiring docs/routes.json and docs/ARCH_MAP.md in diff"
+          grep -E '^docs/routes\.json$' changed_files.txt >/dev/null || (echo "::error::docs/routes.json not updated in PR" && exit 1)
+          grep -E '^docs/ARCH_MAP\.md$' changed_files.txt >/dev/null || (echo "::error::docs/ARCH_MAP.md not updated in PR" && exit 1)
+          echo "OK: docs/routes.json & docs/ARCH_MAP.md present"
+
+      - name: Set up Python
+        if: steps.code_changed.outputs.yes == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify routes.json against current code
+        if: steps.code_changed.outputs.yes == 'true'
+        run: |
+          set -e
+          if [ ! -f docs/arch_verify.py ]; then
+            echo "::error::docs/arch_verify.py not found (required for verification)"; exit 1
+          fi
+          cp docs/routes.json docs/routes.pr.json
+          python docs/arch_verify.py --root . --out docs/routes.ci.json
+          # Compare PR artifact with CI-generated artifact
+          diff -u docs/routes.pr.json docs/routes.ci.json || (echo "::error::docs/routes.json is stale or inconsistent with code" && exit 1)
+          echo "OK: docs/routes.json matches CI scan"
+
+      - name: Check ARCH_MAP.md mentions UPDATE or status markers
+        if: steps.code_changed.outputs.yes == 'true'
+        run: |
+          set -e
+          if grep -E 'UPDATE:|verified|pending|planned' docs/ARCH_MAP.md >/dev/null; then
+            echo "OK: ARCH_MAP.md contains update/status markers"
+          else
+            echo "::error::ARCH_MAP.md lacks update/status markers (UPDATE:/verified/pending/planned)"; exit 1
+          fi

@@ -1,0 +1,114 @@
+    1: from pymongo import MongoClient
+    2: from datetime import datetime, timedelta
+    3: import random
+    4: 
+    5: client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
+    6: db = client['medplatforma']
+    7: 
+    8: # Получи список врачей (или подставь id вручную, если нету)
+    9: doctors = list(db.doctors.find())
+   10: if not doctors:
+   11:     # Временно фейки, если нет врачей (лучше использовать реальные _id)
+   12:     doctors = [{"_id": "1", "full_name": "Д-р Иванов"}, {"_id": "2", "full_name": "Д-р Петров"}]
+   13: 
+   14: def pick_doctor():
+   15:     doc = random.choice(doctors)
+   16:     return str(doc['_id'])
+   17: 
+   18: tasks = [
+   19:     {
+   20:         "title": "Согласовать план лечения",
+   21:         "description": "Обсудить варианты лечения с пациентом Козлова О.",
+   22:         "assigned_to": pick_doctor(),
+   23:         "due_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%dT15:00"),
+   24:         "status": "active",
+   25:         "priority": "high",
+   26:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   27:     },
+   28:     {
+   29:         "title": "Заполнить карту пациента",
+   30:         "description": "Добавить все недостающие документы по Сидорову А.",
+   31:         "assigned_to": pick_doctor(),
+   32:         "due_date": (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%dT11:00"),
+   33:         "status": "active",
+   34:         "priority": "normal",
+   35:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   36:     },
+   37:     {
+   38:         "title": "Провести рентгеноснимок",
+   39:         "description": "Рентген кабинет: панорамный снимок для Петрова И.",
+   40:         "assigned_to": pick_doctor(),
+   41:         "due_date": (datetime.now() - timedelta(hours=2)).strftime("%Y-%m-%dT10:00"),
+   42:         "status": "overdue",
+   43:         "priority": "normal",
+   44:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   45:     },
+   46:     {
+   47:         "title": "Назначить повторный приём",
+   48:         "description": "Связаться с пациентом Фёдоровой Т. для записи.",
+   49:         "assigned_to": pick_doctor(),
+   50:         "due_date": (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%dT13:00"),
+   51:         "status": "active",
+   52:         "priority": "high",
+   53:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   54:     },
+   55:     {
+   56:         "title": "Проверить оплату пациента",
+   57:         "description": "Кассир: подтвердить поступление оплаты от Смирновой Л.",
+   58:         "assigned_to": pick_doctor(),
+   59:         "due_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%dT18:00"),
+   60:         "status": "done",
+   61:         "priority": "normal",
+   62:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   63:     },
+   64:     {
+   65:         "title": "Собрать документы для ЗТЛ",
+   66:         "description": "Передать все документы по Козловой О. в лабораторию.",
+   67:         "assigned_to": pick_doctor(),
+   68:         "due_date": (datetime.now() + timedelta(days=4)).strftime("%Y-%m-%dT16:00"),
+   69:         "status": "active",
+   70:         "priority": "low",
+   71:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   72:     },
+   73:     {
+   74:         "title": "Созвон с партнёрской клиникой",
+   75:         "description": "Обсудить условия сотрудничества с Dr. Smile.",
+   76:         "assigned_to": pick_doctor(),
+   77:         "due_date": (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%dT17:00"),
+   78:         "status": "active",
+   79:         "priority": "normal",
+   80:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   81:     },
+   82:     {
+   83:         "title": "Провести внутренний аудит",
+   84:         "description": "Проверить заполнение карт за июнь.",
+   85:         "assigned_to": pick_doctor(),
+   86:         "due_date": (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%dT14:00"),
+   87:         "status": "done",
+   88:         "priority": "high",
+   89:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   90:     },
+   91:     {
+   92:         "title": "Отправить отчёт в бухгалтерию",
+   93:         "description": "Экспортировать фин.отчёт за неделю.",
+   94:         "assigned_to": pick_doctor(),
+   95:         "due_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%dT10:30"),
+   96:         "status": "active",
+   97:         "priority": "normal",
+   98:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+   99:     },
+  100:     {
+  101:         "title": "Провести инвентаризацию склада",
+  102:         "description": "Составить список расходных материалов.",
+  103:         "assigned_to": pick_doctor(),
+  104:         "due_date": (datetime.now() + timedelta(days=5)).strftime("%Y-%m-%dT12:00"),
+  105:         "status": "active",
+  106:         "priority": "low",
+  107:         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+  108:     }
+  109: ]
+  110: 
+  111: db.tasks.delete_many({})  # Очистить коллекцию, если нужно
+  112: db.tasks.insert_many(tasks)
+  113: 
+  114: print("✅ Демо-задачи для платформы успешно добавлены!")

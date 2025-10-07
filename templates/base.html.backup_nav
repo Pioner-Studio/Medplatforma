@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Medplatforma{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="">
+  <div class="layout">
+    <aside class="sidebar">
+      {% include 'sidebar.html' %}
+    </aside>
+    <div class="main-area">
+      {% include 'topbar.html' %}
+      
+        <!-- TEMP MENU для отладки -->
+        <div style="background: #f8f9fa; padding: 10px; margin: 10px 0;">
+            <strong>Отладочное меню:</strong>
+            <a href="/patients" style="margin: 0 10px;">Пациенты (прямая ссылка)</a>
+            <a href="/services" style="margin: 0 10px;">Услуги (прямая ссылка)</a>
+            <a href="/finance" style="margin: 0 10px;">Финансы (прямая ссылка)</a>
+            <br><small>Роль: {{ session.get("user_role", "не определена") }}</small>
+        </div>
+<main class="content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  {% block scripts %}
+  <script>
+    // Открытие меню профиля
+    function toggleProfileMenu() {
+      let menu = document.getElementById('profileMenu');
+      menu.style.display = (menu.style.display === 'flex' ? 'none' : 'flex');
+    }
+    window.onclick = function(e) {
+      let menu = document.getElementById('profileMenu');
+      if (menu && e.target.closest('.profile-block') == null && e.target.closest('.profile-menu') == null) {
+        menu.style.display = 'none';
+      }
+    };
+
+    // --- Переключатель темы ---
+    document.addEventListener("DOMContentLoaded", function() {
+      const themeBtn = document.getElementById('themeToggleBtn');
+      if (themeBtn) {
+        themeBtn.onclick = function() {
+          const sun = this.querySelector('.theme-sun');
+          const moon = this.querySelector('.theme-moon');
+          const body = document.body;
+          if (sun && sun.style.display !== 'none') {
+            sun.style.display = 'none';
+            moon.style.display = 'inline';
+            body.classList.add('dark-theme');
+          } else {
+            if (sun) sun.style.display = 'inline';
+            if (moon) moon.style.display = 'none';
+            body.classList.remove('dark-theme');
+          }
+        };
+      }
+    });
+    // Можно добавить сохранение выбора темы в localStorage, если надо.
+  </script>
+  {% endblock %}
+  <script>
+function toggleProfileMenu() {
+  let menu = document.getElementById('profileMenu');
+  menu.style.display = (menu.style.display === 'flex' ? 'none' : 'flex');
+}
+window.onclick = function(e) {
+  let menu = document.getElementById('profileMenu');
+  if (menu && e.target.closest('.profile-block') == null && e.target.closest('.profile-menu') == null) {
+    menu.style.display = 'none';
+  }
+}
+
+// Переключение темы
+document.addEventListener('DOMContentLoaded', function() {
+  const themeBtn = document.getElementById('themeToggleBtn');
+  const sunIcon = document.querySelector('.theme-sun');
+  const moonIcon = document.querySelector('.theme-moon');
+  // Сохраняем тему между сессиями
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-theme');
+    sunIcon.style.display = 'none';
+    moonIcon.style.display = 'inline';
+  }
+  themeBtn.onclick = function() {
+    if (document.body.classList.contains('dark-theme')) {
+      document.body.classList.remove('dark-theme');
+      sunIcon.style.display = 'inline';
+      moonIcon.style.display = 'none';
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.body.classList.add('dark-theme');
+      sunIcon.style.display = 'none';
+      moonIcon.style.display = 'inline';
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+});
+</script>
+
+<script>
+// Выделение активного пункта меню
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const menuLinks = document.querySelectorAll('.nav-link, .sidebar a');
+
+    menuLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && currentPath.startsWith(href) && href !== '/') {
+            link.classList.add('active');
+            link.style.background = 'rgba(255,255,255,0.1)';
+        }
+    });
+});
+</script>
+</body>
+</html>

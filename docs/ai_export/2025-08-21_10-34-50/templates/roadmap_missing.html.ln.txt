@@ -1,0 +1,7 @@
+    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: <div style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;">
+    4:   <h2 style="margin-top:0">Roadmap не найден</h2>
+    5:   <p>Положите файл <code>roadmap_clubstom.md</code> в корень проекта (рядом с <code>app.py</code>), затем перезагрузите страницу.</p>
+    6: </div>
+    7: {% endblock %}

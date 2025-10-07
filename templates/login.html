@@ -1,0 +1,44 @@
+<!-- templates/login.html -->
+{% extends "base.html" %} {% block content %}
+<div class="container py-5" style="max-width: 520px">
+  <h3 class="mb-4">Вход</h3>
+
+  {% with msgs = get_flashed_messages(with_categories=true) %} {% if msgs %}
+  <div class="mb-3">
+    {% for cat, msg in msgs %}
+    <div class="alert alert-{{ 'danger' if cat=='error' else cat }}">
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %} {% endwith %}
+
+  <form method="post">
+    <input
+      type="hidden"
+      name="next"
+      value="{{ request.args.get('next','') }}"
+    />
+    <div class="mb-3">
+      <label class="form-label">Логин</label>
+      <input
+        class="form-control"
+        name="login"
+        autocomplete="username"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Пароль</label>
+      <input
+        class="form-control"
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        required
+      />
+    </div>
+    <button class="btn btn-primary">Войти</button>
+  </form>
+</div>
+{% endblock %}

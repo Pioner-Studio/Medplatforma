@@ -1,0 +1,172 @@
+    1: # seed_ru.py
+    2: import os
+    3: from datetime import datetime, timedelta
+    4: from pymongo import MongoClient, ASCENDING, TEXT
+    5: from bson import ObjectId
+    6: from dotenv import load_dotenv
+    7: 
+    8: from ru_catalogs import (
+    9:     DOCTOR_ROLES, DOCTORS, PATIENTS, ROOMS, SERVICES, VISIT_STATUSES
+   10: )
+   11: 
+   12: load_dotenv()
+   13: MONGO_URI = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017")
+   14: DB_NAME   = os.getenv("DB_NAME", "medplatforma")
+   15: 
+   16: client = MongoClient(MONGO_URI)
+   17: db = client[DB_NAME]
+   18: utc = lambda: datetime.utcnow()
+   19: 
+   20: def upsert(coll, filt, doc):
+   21:     doc["updated_at"] = utc()
+   22:     existing = coll.find_one(filt)
+   23:     if existing:
+   24:         coll.update_one({"_id": existing["_id"]}, {"$set": doc})
+   25:         return existing["_id"]
+   26:     doc.setdefault("created_at", utc())
+   27:     return coll.insert_one(doc).inserted_id
+   28: 
+   29: def ensure_indexes():
+   30:     db.patients.create_index([("full_name", TEXT)])
+   31:     db.doctors.create_index([("full_name", TEXT)])
+   32:     db.rooms.create_index([("name", ASCENDING)], unique=True)
+   33:     db.services.create_index([("code", ASCENDING)], unique=True)
+   34:     db.visit_statuses.create_index([("key", ASCENDING)], unique=True)
+   35:     db.appointments.create_index([("start", ASCENDING)])
+   36: 
+   37: def seed_statuses():
+   38:     ids = {}
+   39:     for s in VISIT_STATUSES:
+   40:         _id = upsert(db.visit_statuses, {"key": s["key"]}, s)
+   41:         ids[s["key"]] = _id
+   42:     return ids
+   43: 
+   44: def seed_rooms():
+   45:     m = {}
+   46:     for r in ROOMS:
+   47:         _id = upsert(db.rooms, {"name": r["name"]}, r)
+   48:         m[r["name"]] = _id
+   49:     return m
+   50: 
+   51: def seed_services():
+   52:     m = {}
+   53:     for s in SERVICES:
+   54:         s.setdefault("is_active", True)
+   55:         _id = upsert(db.services, {"code": s["code"]}, s)
+   56:         m[s["code"]] = _id
+   57:     return m
+   58: 
+   59: def seed_patients():
+   60:     ids = []
+   61:     for i,(name, gender) in enumerate(PATIENTS, start=1):
+   62:         p = {
+   63:             "full_name": name,
+   64:             "birthday": datetime(1990 + (i % 10), (i % 12) + 1, (i % 27) + 1),
+   65:             "gender": gender,
+   66:             "contacts": {
+   67:                 "phone": f"+7 999 000-{i:04d}",
+   68:                 "email": f"patient{i}@clubstom.pro",
+   69:                 "whatsapp": f"+7 999 000-{i:04d}",
+   70:                 "telegram": f"@patient{i}"
+   71:             },
+   72:             "address": {"city": "Москва", "street": f"Улица Пример, д.{10+i}", "zip": f"10{i:02d}"},
+   73:             "notes": "Демо‑пациент",
+   74:             "avatar": f"/static/avatars/patients/p{i}.jpg",
+   75:             "created_at": utc(), "updated_at": utc()
+   76:         }
+   77:         _id = upsert(db.patients, {"contacts.email": p["contacts"]["email"]}, p)
+   78:         ids.append(_id)
+   79:     return ids
+   80: 
+   81: def seed_doctors(room_map):
+   82:     room_names = list(room_map.keys())
+   83:     ids = []
+   84:     for i, fio in enumerate(DOCTORS, start=1):
+   85:         # распределяем роли по кругу
+   86:         role = list(DOCTOR_ROLES.keys())[(i-1) % len(DOCTOR_ROLES)]
+   87:         specs = DOCTOR_ROLES[role]
+   88:         primary = room_map[room_names[(i-1) % len(room_names)]]
+   89:         available = [primary]
+   90:         if len(room_names) > 1:
+   91:             available.append(room_map[room_names[i % len(room_names)]])
+   92:         d = {
+   93:             "full_name": fio,
+   94:             "role": role,
+   95:             "specialties": specs,
+   96:             "contacts": {
+   97:                 "phone": f"+7 495 555-{i:04d}",
+   98:                 "email": f"doctor{i}@clubstom.pro",
+   99:                 "whatsapp": f"+7 495 555-{i:04d}",
+  100:                 "telegram": f"@doctor{i}"
+  101:             },
+  102:             "primary_room_id": primary,
+  103:             "room_ids": available,
+  104:             "avatar": f"/static/avatars/doctors/d{i}.jpg",
+  105:             "is_active": True,
+  106:         }
+  107:         _id = upsert(db.doctors, {"contacts.email": d["contacts"]["email"]}, d)
+  108:         ids.append(_id)
+  109:     return ids
+  110: 
+  111: def seed_appointments(patient_ids, doctor_ids, room_map, service_map):
+  112:     """
+  113:     Создаём демо-записи ровно в ТЕКУЩУЮ НЕДЕЛЮ (пн-вс), чтобы они сразу
+  114:     отображались в представлении 'Неделя'.
+  115:     """
+  116:     # Понедельник текущей недели в 10:00 (локальное время машины)
+  117:     today = datetime.now()
+  118:     week_start = today - timedelta(days=today.weekday())  # понедельник
+  119:     anchor = week_start.replace(hour=10, minute=0, second=0, microsecond=0)
+  120:     week_end = anchor + timedelta(days=7)
+  121: 
+  122:     # Чистим только наши демо-записи в этой неделе (чтобы не плодить дубликаты)
+  123:     db.appointments.delete_many({
+  124:         "notes": "Демо‑запись",
+  125:         "start": {"$gte": anchor, "$lt": week_end}
+  126:     })
+  127: 
+  128:     docs = list(db.doctors.find({"_id": {"$in": doctor_ids}}))
+  129:     pats = list(db.patients.find({"_id": {"$in": patient_ids}}))
+  130:     service_ids = list(service_map.values())
+  131: 
+  132:     for idx, d in enumerate(docs):
+  133:         # разбрасываем врача по дням недели (пн‑пт)
+  134:         day_offset = idx % 5
+  135:         for j in range(2):  # по 2 записи на врача
+  136:             patient = pats[(idx*2 + j) % len(pats)]
+  137:             service_id = service_ids[(idx + j) % len(service_ids)]
+  138:             duration = db.services.find_one({"_id": service_id})["duration_min"]
+  139: 
+  140:             start = anchor + timedelta(days=day_offset, hours=2*j + (idx % 2))  # 10:00/12:00 или 11:00/13:00
+  141:             end = start + timedelta(minutes=duration)
+  142: 
+  143:             appt = {
+  144:                 "patient_id": patient["_id"],
+  145:                 "doctor_id": d["_id"],
+  146:                 "room_id": d.get("primary_room_id"),
+  147:                 "service_id": service_id,
+  148:                 "status_key": ["scheduled","completed","cancelled","no_show"][(idx+j)%4],
+  149:                 "start": start,
+  150:                 "end": end,
+  151:                 "notes": "Демо‑запись",
+  152:             }
+  153:             # уникальность по пациенту+доктору+start
+  154:             upsert(db.appointments,
+  155:                    {"patient_id": appt["patient_id"], "doctor_id": appt["doctor_id"], "start": appt["start"]},
+  156:                    appt)
+  157: 
+  158: def main():
+  159:     print(f"→ Подключение к {MONGO_URI} / DB={DB_NAME}")
+  160:     ensure_indexes()
+  161: 
+  162:     print("→ Статусы…");      seed_statuses()
+  163:     print("→ Кабинеты…");     room_map = seed_rooms()
+  164:     print("→ Услуги…");       service_map = seed_services()
+  165:     print("→ Пациенты…");     patient_ids = seed_patients()
+  166:     print("→ Врачи…");        doctor_ids = seed_doctors(room_map)
+  167:     print("→ Демозаписи…");   seed_appointments(patient_ids, doctor_ids, room_map, service_map)
+  168: 
+  169:     print("Готово. Все справочники и демо‑данные на русском.")
+  170: 
+  171: if __name__ == "__main__":
+  172:     main()

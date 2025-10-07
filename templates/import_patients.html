@@ -1,0 +1,52 @@
+{% extends "base.html" %} {% block title %}Импорт пациентов{% endblock %} {%
+block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h5>Импорт пациентов из файла</h5>
+        </div>
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="file" class="form-label"
+                >Выберите файл (CSV или Excel)</label
+              >
+              <input
+                type="file"
+                class="form-control"
+                name="file"
+                accept=".csv,.xlsx,.xls"
+                required
+              />
+              <div class="form-text">
+                Поддерживаются форматы: CSV (разделитель ;), Excel (.xlsx, .xls)
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="update_existing"
+                  id="update_existing"
+                />
+                <label class="form-check-label" for="update_existing">
+                  Обновлять существующих пациентов (по телефону)
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-upload"></i> Загрузить
+            </button>
+            <a href="/patients" class="btn btn-secondary">Отмена</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

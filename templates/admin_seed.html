@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>Загрузка словарей (MVP)</title>
+    <style>
+      body {
+        font-family: system-ui, Arial;
+        max-width: 720px;
+        margin: 24px auto;
+        line-height: 1.4;
+      }
+      input,
+      button {
+        padding: 8px 12px;
+      }
+      .row {
+        margin: 12px 0;
+      }
+      code {
+        background: #f6f6f6;
+        padding: 2px 4px;
+      }
+      .ok {
+        color: #0a0;
+      }
+      .err {
+        color: #c00;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Загрузка словарей (услуги/врачи/кабинеты/пользователи)</h2>
+
+    <div class="row">
+      <label>Админ-токен: <input id="token" placeholder="SECRET_KEY" /></label>
+    </div>
+
+    <div class="row">
+      <input type="file" id="file" />
+      <button onclick="upload()">Загрузить ZIP</button>
+    </div>
+
+    <div class="row">
+      <button onclick="load()">Применить CSV</button>
+      <button onclick="disableDemo()">Отключить демо</button>
+      <button onclick="ping()">Ping</button>
+    </div>
+
+    <pre id="out"></pre>
+
+    <script>
+      async function upload() {
+        const f = document.getElementById("file").files[0];
+        if (!f) return alert("Выбери файл ZIP");
+        const fd = new FormData();
+        fd.append("file", f);
+        const r = await fetch("/api/admin/seed/upload", {
+          method: "POST",
+          headers: { "X-Admin-Token": document.getElementById("token").value },
+          body: fd,
+        });
+        document.getElementById("out").textContent = await r.text();
+      }
+      async function load() {
+        const r = await fetch("/api/admin/seed/load", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Token": document.getElementById("token").value,
+          },
+          body: JSON.stringify({}),
+        });
+        document.getElementById("out").textContent = await r.text();
+      }
+      async function disableDemo() {
+        const r = await fetch("/api/admin/seed/disable_demo", {
+          method: "POST",
+          headers: { "X-Admin-Token": document.getElementById("token").value },
+        });
+        document.getElementById("out").textContent = await r.text();
+      }
+      async function ping() {
+        const r = await fetch("/api/admin/seed/ping");
+        document.getElementById("out").textContent = await r.text();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,712 @@
+{% extends "base.html" %} {% block title %}{{ patient.full_name }} - Карточка
+пациента{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8">
+    <!-- ТАБЫ (ВКЛАДКИ) -->
+    <ul class="nav nav-tabs mb-3" id="patientTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="info-tab" data-bs-toggle="tab"
+                    data-bs-target="#info" type="button" role="tab">
+            <i class="fas fa-user"></i> Основная информация
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="current-visit-tab" data-bs-toggle="tab"
+                    data-bs-target="#current-visit" type="button" role="tab">
+            <i class="fas fa-stethoscope"></i> Текущий приём
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="history-tab" data-bs-toggle="tab"
+                    data-bs-target="#history" type="button" role="tab">
+            <i class="fas fa-history"></i> История записей
+            </button>
+        </li>
+    </ul>
+
+<div class="tab-content" id="patientTabsContent">
+
+      <!-- Вкладка: Основная информация -->
+      <div class="tab-pane fade show active" id="info" role="tabpanel">
+      <!-- Основная информация -->
+      <div class="card mb-4">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">{{ patient.full_name }}</h5>
+          <div>
+            <button
+              class="btn btn-sm btn-outline-primary"
+              onclick="editPatient()"
+            >
+              <i class="fas fa-edit"></i> Редактировать
+            </button>
+            <button
+              class="btn btn-sm btn-outline-success"
+              onclick="createAppointment()"
+            >
+              <i class="fas fa-calendar-plus"></i> Новая запись
+            </button>
+
+            <!-- Кнопка медицинской анкеты -->
+            {% if patient.get('questionnaire_filled', False) %}
+            <a
+              href="{{ url_for('patient_questionnaire', patient_id=patient._id) }}"
+              class="btn btn-sm btn-success"
+            >
+              <i class="fas fa-file-medical-alt"></i> Анкета заполнена
+            </a>
+            {% else %}
+            <a
+              href="{{ url_for('patient_questionnaire', patient_id=patient._id) }}"
+              class="btn btn-sm btn-warning"
+            >
+              <i class="fas fa-exclamation-triangle"></i> Заполнить анкету
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Телефон:</strong> {{ patient.phone or '—' }}</p>
+              <p><strong>Email:</strong> {{ patient.email or '—' }}</p>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="use_preferential"
+                    {%
+                    if
+                    patient.use_preferential_pricing
+                    %}checked{%
+                    endif
+                    %}
+                    onchange="updatePreferentialPricing('{{ patient._id }}')"
+                  />
+                  <label class="form-check-label" for="use_preferential">
+                    🎁 Использовать льготный прайс
+                  </label>
+                </div>
+                <small class="text-muted">Для сотрудников/друзей клиники</small>
+              </div>
+              <p>
+                <strong>Дата рождения:</strong> {{ patient.birthdate or '—' }}
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Карта №:</strong> {{ patient.card_no or '—' }}</p>
+              <p>
+                <strong>Создан:</strong> {{
+                patient.created_at.strftime('%d.%m.%Y') if patient.created_at
+                else '—' }}
+              </p>
+            </div>
+          </div>
+
+          {% if patient.notes %}
+          <div class="mt-3">
+            <strong>Заметки:</strong>
+            <p class="text-muted">{{ patient.notes }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      </div>
+      <!-- Конец вкладки: Основная информация -->
+
+      <!-- Вкладка: Текущий приём -->
+      <div class="tab-pane fade" id="current-visit" role="tabpanel">
+          <div class="card">
+              <div class="card-header">
+                  <h5 class="mb-0">
+                      <i class="fas fa-stethoscope"></i> Текущий приём
+                      {% if current_appointment %}
+                        - {{ current_appointment.start.strftime('%d.%m.%Y %H:%M') if current_appointment.start else '' }}
+                      {% endif %}
+                  </h5>
+              </div>
+              <div class="card-body">
+
+                  {# Нормализуем роль: сначала user_role из view, затем session['role'], затем session['user']['role'] #}
+                  {% set role = (user_role | default(session.get('role') or session.get('user', {}).get('role') or '', true) | trim | lower) %}
+
+                  {% if role not in ['doctor', 'chief_doctor'] %}
+                      <div class="alert alert-warning">
+                          <i class="fas fa-lock"></i>
+                          Только врачи могут работать с текущим приёмом
+                      </div>
+                  {% else %}
+
+                      {% if not current_appointment %}
+                          <div class="alert alert-info">
+                              <i class="fas fa-info-circle"></i>
+                              Нет активной записи на сегодня
+                          </div>
+                      {% else %}
+
+                          <form id="current-visit-form" method="POST" action="/patients/{{ patient._id }}/current-visit/complete">
+                              <!-- Запланированная услуга -->
+                              {% if current_appointment.service_id %}
+                              <h6 class="mb-3">Запланировано:</h6>
+                              <div class="form-check mb-3 p-3 border rounded">
+                                  <input class="form-check-input" type="checkbox"
+                                        name="service_ids[]"
+                                        value="{{ current_appointment.service_id }}"
+                                        id="svc-planned"
+                                        checked>
+                                  <label class="form-check-label w-100" for="svc-planned">
+                                      <strong>{{ current_appointment.service_name }}</strong>
+                                      {% if role in ['admin', 'chief_doctor'] %}
+                                          <span class="badge bg-success float-end">
+                                              {{ "{:,}".format(current_appointment.service_price|int).replace(',', ' ') }} ₽
+                                          </span>
+                                      {% endif %}
+                                      <div class="mt-2">
+                                          <input type="text" class="form-control form-control-sm"
+                                                name="comment_{{ current_appointment.service_id }}"
+                                                placeholder="Комментарий (необязательно)">
+                                      </div>
+                                  </label>
+                              </div>
+                              {% else %}
+                              <p class="text-muted">Услуга не была выбрана при записи</p>
+                              {% endif %}
+
+                              <!-- Кнопка добавления услуг -->
+                              <button type="button" class="btn btn-outline-primary btn-sm mb-3"
+                                      data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                                  <i class="fas fa-plus"></i> Добавить услугу из прайса
+                              </button>
+
+                              <!-- Добавленные услуги -->
+                              <div id="added-services-container"></div>
+
+                              <hr class="my-4">
+
+                              <!-- Итого -->
+                              {% if role in ['admin', 'chief_doctor'] %}
+                              <div class="d-flex justify-content-between align-items-center mb-3">
+                                  <h5 class="mb-0">Итого за сегодня:</h5>
+                                  <h5 class="mb-0 text-success" id="total-amount">0 ₽</h5>
+                              </div>
+                              {% endif %}
+
+                              <!-- Кнопка завершения -->
+                              <button type="submit" class="btn btn-success btn-lg w-100">
+                                  <i class="fas fa-check"></i> Завершить отмеченные услуги
+                              </button>
+                          </form>
+
+                      {% endif %}
+
+                  {% endif %}
+
+              </div>
+          </div>
+      </div>
+      <!-- Конец вкладки: Текущий приём -->
+
+      <!-- Модальное окно добавления услуги -->
+      <div class="modal fade" id="addServiceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Добавить услугу</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="text" class="form-control mb-3" id="service-search"
+                    placeholder="Поиск услуги...">
+              <div id="services-list" style="max-height: 400px; overflow-y: auto;">
+                {% for svc in all_services %}
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="{{ svc._id }}"
+                      data-service-name="{{ svc.name }}"
+                      data-service-price="{{ svc.price }}">
+                    <strong>{{ svc.name }}</strong>
+                    {% if role in ['admin', 'chief_doctor'] %}
+                      <span class="badge bg-info float-end">
+                        {{ "{:,}".format(svc.price|int).replace(',', ' ') }} ₽
+                      </span>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка: История записей -->
+      <div class="tab-pane fade" id="history" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0">История записей</h6>
+          </div>
+          <div class="card-body">
+            {% if appointments %}
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Врач</th>
+                    <th>Услуга</th>
+                    <th>Статус</th>
+                    <th>Стоимость</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for appt in appointments %}
+                  <tr>
+                    <td>
+                      {{ appt.start.strftime('%d.%m.%Y') if appt.start else '—' }}
+                    </td>
+                    <td>
+                      {{ appt.start.strftime('%H:%M') if appt.start else '—' }}
+                    </td>
+                    <td>{{ appt.doctor_name or '—' }}</td>
+                    <td>{{ appt.service_name or '—' }}</td>
+                    <td>
+                      <span
+                        class="badge bg-{{ 'success' if appt.status_key == 'paid' else 'primary' if appt.status_key == 'confirmed' else 'secondary' }}"
+                      >
+                        {{ appt.status_title or appt.status_key or 'Запланирована' }}
+                      </span>
+                    </td>
+                    <td>{{ appt.cost or '—' }}₽</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted">Записей пока нет</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <!-- Конец вкладки: История записей -->
+
+    <div class="col-md-4">
+      <!-- Финансовая информация -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">Финансы</h6>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="border-end">
+                <h4 class="text-success mb-0">
+                  {{ finance.total_paid or 0 }}₽
+                </h4>
+                <small class="text-muted">Оплачено</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <h4 class="text-danger mb-0">{{ finance.total_debt or 0 }}₽</h4>
+              <small class="text-muted">Долг</small>
+            </div>
+          </div>
+
+          {% if finance.total_debt > 0 %}
+          <div class="mt-3">
+            <button
+              class="btn btn-success btn-sm w-100"
+              onclick="processPayment()"
+            >
+              <i class="fas fa-credit-card"></i> Оплатить долг
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div
+          class="card-header"
+          style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          "
+        >
+          <h6 class="mb-0">🎁 Бонусная программа</h6>
+        </div>
+        <div class="card-body">
+          <!-- Баланс бонусов -->
+          <div class="text-center mb-3">
+            <div style="font-size: 14px; color: #6c757d; margin-bottom: 8px">
+              Доступно бонусов
+            </div>
+            <h2 class="mb-0" style="color: #667eea; font-weight: 700">
+              {{ patient.bonus_balance|default(0) }} ₽
+            </h2>
+          </div>
+
+          <!-- Кнопки управления -->
+          <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-sm btn-outline-success" onclick="addBonus()">
+              <i class="fas fa-plus-circle"></i> Начислить бонусы
+            </button>
+            <button
+              class="btn btn-sm btn-outline-warning"
+              onclick="withdrawBonus()"
+            >
+              <i class="fas fa-minus-circle"></i> Списать бонусы
+            </button>
+            <button
+              class="btn btn-sm btn-outline-info"
+              onclick="transferBonus()"
+            >
+              <i class="fas fa-exchange-alt"></i> Перевести другому
+            </button>
+          </div>
+
+          <!-- Реферальная информация -->
+          <div style="padding-top: 12px; border-top: 1px solid #e9ecef">
+            {% if patient.referred_by_patient_id or patient.referred_by_name %}
+            <p class="mb-2" style="font-size: 13px">
+              <strong>Кто привёл:</strong>
+              {% if patient.referred_by_patient_id %}
+              <a href="/patients/{{ patient.referred_by_patient_id }}"
+                >{{ patient.referred_by_name or 'Пациент' }}</a
+              >
+              {% else %} {{ patient.referred_by_name }} {% endif %}
+            </p>
+            {% endif %} {% if referred_patients_count > 0 %}
+            <p class="mb-0" style="font-size: 13px">
+              <strong>Привёл пациентов:</strong> {{ referred_patients_count }}
+              <a
+                href="#"
+                onclick="showReferredPatients(); return false;"
+                style="margin-left: 8px"
+                >(показать)</a
+              >
+            </p>
+            {% endif %}
+          </div>
+
+          <!-- История бонусов (свернутая) -->
+          <div style="margin-top: 12px">
+            <a
+              href="#"
+              onclick="toggleBonusHistory(); return false;"
+              class="text-decoration-none"
+              style="font-size: 13px"
+            >
+              <i class="fas fa-history"></i> История бонусов
+            </a>
+            <div
+              id="bonusHistory"
+              style="
+                display: none;
+                margin-top: 12px;
+                max-height: 200px;
+                overflow-y: auto;
+              "
+            >
+              <!-- Здесь будет загружаться история через JS -->
+              <div class="text-center">
+                <div class="spinner-border spinner-border-sm"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Быстрые действия -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">Быстрые действия</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button
+              class="btn btn-outline-primary btn-sm"
+              onclick="callPatient()"
+            >
+              <i class="fas fa-phone"></i> Позвонить
+            </button>
+            <button class="btn btn-outline-info btn-sm" onclick="sendMessage()">
+              <i class="fas fa-sms"></i> SMS
+            </button>
+            <button
+              class="btn btn-outline-success btn-sm"
+              onclick="sendWhatsApp()"
+            >
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // helpers — безопасная привязка событий
+  const $id = (s) => document.getElementById(s);
+  const on  = (id, type, fn, opts) => { const el = $id(id); if (el) el.addEventListener(type, fn, opts||false); };
+  const setOnClick = (id, fn) => { const el = $id(id); if (el) el.onclick = fn; }; // оставил и onclick-версию на всякий
+</script>
+
+
+<script>
+        function editPatient() {
+            window.location.href = '/patients/{{ patient._id }}/edit';
+        }
+
+        function createAppointment() {
+            window.location.href = '/calendar?patient_id={{ patient._id }}';
+        }
+
+        function processPayment() {
+            window.location.href = '/finance/add?patient_id={{ patient._id }}&type=income';
+        }
+
+        // Управление бонусами
+        function addBonus() {
+            const amount = prompt('Сумма начисления бонусов:');
+            if (!amount || isNaN(amount)) return;
+
+            const comment = prompt('Комментарий (необязательно):') || 'Ручное начисление';
+
+            fetch('/api/patients/{{ patient._id }}/bonus/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount: parseInt(amount), comment: comment})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('Бонусы начислены!');
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            });
+        }
+
+        function withdrawBonus() {
+            const currentBalance = {{ patient.bonus_balance|default(0) }};
+            const amount = prompt('Сумма списания бонусов (доступно: ' + currentBalance + '₽):');
+            if (!amount || isNaN(amount)) return;
+
+            if (parseInt(amount) > currentBalance) {
+                alert('Недостаточно бонусов!');
+                return;
+            }
+
+            const comment = prompt('Комментарий (необязательно):') || 'Ручное списание';
+
+            fetch('/api/patients/{{ patient._id }}/bonus/withdraw', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount: parseInt(amount), comment: comment})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('Бонусы списаны!');
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            });
+        }
+
+        function transferBonus() {
+            alert('Функция в разработке');
+        }
+
+        function toggleBonusHistory() {
+            const el = document.getElementById('bonusHistory');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                loadBonusHistory();
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function loadBonusHistory() {
+            fetch('/api/patients/{{ patient._id }}/bonus/history')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('bonusHistory');
+                    if (data.items && data.items.length > 0) {
+                        el.innerHTML = data.items.map(function(h) {
+                            return '<div style="padding: 8px; border-bottom: 1px solid #f1f3f5; font-size: 13px;">' +
+                                '<div style="display: flex; justify-content: space-between;">' +
+                                    '<span>' + h.date + '</span>' +
+                                    '<span style="color: ' + (h.amount > 0 ? '#28a745' : '#dc3545') + '; font-weight: 600;">' +
+                                        (h.amount > 0 ? '+' : '') + h.amount + '₽' +
+                                    '</span>' +
+                                '</div>' +
+                                '<div style="color: #6c757d; font-size: 12px;">' + h.comment + '</div>' +
+                            '</div>';
+                        }).join('');
+                    } else {
+                        el.innerHTML = '<p class="text-muted text-center">История пуста</p>';
+                    }
+                });
+        }
+
+        function showReferredPatients() {
+            alert('Функция в разработке');
+        }
+
+        function callPatient() {
+            {% if patient.phone %}
+            window.location.href = 'tel:{{ patient.phone }}';
+            {% else %}
+            alert('Телефон не указан');
+            {% endif %}
+        }
+
+        function sendMessage() {
+            {% if patient.phone %}
+            window.location.href = 'sms:{{ patient.phone }}';
+            {% else %}
+            alert('Телефон не указан');
+            {% endif %}
+        }
+
+        function sendWhatsApp() {
+            {% if patient.phone %}
+            const phone = '{{ patient.phone }}'.replace(/\D/g, '');
+            window.open('https://wa.me/' + phone, '_blank');
+            {% else %}
+            alert('Телефон не указан');
+            {% endif %}
+        }
+
+        function updatePreferentialPricing(patientId) {
+            const checked = document.getElementById('use_preferential').checked;
+
+            fetch('/api/patients/' + patientId + '/update_info', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({use_preferential_pricing: checked})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    const msg = checked ? 'Льготный прайс активирован' : 'Используется основной прайс';
+                    alert(msg);
+                }
+            });
+        }
+
+        // ========== ТЕКУЩИЙ ПРИЁМ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Поиск услуг в модальном окне
+            const serviceSearch = document.getElementById('service-search');
+            if (serviceSearch) {
+                serviceSearch.addEventListener('input', function(e) {
+                    const search = e.target.value.toLowerCase();
+                    document.querySelectorAll('.service-item').forEach(function(item) {
+                        const name = item.dataset.serviceName.toLowerCase();
+                        item.style.display = name.includes(search) ? 'block' : 'none';
+                    });
+                });
+            }
+
+            // Добавление услуги из прайса
+            document.querySelectorAll('.service-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const id = this.dataset.serviceId;
+                    const name = this.dataset.serviceName;
+                    const price = this.dataset.servicePrice;
+
+                    if (document.querySelector('#added-svc-' + id)) {
+                        alert('Эта услуга уже добавлена');
+                        return;
+                    }
+
+                    const container = document.getElementById('added-services-container');
+                    if (!container) return;
+
+                    const div = document.createElement('div');
+                    div.id = 'added-svc-' + id;
+                    div.className = 'form-check mb-3 p-3 border rounded bg-light';
+
+                    const userRole = '{{ role }}';
+                    const priceDisplay = (userRole === 'admin' || userRole === 'chief_doctor')
+                        ? '<span class="badge bg-success float-end">' + parseInt(price).toLocaleString('ru-RU') + ' ₽</span>'
+                        : '';
+
+                    div.innerHTML =
+                        '<input class="form-check-input service-checkbox" type="checkbox" name="service_ids[]" ' +
+                            'value="' + id + '" id="svc-' + id + '" checked data-price="' + price + '">' +
+                        '<label class="form-check-label w-100" for="svc-' + id + '">' +
+                            '<strong>' + name + '</strong>' +
+                            priceDisplay +
+                            '<div class="mt-2">' +
+                                '<input type="text" class="form-control form-control-sm" ' +
+                                    'name="comment_' + id + '" ' +
+                                    'placeholder="Комментарий (необязательно)">' +
+                            '</div>' +
+                            '<button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeService(\'' + id + '\')">' +
+                                '<i class="fas fa-trash"></i> Удалить' +
+                            '</button>' +
+                        '</label>';
+
+                    container.appendChild(div);
+
+                    div.querySelector('.service-checkbox').addEventListener('change', updateTotal);
+
+                    const modalEl = document.getElementById('addServiceModal');
+                    if (modalEl) {
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    }
+
+                    updateTotal();
+                });
+            });
+
+            updateTotal();
+
+            document.querySelectorAll('input[name="service_ids[]"]').forEach(function(cb) {
+                cb.addEventListener('change', updateTotal);
+            });
+
+        });
+
+        function removeService(serviceId) {
+            const element = document.getElementById('added-svc-' + serviceId);
+            if (element) {
+                element.remove();
+                updateTotal();
+            }
+        }
+
+        function updateTotal() {
+            const userRole = '{{ role }}';
+            if (userRole !== 'admin' && userRole !== 'chief_doctor') return;
+
+            let total = 0;
+            document.querySelectorAll('input[name="service_ids[]"]:checked').forEach(function(checkbox) {
+                const priceAttr = checkbox.dataset.price;
+                const badgeEl = checkbox.closest('.form-check, .border').querySelector('.badge');
+                const priceText = badgeEl ? badgeEl.textContent.replace(/\D/g, '') : '';
+                const price = parseInt(priceAttr || priceText || 0);
+                total += price;
+            });
+
+            const totalElement = document.getElementById('total-amount');
+            if (totalElement) {
+                totalElement.textContent = total.toLocaleString('ru-RU') + ' ₽';
+            }
+        }
+</script>
+
+{% endblock %}

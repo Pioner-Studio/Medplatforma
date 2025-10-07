@@ -1,0 +1,8 @@
+    1: from pymongo import MongoClient
+    2: 
+    3: MONGO_URI = "mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/"
+    4: client = MongoClient(MONGO_URI)
+    5: db = client["medplatforma"]
+    6: 
+    7: doctors_collection = db["doctors"]
+    8: events_collection = db["events"]

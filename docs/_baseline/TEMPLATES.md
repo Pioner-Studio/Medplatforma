@@ -1,0 +1,52 @@
+# TEMPLATES
+
+_Generated: 2025-08-16 19:15:15.482520_
+
+### /templates
+- 📄 404.html
+- 📄 action_log.html
+- 📄 add_doctor.html
+- 📄 add_event.html
+- 📄 add_expense.html
+- 📄 add_patient.html
+- 📄 add_payment.html
+- 📄 add_room.html
+- 📄 add_service.html
+- 📄 add_xray.html
+- 📄 add_ztl.html
+- 📄 backup.html
+- 📄 base.html
+- 📄 cabinet_card.html
+- 📄 calendar.html
+- 📄 close_appointment.html
+- 📄 data_tools.html
+- 📄 debtors.html
+- 📄 doctor_card.html
+- 📄 doctors.html
+- 📄 edit_doctor.html
+- 📄 edit_event.html
+- 📄 edit_patient.html
+- 📄 edit_room.html
+- 📄 edit_service.html
+- 📄 expenses.html
+- 📄 finance_report.html
+- 📄 import_doctors.html
+- 📄 import_patients.html
+- 📄 journal.html
+- 📄 login.html
+- 📄 logs.html
+- 📄 messages.html
+- 📄 partners.html
+- 📄 patient_card.html
+- 📄 patients.html
+- 📄 reports.html
+- 📄 roadmap.html
+- 📄 roadmap_missing.html
+- 📄 rooms.html
+- 📄 services.html
+- 📄 sidebar.html
+- 📄 staff.html
+- 📄 tasks.html
+- 📄 topbar.html
+- 📄 xray_room.html
+- 📄 ztl.html

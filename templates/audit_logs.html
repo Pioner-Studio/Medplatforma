@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Журнал аудита{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Журнал аудита системы
+                </h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="exportAuditLogs()">
+                        <i class="fas fa-download me-1"></i> Экспорт
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt me-1"></i> Обновить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="user_filter" class="form-label">Пользователь</label>
+                            <input type="text" class="form-control" id="user_filter" name="user"
+                                   value="{{ user_filter }}" placeholder="Имя пользователя">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="action_filter" class="form-label">Действие</label>
+                            <select class="form-select" id="action_filter" name="action">
+                                <option value="">Все действия</option>
+                                <option value="create" {% if action_filter == 'create' %}selected{% endif %}>Создание</option>
+                                <option value="update" {% if action_filter == 'update' %}selected{% endif %}>Изменение</option>
+                                <option value="delete" {% if action_filter == 'delete' %}selected{% endif %}>Удаление</option>
+                                <option value="view" {% if action_filter == 'view' %}selected{% endif %}>Просмотр</option>
+                                <option value="login" {% if action_filter == 'login' %}selected{% endif %}>Вход</option>
+                                <option value="export" {% if action_filter == 'export' %}selected{% endif %}>Экспорт</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_from" class="form-label">Дата с</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from"
+                                   value="{{ date_from }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_to" class="form-label">Дата до</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to"
+                                   value="{{ date_to }}">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="btn-group w-100">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-1"></i> Применить
+                                </button>
+                                <a href="{{ url_for('audit_logs') }}" class="btn btn-outline-secondary">
+                                    Сбросить
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Найдено записей: <strong>{{ total }}</strong>
+                        {% if user_filter or action_filter or date_from or date_to %}
+                        (с фильтрами)
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таблица логов -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 140px;">Время</th>
+                                    <th style="width: 120px;">Пользователь</th>
+                                    <th style="width: 80px;">Роль</th>
+                                    <th style="width: 100px;">Действие</th>
+                                    <th style="width: 100px;">Объект</th>
+                                    <th>Описание</th>
+                                    <th style="width: 100px;">IP</th>
+                                    <th style="width: 80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ log.timestamp_local }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                <i class="fas fa-user-circle text-muted"></i>
+                                            </div>
+                                            <span class="fw-medium">{{ log.user_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% set role_class = {
+                                            'admin': 'danger',
+                                            'registrar': 'warning',
+                                            'doctor': 'info'
+                                        } %}
+                                        <span class="badge bg-{{ role_class.get(log.user_role, 'secondary') }}">
+                                            {{ log.user_role or 'unknown' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% set action_icons = {
+                                            'create': 'fa-plus text-success',
+                                            'update': 'fa-edit text-primary',
+                                            'delete': 'fa-trash text-danger',
+                                            'view': 'fa-eye text-info',
+                                            'login': 'fa-sign-in-alt text-success',
+                                            'logout': 'fa-sign-out-alt text-warning',
+                                            'export': 'fa-download text-secondary'
+                                        } %}
+                                        <i class="fas {{ action_icons.get(log.action, 'fa-question') }} me-1"></i>
+                                        {{ log.action }}
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small">{{ log.object_type }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 300px;">
+                                            {{ log.comment }}
+                                            {% if log.patient_id %}
+                                            <span class="badge bg-light text-dark ms-1">ID: {{ log.patient_id[:8] }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted font-monospace">
+                                            {{ log.ip_address }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                onclick="showLogDetails('{{ log._id }}')"
+                                                title="Подробности">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Пагинация -->
+            {% if total_pages > 1 %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination">
+                        {% if has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('audit_logs', page=page-1, user=user_filter, action=action_filter, date_from=date_from, date_to=date_to) }}">
+                                Предыдущая
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for p in range(1, total_pages + 1) %}
+                            {% if p == page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ p }}</span>
+                            </li>
+                            {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('audit_logs', page=p, user=user_filter, action=action_filter, date_from=date_from, date_to=date_to) }}">{{ p }}</a>
+                            </li>
+                            {% elif p == 4 or p == total_pages - 3 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('audit_logs', page=page+1, user=user_filter, action=action_filter, date_from=date_from, date_to=date_to) }}">
+                                Следующая
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal для деталей лога -->
+<div class="modal fade" id="logDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Детали записи аудита</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="logDetailsContent">
+                    <div class="text-center p-4">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showLogDetails(logId) {
+    const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+    const content = document.getElementById('logDetailsContent');
+
+    // Reset content
+    content.innerHTML = `
+        <div class="text-center p-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+        </div>
+    `;
+
+    modal.show();
+
+    // Load log details (implement API endpoint)
+    fetch(`/api/audit/${logId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.ok) {
+                const log = data.log;
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Основная информация</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Время:</strong></td><td>${log.timestamp_local}</td></tr>
+                                <tr><td><strong>Пользователь:</strong></td><td>${log.user_name}</td></tr>
+                                <tr><td><strong>Роль:</strong></td><td>${log.user_role}</td></tr>
+                                <tr><td><strong>Действие:</strong></td><td>${log.action}</td></tr>
+                                <tr><td><strong>Объект:</strong></td><td>${log.object_type}</td></tr>
+                                <tr><td><strong>IP-адрес:</strong></td><td>${log.ip_address}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Дополнительно</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>URL:</strong></td><td class="font-monospace small">${log.url || 'N/A'}</td></tr>
+                                <tr><td><strong>Метод:</strong></td><td>${log.method || 'N/A'}</td></tr>
+                                <tr><td><strong>User Agent:</strong></td><td class="small">${log.user_agent || 'N/A'}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    ${log.comment ? `<div class="mt-3"><h6>Комментарий</h6><p>${log.comment}</p></div>` : ''}
+                    ${log.details && Object.keys(log.details).length ? `
+                        <div class="mt-3">
+                            <h6>Детали</h6>
+                            <pre class="bg-light p-2 rounded"><code>${JSON.stringify(log.details, null, 2)}</code></pre>
+                        </div>
+                    ` : ''}
+                `;
+            } else {
+                content.innerHTML = `<div class="alert alert-danger">Ошибка загрузки: ${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            content.innerHTML = `<div class="alert alert-danger">Ошибка сети: ${error.message}</div>`;
+        });
+}
+
+function exportAuditLogs() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'csv');
+    window.location.href = '{{ url_for("audit_logs") }}?' + params.toString();
+}
+
+function refreshLogs() {
+    window.location.reload();
+}
+
+// Автообновление каждые 30 секунд
+setInterval(() => {
+    if (document.visibilityState === 'visible') {
+        const lastUpdate = document.querySelector('[data-last-update]');
+        if (!lastUpdate || (Date.now() - parseInt(lastUpdate.dataset.lastUpdate)) > 30000) {
+            refreshLogs();
+        }
+    }
+}, 30000);
+
+// Горячие клавиши
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'r') {
+        e.preventDefault();
+        refreshLogs();
+    }
+    if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        exportAuditLogs();
+    }
+});
+</script>
+{% endblock %}

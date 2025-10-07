@@ -1,0 +1,878 @@
+{% extends "base.html" %} {% block content %}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px">
+  <!-- Заголовок и навигация -->
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    "
+  >
+    <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #1f2937">
+      Внести операцию
+    </h1>
+    <div style="display: flex; gap: 12px">
+      <a
+        href="/finance"
+        style="
+          background: #6b7280;
+          color: white;
+          padding: 10px 16px;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 500;
+        "
+        >К финансам</a
+      >
+    </div>
+  </div>
+
+  <!-- Основной контент в две колонки -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px">
+    <!-- Левая колонка: Форма -->
+    <div
+      style="
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+      "
+    >
+    <!-- Блок отображения ошибок -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div style="margin-bottom: 20px">
+  {% for category, message in messages %}
+  <div style="
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+  ">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+      <form method="post" action="/finance/add" id="financeAddForm">
+        <!-- Тип операции -->
+        <div style="margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Тип</label
+          >
+          <select
+            name="type"
+            id="typeSel"
+            required
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              background: white;
+            "
+          >
+            <option value="income" {% if not form_type or form_type == "income" %}selected{% endif %}>Доход (оплата услуги)</option>
+            <option value="expense" {% if form_type == "expense" %}selected{% endif %}>Расход</option>
+            <option value="deposit" {% if form_type == "deposit" %}selected{% endif %}>Депозит</option>
+            <option value="salary" {% if form_type == "salary" %}selected{% endif %}>ЗП</option>
+            <option value="purchase" {% if form_type == "purchase" %}selected{% endif %}>Деньги на закупку</option>
+          </select>
+        </div>
+
+        <!-- Дата операции -->
+        <div style="margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Дата операции</label
+          >
+          <input
+            type="date"
+            name="operation_date"
+            value="{{ form_operation_date or today }}"
+            max="{{ today }}"
+            required
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+            "
+          />
+          <div style="margin-top: 4px; font-size: 12px; color: #6b7280">
+            По умолчанию - сегодня. Можно внести задним числом.
+          </div>
+        </div>
+
+        <!-- Сумма -->
+        <div id="amountRow" style="margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Сумма</label
+          >
+          <input
+            type="number"
+            min="0"
+            step="1"
+            name="amount"
+            id="amountInput"
+            value="{{ form_amount or '' }}"
+            placeholder="0"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+            "
+          />
+        </div>
+
+        <!-- Источник -->
+        <div style="margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Источник</label
+          >
+          <select
+            name="source"
+            id="sourceSelect"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              background: white;
+            "
+          >
+            <option value="">— Выберите источник —</option>
+            <option value="alpha" {% if selected_source == "alpha" %}selected{% endif %}>Альфа-Банк</option>
+            <option value="sber" {% if selected_source == "sber" %}selected{% endif %}>Сбербанк</option>
+            <option value="cash" {% if selected_source == "cash" %}selected{% endif %}>Наличные</option>
+          </select>
+        </div>
+
+        <!-- Категория (для расходов) -->
+        <div id="categoryBlock" style="display: none; margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Категория</label
+          >
+          <select
+            name="category"
+            id="categorySelect"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              background: white;
+            "
+          >
+            <option value="">— Выберите категорию —</option>
+            <option value="rent" {% if form_category == "rent" %}selected{% endif %}>Аренда</option>
+            <option value="purchase" {% if form_category == "purchase" %}selected{% endif %}>Закупка</option>
+            <option value="marketing" {% if form_category == "marketing" %}selected{% endif %}>Маркетинг</option>
+            <option value="dividends" {% if form_category == "dividends" %}selected{% endif %}>Дивиденды</option>
+          </select>
+        </div>
+
+        <!-- Кассир -->
+        <div style="margin-bottom: 20px">
+          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">
+            Кассир (кто вносит)
+          </label>
+          <div style="position: relative;">
+            <input
+            type="text"
+            class="form-control"
+            value="{{ session.get('user', {}).get('full_name', '') }}"
+            readonly
+            style="background-color: #f3f4f6; padding-right: 35px;"
+            >
+            <i class="fa fa-lock" style="position: absolute; right: 12px; top: 12px; color: #9ca3af;"></i>
+          </div>
+          <input type="hidden" name="cashier_id" value="{{ current_cashier_id }}">
+        </div>
+
+        <!-- Услуга -->
+        <div id="serviceBlock" style="margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Услуга (цена строго из прайса)</label
+          >
+          <select
+            name="service_id"
+            id="serviceSelect"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              background: white;
+            "
+          >
+            <option value="">—</option>
+            {% for service in services %}
+            <option value="{{ service._id }}"
+                    data-price="{{ service.price }}"
+                    {% if selected_service_id and selected_service_id == service._id|string %}selected{% endif %}>
+              {{ service.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Пациент -->
+        <div style="margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Пациент</label
+          >
+          <select
+            name="patient_id"
+            id="patientSelect"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              background: white;
+            "
+          >
+            <option value="">— Выберите пациента —</option>
+            {% for patient in patients %}
+            <option value="{{ patient._id }}"
+                    {% if selected_patient_id and selected_patient_id == patient._id|string %}selected{% endif %}>
+              {{ patient.full_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Блок баллной оплаты -->
+        <div
+          id="bonusBlock"
+          style="
+            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 12px;
+            "
+          >
+            <h4 style="margin: 0; color: white; font-size: 16px">
+              🎁 Баллы партнерской программы пациента
+            </h4>
+            <span
+              id="bonusBalance"
+              style="color: white; font-weight: bold; font-size: 18px"
+              >0 ₽</span
+            >
+          </div>
+
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              color: white;
+              margin-bottom: 12px;
+            "
+          >
+            <input
+              type="checkbox"
+              name="use_bonus"
+              id="useBonuses"
+              style="width: 16px; height: 16px; accent-color: white"
+            />
+            Использовать баллы партнерской программы для оплаты
+          </label>
+
+          <div id="bonusPaymentControls" style="display: none">
+            <div style="display: flex; gap: 8px; margin-bottom: 8px">
+              <button
+                type="button"
+                id="useAllBonuses"
+                style="
+                  background: rgba(255, 255, 255, 0.2);
+                  color: white;
+                  border: 1px solid rgba(255, 255, 255, 0.3);
+                  padding: 6px 12px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  font-size: 12px;
+                "
+              >
+                Все баллы партнерской программы
+              </button>
+              <button
+                type="button"
+                id="useMaxBonuses"
+                style="
+                  background: rgba(255, 255, 255, 0.2);
+                  color: white;
+                  border: 1px solid rgba(255, 255, 255, 0.3);
+                  padding: 6px 12px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  font-size: 12px;
+                "
+              >
+                Максимум
+              </button>
+            </div>
+            <input
+              type="number"
+              id="bonusAmount"
+              name="bonus_amount"
+              value="{{ form_bonus_amount or '' }}"
+              placeholder="Сумма баллов"
+              min="0"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: none;
+                border-radius: 6px;
+                margin-bottom: 8px;
+              "
+            />
+            <div
+              id="bonusInfo"
+              style="color: rgba(255, 255, 255, 0.9); font-size: 12px"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Комбинированная оплата -->
+        <div style="margin-bottom: 20px">
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-weight: 500;
+              color: #374151;
+            "
+          >
+            <input
+              type="checkbox"
+              name="split_payment"
+              id="splitPayment"
+              style="width: 16px; height: 16px; accent-color: #3b82f6"
+            />
+            Разделить оплату (несколько источников)
+          </label>
+        </div>
+
+        <!-- Блок разделенной оплаты -->
+        <div
+          id="splitPaymentBlock"
+          style="
+            display: none;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+          "
+        >
+          <h4 style="margin: 0 0 12px 0; color: #374151">Разделение оплаты</h4>
+          <div id="splitItems">
+            <!-- Элементы разделения будут добавлены через JavaScript -->
+          </div>
+          <button
+            type="button"
+            id="addSplitItem"
+            style="
+              background: #e5e7eb;
+              color: #374151;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 6px;
+              cursor: pointer;
+              margin-top: 8px;
+            "
+          >
+            + Добавить источник
+          </button>
+          <div
+            id="splitTotal"
+            style="margin-top: 12px; font-weight: 500; color: #374151"
+          ></div>
+        </div>
+
+        <!-- Комментарий -->
+        <div style="margin-bottom: 24px">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              font-weight: 500;
+              color: #374151;
+            "
+            >Комментарий</label
+          >
+          <textarea
+            name="comment"
+            rows="3"
+            placeholder="необязательно"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              resize: vertical;
+            "
+          >{{ form_note or '' }}</textarea>
+        </div>
+
+        <!-- Кнопки -->
+        <div style="display: flex; gap: 12px">
+          <button
+            type="submit"
+            style="
+              background: #3b82f6;
+              color: white;
+              padding: 12px 24px;
+              border: none;
+              border-radius: 8px;
+              font-weight: 500;
+              cursor: pointer;
+              flex: 1;
+            "
+          >
+            Сохранить
+          </button>
+          <a
+            href="/finance"
+            style="
+              background: #f3f4f6;
+              color: #374151;
+              padding: 12px 24px;
+              border-radius: 8px;
+              text-decoration: none;
+              text-align: center;
+              font-weight: 500;
+              border: 1px solid #d1d5db;
+            "
+            >Отмена</a
+          >
+        </div>
+      </form>
+    </div>
+
+    <!-- Правая колонка: Информационный блок -->
+    <div>
+      <!-- Баланс касс -->
+      <div
+        style="
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          margin-bottom: 20px;
+        "
+      >
+        <h3 style="margin: 0 0 16px 0; color: #374151; font-size: 16px">
+          Текущие балансы
+        </h3>
+        <div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              padding: 8px 0;
+              border-bottom: 1px solid #f3f4f6;
+            "
+          >
+            <span style="color: #6b7280">Альфа-Банк</span>
+            <span style="font-weight: 500" id="alphaBalance">—</span>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              padding: 8px 0;
+              border-bottom: 1px solid #f3f4f6;
+            "
+          >
+            <span style="color: #6b7280">Сбербанк</span>
+            <span style="font-weight: 500" id="sberBalance">—</span>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              padding: 8px 0;
+            "
+          >
+            <span style="color: #6b7280">Наличные</span>
+            <span style="font-weight: 500" id="cashBalance">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Информационный блок -->
+      <div
+        style="
+          background: #f0f9ff;
+          border: 1px solid #0ea5e9;
+          border-radius: 12px;
+          padding: 20px;
+        "
+      >
+        <h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px">
+          Как это работает
+        </h3>
+        <ul
+          style="
+            margin: 0;
+            padding-left: 16px;
+            color: #0c4a6e;
+            font-size: 14px;
+            line-height: 1.6;
+          "
+        >
+          <li>Доходы автоматически создаются при записи</li>
+          <li>Можно вносить оплаты задним числом</li>
+          <li>Комбинированная оплата позволяет разделить сумму</li>
+          <li>Все операции автоматически обновляют балансы касс</li>
+          <li>Баллы партнерской программы начисляются рефералам автоматически</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Обработка типа операции
+  document.getElementById("typeSel").addEventListener("change", function () {
+    const categoryBlock = document.getElementById("categoryBlock");
+    if (this.value === "expense") {
+      categoryBlock.style.display = "block";
+    } else {
+      categoryBlock.style.display = "none";
+    }
+  });
+
+  // Обработка выбора услуги - автозаполнение цены
+  document
+    .getElementById("serviceSelect")
+    .addEventListener("change", function () {
+      const selectedOption = this.options[this.selectedIndex];
+      const price = selectedOption.getAttribute("data-price");
+      if (price) {
+        document.getElementById("amountInput").value = price;
+        calculateBonusPayment();
+      }
+    });
+
+  // Обработка изменения суммы
+  document.getElementById("amountInput").addEventListener("input", function () {
+    calculateBonusPayment();
+    updateSplitTotal();
+  });
+
+  // Обработка комбинированной оплаты
+  document
+    .getElementById("splitPayment")
+    .addEventListener("change", function () {
+      const splitBlock = document.getElementById("splitPaymentBlock");
+      const sourceSelect = document.getElementById("sourceSelect");
+
+      if (this.checked) {
+        splitBlock.style.display = "block";
+        sourceSelect.style.display = "none";
+        addSplitItem();
+      } else {
+        splitBlock.style.display = "none";
+        sourceSelect.style.display = "block";
+        document.getElementById("splitItems").innerHTML = "";
+      }
+    });
+
+  // Добавление элемента разделенной оплаты
+  let splitItemCount = 0;
+  function addSplitItem() {
+    splitItemCount++;
+    const splitItems = document.getElementById("splitItems");
+    const item = document.createElement("div");
+    item.style.cssText =
+      "display: flex; gap: 12px; margin-bottom: 12px; align-items: center;";
+    item.innerHTML = `
+    <select name="split_source_${splitItemCount}" style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+      <option value="">Источник</option>
+      <option value="alpha">Альфа-Банк</option>
+      <option value="sber">Сбербанк</option>
+      <option value="cash">Наличные</option>
+    </select>
+    <input type="number" name="split_amount_${splitItemCount}" placeholder="Сумма" min="0" style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;" oninput="updateSplitTotal()">
+    <button type="button" onclick="removeSplitItem(this)" style="background: #ef4444; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer;">×</button>
+  `;
+    splitItems.appendChild(item);
+    updateSplitTotal();
+  }
+
+  function removeSplitItem(button) {
+    button.parentElement.remove();
+    updateSplitTotal();
+  }
+
+  function updateSplitTotal() {
+    const amounts = document.querySelectorAll('input[name^="split_amount_"]');
+    let total = 0;
+    amounts.forEach((input) => {
+      if (input.value) total += parseFloat(input.value);
+    });
+
+    const bonusAmount =
+      parseFloat(document.getElementById("bonusAmount").value) || 0;
+    const useBonuses = document.getElementById("useBonuses").checked;
+
+    if (useBonuses && bonusAmount > 0) {
+      total += bonusAmount;
+    }
+
+    const totalAmount =
+      parseFloat(document.getElementById("amountInput").value) || 0;
+    const remaining = totalAmount - total;
+
+    let splitHtml = `Разделено: ${total} ₽ из ${totalAmount} ₽<br>`;
+
+    if (useBonuses && bonusAmount > 0) {
+      const otherSources = total - bonusAmount;
+      splitHtml += `Баллы партнерской программы: ${bonusAmount} ₽, другие источники: ${otherSources} ₽<br>`;
+    }
+
+    splitHtml += `Остаток: <span style="color: ${
+      remaining === 0 ? "#22c55e" : "#ef4444"
+    }">${remaining} ₽</span>`;
+
+    document.getElementById("splitTotal").innerHTML = splitHtml;
+  }
+
+  document
+    .getElementById("addSplitItem")
+    .addEventListener("click", addSplitItem);
+
+  // Загрузка балансов касс
+  async function loadCashboxBalances() {
+    try {
+      document.getElementById("alphaBalance").textContent = "656,900 ₽";
+      document.getElementById("sberBalance").textContent = "795,000 ₽";
+      document.getElementById("cashBalance").textContent = "63,500 ₽";
+    } catch (error) {
+      console.error("Ошибка загрузки балансов:", error);
+    }
+  }
+
+  // Загрузка при старте страницы
+  document.addEventListener("DOMContentLoaded", function () {
+    loadCashboxBalances();
+
+    // Обработка выбора пациента - загрузка баллов
+    document
+      .getElementById("patientSelect")
+      .addEventListener("change", loadPatientBonuses);
+
+    // Обработка баллной оплаты
+    document
+      .getElementById("useBonuses")
+      .addEventListener("change", toggleBonusPayment);
+    document
+      .getElementById("bonusAmount")
+      .addEventListener("input", calculateBonusPayment);
+    document
+      .getElementById("useAllBonuses")
+      .addEventListener("click", useAllBonuses);
+    document
+      .getElementById("useMaxBonuses")
+      .addEventListener("click", useMaxBonuses);
+  });
+
+  let currentPatientBonuses = 0;
+  let currentTotalAmount = 0;
+
+  // Загрузка баллов пациента
+  async function loadPatientBonuses() {
+    const patientId = document.getElementById("patientSelect").value;
+    const bonusBlock = document.getElementById("bonusBlock");
+
+    if (!patientId) {
+      bonusBlock.style.display = "none";
+      currentPatientBonuses = 0;
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/patients/${patientId}/bonus`);
+      const data = await response.json();
+
+      if (data.success) {
+        currentPatientBonuses = data.bonus_balance || 0;
+
+        if (currentPatientBonuses > 0) {
+          bonusBlock.style.display = "block";
+          document.getElementById("bonusBalance").textContent =
+            currentPatientBonuses + " ₽";
+        } else {
+          bonusBlock.style.display = "none";
+        }
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки баллов:", error);
+      bonusBlock.style.display = "none";
+    }
+  }
+
+  function toggleBonusPayment() {
+    const useBonuses = document.getElementById("useBonuses").checked;
+    const controls = document.getElementById("bonusPaymentControls");
+
+    if (useBonuses) {
+      controls.style.display = "block";
+      calculateBonusPayment();
+    } else {
+      controls.style.display = "none";
+      document.getElementById("bonusAmount").value = "";
+      calculateBonusPayment();
+    }
+  }
+
+  function calculateBonusPayment() {
+    const bonusAmount =
+      parseFloat(document.getElementById("bonusAmount").value) || 0;
+    const totalAmount =
+      parseFloat(document.getElementById("amountInput").value) || 0;
+    const bonusInfo = document.getElementById("bonusInfo");
+
+    currentTotalAmount = totalAmount;
+
+    if (bonusAmount > currentPatientBonuses) {
+      bonusInfo.innerHTML = `❌ Недостаточно баллов (доступно: ${currentPatientBonuses} ₽)`;
+      bonusInfo.style.color = "#fecaca";
+      return;
+    }
+
+    if (bonusAmount > totalAmount) {
+      bonusInfo.innerHTML = `❌ Сумма баллов больше стоимости услуги`;
+      bonusInfo.style.color = "#fecaca";
+      return;
+    }
+
+    const remainder = totalAmount - bonusAmount;
+
+    if (remainder === 0) {
+      bonusInfo.innerHTML = `✅ Полная оплата баллами`;
+      bonusInfo.style.color = "#bbf7d0";
+    } else {
+      bonusInfo.innerHTML = `💰 Баллы партнерской программы: ${bonusAmount} ₽, доплата: ${remainder} ₽`;
+      bonusInfo.style.color = "rgba(255,255,255,0.9)";
+    }
+
+    updateSplitTotal();
+  }
+
+  function useAllBonuses() {
+    document.getElementById("bonusAmount").value = currentPatientBonuses;
+    calculateBonusPayment();
+  }
+
+  function useMaxBonuses() {
+    const totalAmount =
+      parseFloat(document.getElementById("amountInput").value) || 0;
+    const maxBonuses = Math.min(currentPatientBonuses, totalAmount);
+    document.getElementById("bonusAmount").value = maxBonuses;
+    calculateBonusPayment();
+  }
+
+// ========== АВТОЗАПОЛНЕНИЕ ИЗ ЗАПИСИ КАЛЕНДАРЯ ==========
+  {% if appointment_data %}
+  document.addEventListener('DOMContentLoaded', function() {
+    // Автозаполнение пациента
+    const patientSelect = document.getElementById('patientSelect');
+    if (patientSelect && '{{ appointment_data.patient_id }}') {
+      patientSelect.value = '{{ appointment_data.patient_id }}';
+      loadPatientBonuses(); // Загружаем баллы партнерской программы пациента
+    }
+
+    // Автозаполнение услуги
+    const serviceSelect = document.getElementById('serviceSelect');
+    if (serviceSelect && '{{ appointment_data.service_id }}') {
+      serviceSelect.value = '{{ appointment_data.service_id }}';
+      // Триггерим событие change для обновления цены
+      serviceSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Автозаполнение суммы
+    const amountInput = document.getElementById('amountInput');
+    if (amountInput && {{ appointment_data.amount }}) {
+      amountInput.value = {{ appointment_data.amount }};
+    }
+
+    console.log('Форма автозаполнена из записи календаря');
+  });
+  {% endif %}
+
+</script>
+
+{% endblock %}

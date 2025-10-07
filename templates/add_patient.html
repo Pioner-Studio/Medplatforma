@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Добавить пациента</h2>
+<form method="post" action="/add_patient" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;max-width:860px;">
+  <!-- Скрытое поле для возврата к форме записи -->
+  <input type="hidden" name="return_to" value="{{ return_to or '' }}">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <label>ФИО
+      <input type="text" name="full_name" value="{{ form.full_name or '' }}" required>
+    </label>
+    <label>Дата рождения
+      <input type="date" name="birthdate" value="{{ form.birthdate or '' }}">
+    </label>
+    <label>Пол
+      <select name="gender">
+        <option value="male"   {% if form.gender=='male' %}selected{% endif %}>Мужской</option>
+        <option value="female" {% if form.gender=='female' %}selected{% endif %}>Женский</option>
+        <option value="other"  {% if form.gender=='other' %}selected{% endif %}>Другое</option>
+      </select>
+    </label>
+    <label>Аватар (путь)
+      <input type="text" name="avatar" value="{{ form.avatar or '' }}" placeholder="/static/avatars/patients/p1.jpg">
+    </label>
+    <label>Телефон
+      <input type="text" name="phone" value="{{ form.phone or '' }}">
+    </label>
+    <label>Email
+      <input type="email" name="email" value="{{ form.email or '' }}">
+    </label>
+    <label>WhatsApp
+      <input type="text" name="whatsapp" value="{{ form.whatsapp or '' }}">
+    </label>
+    <label>Telegram
+      <input type="text" name="telegram" value="{{ form.telegram or '' }}" placeholder="@username">
+    </label>
+    <label>Город
+      <input type="text" name="city" value="{{ form.city or '' }}">
+    </label>
+    <label>Улица/дом
+      <input type="text" name="street" value="{{ form.street or '' }}">
+    </label>
+    <label>Индекс
+      <input type="text" name="zip" value="{{ form.zip or '' }}">
+    </label>
+    <label style="grid-column:1/-1;">Заметки
+      <textarea name="notes" rows="4">{{ form.notes or '' }}</textarea>
+    </label>
+    <!-- Реферальная программа: кто привёл -->
+    <div style="grid-column:1/-1;margin-top:8px;padding:12px;background:#f8f9fa;border-radius:8px;">
+      <label style="font-weight:600;margin-bottom:8px;display:block;">Кто привёл пациента? (для начисления баллов)</label>
+
+      <div style="margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="radio" name="referral_type" value="patient" id="referral_patient" checked>
+          <span>Существующий пациент</span>
+        </label>
+      </div>
+
+      <div id="referralPatientBlock" style="margin-bottom:12px;">
+        <select name="referred_by_patient_id" style="width:100%;padding:8px;border:1px solid #d6d7dc;border-radius:8px;">
+          <option value="">-- Не выбран (пришёл сам) --</option>
+          {% for p in (all_patients or []) %}
+          <option value="{{ p._id }}">{{ p.full_name }} ({{ p.phone or 'нет телефона' }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="radio" name="referral_type" value="other" id="referral_other">
+          <span>Другой человек (не пациент)</span>
+        </label>
+      </div>
+
+      <div id="referralOtherBlock" style="display:none;">
+        <input type="text" name="referred_by_name" placeholder="ФИО того, кто привёл" style="width:100%;padding:8px;border:1px solid #d6d7dc;border-radius:8px;">
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;display:flex;gap:10px;">
+    <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;">Сохранить</button>
+    <a href="{{ url_for('patients_list') }}">Отмена</a>
+  </div>
+<script>
+document.getElementById('referral_patient').addEventListener('change', function() {
+  document.getElementById('referralPatientBlock').style.display = 'block';
+  document.getElementById('referralOtherBlock').style.display = 'none';
+});
+document.getElementById('referral_other').addEventListener('change', function() {
+  document.getElementById('referralPatientBlock').style.display = 'none';
+  document.getElementById('referralOtherBlock').style.display = 'block';
+});
+</script>
+</form>
+{% endblock %}

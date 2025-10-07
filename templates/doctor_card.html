@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="doctor-card">
+  <!-- Верх -->
+  <div class="doctor-card-header">
+    <div class="doctor-avatar">
+      <img src="{{ doctor.avatar_url or '/static/avatars/doctor_default.png' }}" alt="avatar">
+    </div>
+    <div class="doctor-main-info">
+      <h2>{{ doctor.full_name }}</h2>
+      <div class="doctor-status">{{ doctor.position or 'Врач' }}</div>
+      <div class="doctor-actions">
+        <a href="/edit_doctor/{{ doctor._id }}" class="btn-main btn-edit"><i class="fa fa-edit"></i> Редактировать</a>
+        <a href="tel:{{ doctor.phone }}" class="btn-main btn-call"><i class="fa fa-phone"></i> Позвонить</a>
+        <a href="mailto:{{ doctor.email }}" class="btn-main btn-email"><i class="fa fa-envelope"></i> Email</a>
+        <a href="/add_file/{{ doctor._id }}" class="btn-main btn-file"><i class="fa fa-upload"></i> Документы</a>
+        <a href="/add_appointment/{{ doctor._id }}" class="btn-main btn-appt"><i class="fa fa-calendar-plus"></i> Записать пациента</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Вкладки -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="info">Инфо</button>
+    <button class="tab-btn" data-tab="schedule">Расписание</button>
+    <button class="tab-btn" data-tab="reviews">Отзывы</button>
+    <button class="tab-btn" data-tab="docs">Документы</button>
+    <button class="tab-btn" data-tab="gallery">До/После</button>
+  </div>
+
+  <!-- Контент вкладок -->
+  <div class="tab-content active" id="tab-info">
+    <div class="doctor-info-sections">
+      <div class="doctor-block">
+        <h3>Основное</h3>
+        <p><b>Специализация:</b> {{ doctor.specialization }}</p>
+        <p><b>Телефон:</b> {{ doctor.phone }}</p>
+        <p><b>Email:</b> {{ doctor.email }}</p>
+        <p><b>Опыт работы:</b> {{ doctor.experience }} лет</p>
+        <p><b>В клинике с:</b> {{ doctor.since }}</p>
+      </div>
+      <div class="doctor-block">
+        <h3>Образование и квалификация</h3>
+        <p>{{ doctor.education or "—" }}</p>
+        <p>{{ doctor.certificates or "" }}</p>
+      </div>
+      <div class="doctor-block">
+        <h3>Биография</h3>
+        <p>{{ doctor.bio or "—" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-schedule">
+    <div class="doctor-schedule-section">
+      <h3>Расписание врача</h3>
+      <div id="doctor-calendar"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-reviews">
+    <div class="doctor-history-section">
+      <h3>Отзывы пациентов</h3>
+      <div class="doctor-reviews">
+        {% for review in doctor.reviews %}
+          <div class="review-block">
+            <div class="review-rating">{% for i in range(review.stars) %}★{% endfor %}</div>
+            <div class="review-text">"{{ review.text }}"</div>
+            <div class="review-date">{{ review.date }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-docs">
+    <div class="doctor-files-section">
+      <h3>Документы и сертификаты</h3>
+      <div class="doctor-files">
+        {% for file in doctor.files %}
+          <div class="file-preview">
+            {% if file.type == 'image' %}
+              <img src="{{ file.url }}" alt="file" />
+            {% elif file.type == 'pdf' %}
+              <a href="{{ file.url }}" target="_blank"><i class="fa fa-file-pdf"></i> PDF файл</a>
+            {% endif %}
+            <div class="file-name">{{ file.name }}</div>
+          </div>
+        {% endfor %}
+        <a href="/add_file/{{ doctor._id }}" class="btn-main btn-file-upload"><i class="fa fa-upload"></i> Загрузить</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-gallery">
+    <div class="doctor-gallery-section">
+      <h3>Галерея работ “До / После”</h3>
+      <div class="gallery-row">
+        {% for case in doctor.cases %}
+        <div class="gallery-case">
+          <div class="gallery-label">До</div>
+          <img src="{{ case.before }}" alt="before">
+          <div class="gallery-label">После</div>
+          <img src="{{ case.after }}" alt="after">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Табы
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(tc => tc.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+      // При показе расписания — рендер календаря
+      if (this.dataset.tab === "schedule" && !window.doctorCalRendered) {
+        renderDoctorCalendar();
+        window.doctorCalRendered = true;
+      }
+    });
+  });
+
+  // FullCalendar для расписания врача
+  window.renderDoctorCalendar = function() {
+    var calendarEl = document.getElementById('doctor-calendar');
+    var events = [
+      {% for ev in doctor.events %}
+      {
+        title: "{{ ev.title|e }}",
+        start: "{{ ev.start }}",
+        end: "{{ ev.end }}",
+        backgroundColor: "{{ ev.color|default('#A2C6FA') }}",
+        borderColor: "{{ ev.color|default('#A2C6FA') }}",
+        // ... другие поля
+      },
+      {% endfor %}
+    ];
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'timeGridWeek',
+      locale: 'ru',
+      slotMinTime: "08:00:00",
+      slotMaxTime: "20:00:00",
+      allDayText: 'Весь день',
+      headerToolbar: { left: '', center: 'title', right: '' },
+      events: events,
+      height: 370,
+      nowIndicator: true
+    });
+    calendar.render();
+  };
+});
+</script>
+
+{% endblock %}

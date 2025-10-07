@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Журнал действий</h2>
+<div class="card shadow" style="max-width:1250px;margin:32px auto 0 auto;padding:34px 24px;">
+  <table class="action-log-table" style="width:100%;border-radius:20px;overflow:hidden;">
+    <thead>
+      <tr>
+        <th>Дата/Время</th>
+        <th>Пользователь</th>
+        <th>Роль</th>
+        <th>Действие</th>
+        <th>Объект</th>
+        <th>Комментарий</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td style="color:#888;">{{ log.time }}</td>
+        <td>
+          <img src="{{ log.avatar_url or '/static/avatars/staff_1.png' }}" class="avatar mini-avatar" style="width:38px;height:38px;vertical-align:middle;margin-right:10px;">
+          {{ log.user }}
+        </td>
+        <td>
+          <span class="badge bg-light text-primary">{{ log.role }}</span>
+        </td>
+        <td>
+          {% if log.action == 'created' %}
+            <span class="badge bg-light" style="color:#22c55e;"><b>Создание</b></span>
+          {% elif log.action == 'edited' %}
+            <span class="badge bg-light" style="color:#eab308;"><b>Изменение</b></span>
+          {% elif log.action == 'deleted' %}
+            <span class="badge bg-light" style="color:#ef4444;"><b>Удаление</b></span>
+          {% else %}
+            <span class="badge bg-light">{{ log.action|capitalize }}</span>
+          {% endif %}
+        </td>
+        <td>{{ log.object }}</td>
+        <td>{{ log.comment }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Редактировать пациента</h2>
+
+<form method="post" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;max-width:860px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <label>ФИО
+      <input type="text" name="full_name" value="{{ item.full_name }}" required>
+    </label>
+    <label>Дата рождения
+      <input type="date" name="birthday" value="{{ item.birthday.strftime('%Y-%m-%d') if item.birthday else '' }}">
+    </label>
+
+    <label>Пол
+      <select name="gender">
+        <option value="male"   {% if item.gender=='male' %}selected{% endif %}>Мужской</option>
+        <option value="female" {% if item.gender=='female' %}selected{% endif %}>Женский</option>
+        <option value="other"  {% if item.gender=='other' %}selected{% endif %}>Другое</option>
+      </select>
+    </label>
+    <label>Аватар (путь)
+      <input type="text" name="avatar" value="{{ item.avatar or '' }}" placeholder="/static/avatars/patients/p1.jpg">
+    </label>
+
+    <label>Телефон
+      <input type="text" name="phone" value="{{ item.contacts.phone }}">
+    </label>
+    <label>Email
+      <input type="email" name="email" value="{{ item.contacts.email }}">
+    </label>
+
+    <label>WhatsApp
+      <input type="text" name="whatsapp" value="{{ item.contacts.whatsapp }}">
+    </label>
+    <label>Telegram
+      <input type="text" name="telegram" value="{{ item.contacts.telegram }}">
+    </label>
+
+    <label>Город
+      <input type="text" name="city" value="{{ item.address.city }}">
+    </label>
+    <label>Улица/дом
+      <input type="text" name="street" value="{{ item.address.street }}">
+    </label>
+    <label>Индекс
+      <input type="text" name="zip" value="{{ item.address.zip }}">
+    </label>
+
+    <label style="grid-column:1/-1;">Заметки
+      <textarea name="notes" rows="4">{{ item.notes or '' }}</textarea>
+    </label>
+  </div>
+
+  <div style="margin-top:14px;display:flex;gap:10px;">
+    <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;">Сохранить</button>
+    <a href="{{ url_for('patients_list') }}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

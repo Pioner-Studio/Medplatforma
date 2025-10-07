@@ -1,0 +1,57 @@
+    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: 
+    4: <div class="journal-header" style="display:flex;justify-content:space-between;align-items:center;">
+    5:   <h2>Журнал действий</h2>
+    6:   <a href="{{ url_for('export_logs', **request.args) }}" class="btn btn-outline-primary">Выгрузить видимое в CSV</a>
+    7: </div>
+    8: 
+    9: <form method="get" class="journal-filters" style="display:flex;gap:18px;align-items:center;margin-bottom:18px;">
+   10:   <input type="text" name="search" placeholder="Поиск по пользователю или действию..." value="{{ request.args.get('search','') }}">
+   11:   <select name="role">
+   12:     <option value="">Все роли</option>
+   13:     {% for r in roles %}
+   14:       <option value="{{ r }}" {% if r == selected_role %}selected{% endif %}>{{ r }}</option>
+   15:     {% endfor %}
+   16:   </select>
+   17:   <input type="date" name="start_date" value="{{ start_date }}">
+   18:   <input type="date" name="end_date" value="{{ end_date }}">
+   19:   <button type="submit" class="btn btn-outline-primary">Фильтр</button>
+   20: </form>
+   21: 
+   22: <div style="overflow-x:auto;">
+   23: <table class="journal-table" style="width:100%;background:#fff;border-radius:18px;box-shadow:0 2px 22px #e3eaf92a;">
+   24:   <thead>
+   25:     <tr>
+   26:       <th>Дата/Время</th>
+   27:       <th>Пользователь</th>
+   28:       <th>Роль</th>
+   29:       <th>IP</th>
+   30:       <th>Действие</th>
+   31:       <th>Объект</th>
+   32:       <th>Комментарий</th>
+   33:     </tr>
+   34:   </thead>
+   35:   <tbody>
+   36:     {% for log in logs %}
+   37:       <tr>
+   38:         <td>{{ log.datetime or "" }}</td>
+   39:         <td>
+   40:           {% if log.avatar_url %}
+   41:             <img src="{{ log.avatar_url }}" style="width:28px;height:28px;border-radius:50%;margin-right:5px;vertical-align:middle;">
+   42:           {% endif %}
+   43:           {{ log.user or "" }}
+   44:         </td>
+   45:         <td>{{ log.role or "" }}</td>
+   46:         <td style="color:#788;">{{ log.ip or "" }}</td>
+   47:         <td>{{ log.action or "" }}</td>
+   48:         <td>{{ log.object or "" }}</td>
+   49:         <td style="max-width:240px;white-space:normal;">{{ log.comment or "" }}</td>
+   50:       </tr>
+   51:     {% else %}
+   52:       <tr><td colspan="7" style="color:#aaa;text-align:center;">Нет записей</td></tr>
+   53:     {% endfor %}
+   54:   </tbody>
+   55: </table>
+   56: </div>
+   57: {% endblock %}

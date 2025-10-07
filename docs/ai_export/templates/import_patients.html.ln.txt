@@ -1,0 +1,59 @@
+    1: <h2>Импорт пациентов</h2>
+    2: 
+    3: <a href="{{ url_for('import_template_patients') }}" class="btn" style="margin-bottom:15px;display:inline-block;">
+    4:   Скачать шаблон CSV для импорта пациентов
+    5: </a>
+    6: 
+    7: <form method="post" enctype="multipart/form-data" style="margin-top:10px;">
+    8:     <label for="file">Выберите CSV-файл:</label>
+    9:     <input type="file" name="file" id="file" required>
+   10:     <button type="submit">Импортировать</button>
+   11: </form>
+   12: 
+   13: {% if preview_data %}
+   14:   <h3>Предпросмотр данных</h3>
+   15:   <form method="post" action="{{ url_for('import_patients_confirm') }}">
+   16:     <input type="hidden" name="csv_data" value="{{ request.files['file'].stream.read().decode('utf-8-sig') | tojson }}">
+   17:     <table border="1" cellpadding="3">
+   18:       <tr>
+   19:         <th>ФИО</th>
+   20:         <th>Дата рождения</th>
+   21:         <th>Телефон</th>
+   22:         <th>Email</th>
+   23:         <th>Долг</th>
+   24:         <th>Депозит</th>
+   25:         <th>Ошибки</th>
+   26:       </tr>
+   27:       {% for item in preview_data %}
+   28:         <tr {% if item.errors %} style="background:#ffb3b3"{% endif %}>
+   29:           <td>{{ item.row.full_name }}</td>
+   30:           <td>{{ item.row.dob }}</td>
+   31:           <td>{{ item.row.phone }}</td>
+   32:           <td>{{ item.row.email }}</td>
+   33:           <td>{{ item.row.debt }}</td>
+   34:           <td>{{ item.row.deposit }}</td>
+   35:           <td>
+   36:             {% if item.errors %}
+   37:               <span style="color:red">{{ item.errors|join(', ') }}</span>
+   38:             {% else %}
+   39:               -
+   40:             {% endif %}
+   41:           </td>
+   42:         </tr>
+   43:       {% endfor %}
+   44:     </table>
+   45:     {% if show_confirm %}
+   46:       <button type="submit">Подтвердить импорт</button>
+   47:     {% endif %}
+   48:   </form>
+   49: {% endif %}
+   50: 
+   51: {% if message %}
+   52:   <div class="alert">{{ message }}</div>
+   53: {% endif %}
+   54: 
+   55: <p>
+   56:   <b>Внимание:</b> Используйте шаблон, чтобы не было ошибок. <br>
+   57:   Допустимые поля: <br>
+   58:   <code>full_name, dob, phone, passport, email, referral, debt, deposit, partner_points</code>
+   59: </p>

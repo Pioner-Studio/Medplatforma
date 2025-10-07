@@ -1,0 +1,152 @@
+    1: {% extends "base.html" %}
+    2: {% block content %}
+    3: <div class="ztl-cabinet-wrap">
+    4:     <div class="ztl-header-row">
+    5:         <h2>Зуботехническая лаборатория (ZTL)</h2>
+    6:         <a href="{{ url_for('add_ztl') }}" class="btn-add-ztl">
+    7:             <i class="fa fa-plus"></i> Добавить работу
+    8:         </a>
+    9:     </div>
+   10: 
+   11:     <form method="get" class="ztl-filters">
+   12:         <select name="patient" class="filter-select">
+   13:             <option value="">Все пациенты</option>
+   14:             {% for p in patients.values() %}
+   15:             <option value="{{ p['_id'] }}">{{ p['full_name'] }}</option>
+   16:             {% endfor %}
+   17:         </select>
+   18:         <select name="doctor" class="filter-select">
+   19:             <option value="">Все врачи</option>
+   20:             {% for d in doctors.values() %}
+   21:             <option value="{{ d['_id'] }}">{{ d['full_name'] }}</option>
+   22:             {% endfor %}
+   23:         </select>
+   24:         <select name="type" class="filter-select">
+   25:             <option value="">Все типы</option>
+   26:             <option>Коронка</option>
+   27:             <option>Винир</option>
+   28:             <option>Брекеты</option>
+   29:             <option>Протез</option>
+   30:             <option>Каппа</option>
+   31:         </select>
+   32:         <select name="status" class="filter-select">
+   33:             <option value="">Все статусы</option>
+   34:             <option>В работе</option>
+   35:             <option>Готово</option>
+   36:             <option>Выдано</option>
+   37:             <option>Ожидает оплаты</option>
+   38:         </select>
+   39:         <button type="submit" class="btn btn-secondary">Фильтр</button>
+   40:     </form>
+   41: 
+   42:     <div class="ztl-cards-row">
+   43:         {% for w in ztls %}
+   44:         <div class="ztl-card shadow" onclick="showZtlModal({{ w|tojson|safe }}, '{{ patients.get(w.patient_id|string, {}).get('full_name', '') }}', '{{ doctors.get(w.doctor_id|string, {}).get('full_name', '') }}')">
+   45:             <div class="ztl-card-img">
+   46:                 <img src="{{ w.file_url }}" alt="labwork">
+   47:             </div>
+   48:             <div class="ztl-card-title">{{ patients[w.patient_id].full_name if w.patient_id in patients else '—' }}</div>
+   49:             <div class="ztl-card-doctor">Врач: {{ doctors[w.doctor_id].full_name if w.doctor_id in doctors else '—' }}</div>
+   50:             <div class="ztl-card-type">
+   51:                 <span class="ztl-badge-type">{{ w.type }}</span>
+   52:                 <span class="ztl-badge-status {{ w.status|lower|replace(' ', '_') }}">{{ w.status }}</span>
+   53:             </div>
+   54:             <div class="ztl-card-dates">
+   55:                 <span>Дата заказа: {{ w.order_date }}</span>
+   56:                 <span>Срок: {{ w.due_date }}</span>
+   57:             </div>
+   58:             <div class="ztl-card-comment">{{ w.comment }}</div>
+   59:         </div>
+   60:         {% endfor %}
+   61:     </div>
+   62: </div>
+   63: 
+   64: <!-- Модалка деталей работы -->
+   65: <div class="modal" id="ztlModal" style="display:none;">
+   66:   <div class="modal-content" style="max-width:520px;">
+   67:     <span class="close" onclick="document.getElementById('ztlModal').style.display='none'">&times;</span>
+   68:     <img id="modalZtlImg" src="" style="width:96%;border-radius:14px;box-shadow:0 4px 20px #8fc7fa55;margin-bottom:14px;">
+   69:     <div id="modalZtlInfo" style="font-size:1.1em;"></div>
+   70:     <div id="modalZtlComment" style="margin:8px 0 0 0;color:#2563eb;"></div>
+   71:   </div>
+   72: </div>
+   73: <script>
+   74: function showZtlModal(w, patient, doctor) {
+   75:     document.getElementById('modalZtlImg').src = w.file_url;
+   76:     document.getElementById('modalZtlInfo').innerHTML =
+   77:       `<b>Пациент:</b> ${patient}<br><b>Врач:</b> ${doctor}<br>
+   78:        <b>Тип:</b> ${w.type}<br><b>Статус:</b> ${w.status}<br>
+   79:        <b>Дата заказа:</b> ${w.order_date} <br><b>Срок:</b> ${w.due_date}`;
+   80:     document.getElementById('modalZtlComment').innerText = w.comment || '';
+   81:     document.getElementById('ztlModal').style.display = 'flex';
+   82: }
+   83: window.onclick = function(e) {
+   84:     let modal = document.getElementById('ztlModal');
+   85:     if (e.target === modal) modal.style.display = 'none';
+   86: }
+   87: </script>
+   88: 
+   89: {% block head %}
+   90: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   91: <style>
+   92: .ztl-cabinet-wrap {
+   93:     max-width: 1200px; margin: 0 auto; padding: 38px 0 38px 0;
+   94:     display: flex; flex-direction: column; align-items: center;
+   95: }
+   96: .ztl-header-row {
+   97:     display: flex; align-items: center; justify-content: space-between;
+   98:     width: 100%; margin-bottom: 24px;
+   99: }
+  100: .ztl-header-row h2 { font-weight: 700; font-size: 2em; }
+  101: .btn-add-ztl {
+  102:     display: inline-flex; align-items: center; gap: 10px;
+  103:     background: linear-gradient(90deg,#2196f3 60%,#21b445 100%);
+  104:     color: #fff; font-weight: 700; border-radius: 10px; padding: 13px 34px; font-size: 1.09em;
+  105:     box-shadow: 0 4px 18px #b5e3cb22; border: none; text-decoration: none; transition: .14s; background-size: 200%;
+  106: }
+  107: .btn-add-ztl:hover { background-position: right; color: #fff; }
+  108: .ztl-filters {
+  109:     display: flex; gap: 13px; margin-bottom: 32px; flex-wrap: wrap; align-items: center;
+  110:     width: 100%; justify-content: center;
+  111: }
+  112: .ztl-cards-row {
+  113:     display: flex; flex-wrap: wrap; gap: 32px; justify-content: flex-start; width: 100%; margin-top: 10px;
+  114: }
+  115: .ztl-card {
+  116:     background: #fff; border-radius: 22px; box-shadow: 0 4px 24px #d7eafc45;
+  117:     padding: 23px 28px; min-width: 282px; width: 325px; max-width: 99vw; transition: box-shadow .17s;
+  118:     display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
+  119:     cursor: pointer;
+  120: }
+  121: .ztl-card:hover { box-shadow: 0 8px 32px #b5e3cb70; transform: translateY(-2px) scale(1.025);}
+  122: .ztl-card-img { width: 100%; display: flex; justify-content: center; margin-bottom: 8px; }
+  123: .ztl-card-img img {
+  124:     width: 90px; height: 70px; object-fit: cover; border-radius: 11px; box-shadow: 0 2px 14px #a7d4fd44; background: #f4f6fb;
+  125: }
+  126: .ztl-card-title { font-weight: 600; font-size: 1.08em; color: #2a3555; margin-bottom: 1px;}
+  127: .ztl-card-doctor { color: #888; font-size: .98em; margin-bottom: 4px;}
+  128: .ztl-card-type { display: flex; gap: 10px; align-items: center; margin-bottom: 4px;}
+  129: .ztl-badge-type {
+  130:     background: #e9f4ff; color: #2196f3; font-weight: 600; font-size: .97em;
+  131:     border-radius: 7px; padding: 4px 13px;
+  132: }
+  133: .ztl-badge-status {
+  134:     background: #e2ebfa; color: #6c6c98; font-weight: 600; font-size: .97em;
+  135:     border-radius: 7px; padding: 4px 13px;
+  136: }
+  137: .ztl-badge-status.в_работе { background: #f4e4ff; color: #a44de0;}
+  138: .ztl-badge-status.готово { background: #e6fbe6; color: #21ba45;}
+  139: .ztl-badge-status.выдано { background: #e7f1fd; color: #2176bd;}
+  140: .ztl-badge-status.ожидает_оплаты { background: #fff6e3; color: #e39a1a;}
+  141: .ztl-card-dates { color: #8c8fa5; font-size: .95em; margin-bottom: 1px;}
+  142: .ztl-card-dates span { margin-right: 9px;}
+  143: .ztl-card-comment { font-size: .97em; color: #2563eb; margin-top: 1px;}
+  144: .modal { align-items: center; justify-content: center; }
+  145: .modal-content { animation: xraypop .3s; }
+  146: @keyframes xraypop {
+  147:     from { opacity:0; transform: scale(0.96);}
+  148:     to   { opacity:1; transform: scale(1);}
+  149: }
+  150: </style>
+  151: {% endblock %}
+  152: {% endblock %}

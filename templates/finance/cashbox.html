@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Касса - Медплатформа{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <h1 class="mb-4">Касса</h1>
+
+  <!-- Балансы касс -->
+  <div class="mb-4">
+    <h2 class="h5 text-muted mb-3">Текущие балансы</h2>
+    <div class="row g-3">
+      {% for cb in (cashboxes or []) %}
+      <div class="col-md-4">
+        <div class="card shadow-sm" style="background: {% if cb.balance >= 0 %}linear-gradient(135deg, #667eea 0%, #764ba2 100%){% else %}linear-gradient(135deg, #f093fb 0%, #f5576c 100%){% endif %}; color: white; border: none; border-radius: 12px;">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div style="opacity: 0.9;">{{ cb.name }}</div>
+              <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(255,255,255,0.2);">
+                <span style="font-size: 20px;">{% if cb.balance >= 0 %}💰{% else %}⚠️{% endif %}</span>
+              </div>
+            </div>
+            <div class="h2 fw-bold mb-1">{{ "{:,}".format(cb.balance).replace(',', ' ') }} ₽</div>
+            <small style="opacity: 0.8;">{% if cb.balance >= 0 %}В наличии{% else %}Перерасход{% endif %}</small>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Общая статистика -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small mb-2">Доходы</div>
+          <div class="h3 fw-bold text-success mb-0">{{ "{:,}".format(income|default(0)).replace(',', ' ') }} ₽</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small mb-2">Расходы</div>
+          <div class="h3 fw-bold text-danger mb-0">{{ "{:,}".format(expense|default(0)).replace(',', ' ') }} ₽</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Поступления по источникам -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h3 class="h6 fw-semibold mb-3">Поступления по источникам</h3>
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-normal">
+          Альфа — {{ by_source.alpha|default(0) }} ₽
+        </span>
+        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-normal">
+          Сбер — {{ by_source.sber|default(0) }} ₽
+        </span>
+        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill fw-normal">
+          Нал — {{ by_source.cash|default(0) }} ₽
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Расходы по категориям -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="h6 fw-semibold mb-3">Расходы по категориям</h3>
+      {% set CAT_RU = {"purchase":"Закупка","marketing":"Маркетинг","dividends":"Дивиденды","rent":"Аренда","other":"Другие расходы"} %}
+
+      {% if by_category %}
+        <div class="d-flex gap-2 flex-wrap">
+          {% for cat, sum in by_category.items() %}
+          <a href="/finance?type=expense&category={{ cat }}"
+             class="badge bg-light text-dark px-3 py-2 rounded-pill text-decoration-none border">
+            {{ CAT_RU.get(cat,cat) }} — {{ sum }} ₽
+          </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <span class="text-muted">Нет данных</span>
+      {% endif %}
+
+      <hr class="my-3">
+      <a href="/finance?type=expense" class="text-primary text-decoration-none fw-semibold">Все расходы →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

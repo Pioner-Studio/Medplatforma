@@ -1,0 +1,32 @@
+    1: from pymongo import MongoClient
+    2: from datetime import datetime
+    3: 
+    4: client = MongoClient("mongodb+srv://medadmin:medpass123@medplatforma.cnv7fbo.mongodb.net/")
+    5: db = client['medplatforma']
+    6: 
+    7: def upsert(coll, query, doc):
+    8:     coll.update_one(query, {"$setOnInsert": doc}, upsert=True)
+    9: 
+   10: # 1) Статусы визита
+   11: visit_statuses = [
+   12:     {"key":"scheduled",  "title":"Запланировано", "color":"#3498db"},
+   13:     {"key":"checked_in", "title":"Пришёл",        "color":"#10b981"},
+   14:     {"key":"done",       "title":"Выполнено",     "color":"#22c55e"},
+   15:     {"key":"canceled",   "title":"Отменено",      "color":"#ef4444"},
+   16: ]
+   17: for s in visit_statuses:
+   18:     upsert(db.visit_statuses, {"key": s["key"]}, s)
+   19: 
+   20: # 2) Услуги (с длительностью и цветом)
+   21: services = [
+   22:     {"code":"CONS", "name":"Консультация", "duration_min":20, "price":0,    "color":"#60a5fa", "is_active":True},
+   23:     {"code":"HYGI", "name":"Гигиена",      "duration_min":40, "price":3500, "color":"#34d399", "is_active":True},
+   24:     {"code":"CANL", "name":"Лечение каналов","duration_min":60, "price":9000,"color":"#f87171","is_active":True},
+   25:     {"code":"CROW", "name":"Коронка",      "duration_min":50, "price":15000,"color":"#fbbf24","is_active":True},
+   26:     {"code":"XRY",  "name":"Рентген",      "duration_min":15, "price":800,  "color":"#a78bfa","is_active":True},
+   27: ]
+   28: for s in services:
+   29:     s["created_at"] = s["updated_at"] = datetime.utcnow()
+   30:     upsert(db.services, {"code": s["code"]}, s)
+   31: 
+   32: print("OK: core seed done")

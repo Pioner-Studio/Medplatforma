@@ -1,0 +1,1097 @@
+[
+  {
+    "endpoint": "auth.login",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/login"
+  },
+  {
+    "endpoint": "auth.logout",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/logout"
+  },
+  {
+    "endpoint": "auth.current_user_api",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/current-user"
+  },
+  {
+    "endpoint": "auth.change_password",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/change-password"
+  },
+  {
+    "endpoint": "switch_user",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/switch-user/<user_id>"
+  },
+  {
+    "endpoint": "admin_seed.list_routes",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/admin/seed/_routes"
+  },
+  {
+    "endpoint": "admin_seed.dicts",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/admin/seed/dicts"
+  },
+  {
+    "endpoint": "transfer.transfer_page",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance/transfer"
+  },
+  {
+    "endpoint": "transfer.transfer_execute",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/finance/transfer"
+  },
+  {
+    "endpoint": "transfer.transfer_history",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance/transfer/history"
+  },
+  {
+    "endpoint": "transfer.transfer_delete",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/finance/transfer/delete/<id>"
+  },
+  {
+    "endpoint": "api_patient_get",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<id>"
+  },
+  {
+    "endpoint": "api_patient_update",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<id>/update"
+  },
+  {
+    "endpoint": "api_patient_contacts_min",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<id>/contacts"
+  },
+  {
+    "endpoint": "api_patients_min_list",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/min"
+  },
+  {
+    "endpoint": "api_patient_bonus",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<patient_id>/bonus"
+  },
+  {
+    "endpoint": "api_patient_bonus_add",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<patient_id>/bonus/add"
+  },
+  {
+    "endpoint": "api_patient_bonus_withdraw",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<patient_id>/bonus/withdraw"
+  },
+  {
+    "endpoint": "api_patient_bonus_history",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<patient_id>/bonus/history"
+  },
+  {
+    "endpoint": "api_patient_min_by_id",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<id>/min"
+  },
+  {
+    "endpoint": "api_patient_treatment_plans",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<patient_id>/treatment-plans"
+  },
+  {
+    "endpoint": "patient_card_page",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/patients/<id>"
+  },
+  {
+    "endpoint": "complete_current_visit",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/patients/<patient_id>/current-visit/complete"
+  },
+  {
+    "endpoint": "schedule.list_view",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/schedule/"
+  },
+  {
+    "endpoint": "schedule.add_appointment",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/schedule/add"
+  },
+  {
+    "endpoint": "schedule.free_slots",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/schedule/free_slots"
+  },
+  {
+    "endpoint": "finance.list_ops",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance"
+  },
+  {
+    "endpoint": "finance.add_get",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance/add"
+  },
+  {
+    "endpoint": "finance.add_post",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/finance/add"
+  },
+  {
+    "endpoint": "finance.report_cashbox",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance/report/cashbox"
+  },
+  {
+    "endpoint": "finance.delete_operation",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/finance/delete/<operation_id>"
+  },
+  {
+    "endpoint": "finance.export_csv",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance/export/csv"
+  },
+  {
+    "endpoint": "finance.export_json",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance/export/json"
+  },
+  {
+    "endpoint": "finance.import_json",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/finance/import/json"
+  },
+  {
+    "endpoint": "bonus.add_bonus",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<id>/bonus/add"
+  },
+  {
+    "endpoint": "bonus.withdraw_bonus",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<id>/bonus/withdraw"
+  },
+  {
+    "endpoint": "bonus.bonus_history",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<id>/bonus/history"
+  },
+  {
+    "endpoint": "roadmap_view",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/roadmap"
+  },
+  {
+    "endpoint": "api_free_slots",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/free_slots"
+  },
+  {
+    "endpoint": "home",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/"
+  },
+  {
+    "endpoint": "favicon",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/favicon.ico"
+  },
+  {
+    "endpoint": "calendar_view",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/schedule"
+  },
+  {
+    "endpoint": "api_rooms_status_now",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/rooms/status_now"
+  },
+  {
+    "endpoint": "api_rooms_today_details",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/rooms/today_details"
+  },
+  {
+    "endpoint": "update_event_time",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/update_event_time"
+  },
+  {
+    "endpoint": "export_calendar",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/export_calendar"
+  },
+  {
+    "endpoint": "download_patients_csv",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/export/csv"
+  },
+  {
+    "endpoint": "download_patients_excel",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/export/excel"
+  },
+  {
+    "endpoint": "import_patients",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/patients/import"
+  },
+  {
+    "endpoint": "dashboard",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/dashboard"
+  },
+  {
+    "endpoint": "add_event",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/add_event"
+  },
+  {
+    "endpoint": "edit_event",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/edit_event/<event_id>"
+  },
+  {
+    "endpoint": "api_busy_slots",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/busy_slots"
+  },
+  {
+    "endpoint": "busy_slots",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/busy_slots/<doctor_id>"
+  },
+  {
+    "endpoint": "doctors",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/doctors"
+  },
+  {
+    "endpoint": "add_doctor",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/add_doctor"
+  },
+  {
+    "endpoint": "doctor_card",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/doctor_card/<doctor_id>"
+  },
+  {
+    "endpoint": "doctor_busy_slots",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/doctor_busy_slots/<doctor_id>"
+  },
+  {
+    "endpoint": "doctor_schedule",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/doctor_schedule"
+  },
+  {
+    "endpoint": "finance_report",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance_report"
+  },
+  {
+    "endpoint": "finance_debtors",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance/debtors"
+  },
+  {
+    "endpoint": "api_doctors_revenue_report",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/reports/doctors_revenue"
+  },
+  {
+    "endpoint": "finance_report_export",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/finance_report/export"
+  },
+  {
+    "endpoint": "tasks",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/tasks"
+  },
+  {
+    "endpoint": "add_task",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/add_task"
+  },
+  {
+    "endpoint": "mark_task_done",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/mark_task_done/<task_id>"
+  },
+  {
+    "endpoint": "task_card",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/task/<task_id>"
+  },
+  {
+    "endpoint": "messages",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/messages"
+  },
+  {
+    "endpoint": "ztl",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/ztl"
+  },
+  {
+    "endpoint": "add_ztl",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/add_ztl"
+  },
+  {
+    "endpoint": "partners",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/partners"
+  },
+  {
+    "endpoint": "logs",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/logs"
+  },
+  {
+    "endpoint": "export_logs",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/logs/export"
+  },
+  {
+    "endpoint": "audit_logs",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/audit"
+  },
+  {
+    "endpoint": "api_audit_details",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/audit/<log_id>"
+  },
+  {
+    "endpoint": "backup",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/backup"
+  },
+  {
+    "endpoint": "profile",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/profile"
+  },
+  {
+    "endpoint": "settings",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/settings"
+  },
+  {
+    "endpoint": "data_tools",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/data_tools"
+  },
+  {
+    "endpoint": "export_data",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/export_data"
+  },
+  {
+    "endpoint": "import_data",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/import_data"
+  },
+  {
+    "endpoint": "cabinet_card",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/cabinet/<cabinet_name>"
+  },
+  {
+    "endpoint": "api_events",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/events"
+  },
+  {
+    "endpoint": "api_service_get",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/services/<id>"
+  },
+  {
+    "endpoint": "api_dicts",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/dicts"
+  },
+  {
+    "endpoint": "delete_appointment",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/delete_appointment/<id>"
+  },
+  {
+    "endpoint": "api_appointment_get",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/appointments/<id>"
+  },
+  {
+    "endpoint": "api_appointment_update",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/appointments/<id>/update"
+  },
+  {
+    "endpoint": "api_appointments_update_time",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/appointments/update_time"
+  },
+  {
+    "endpoint": "api_appointments_delete_by_id",
+    "methods": [
+      "DELETE"
+    ],
+    "rule": "/api/appointments/<id>"
+  },
+  {
+    "endpoint": "api_appointments_delete_post",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/appointments/delete"
+  },
+  {
+    "endpoint": "schedule_api_delete_proxy",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/schedule/api/delete"
+  },
+  {
+    "endpoint": "api_services_min",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/services_min"
+  },
+  {
+    "endpoint": "api_visit_statuses_min",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/visit_statuses_min"
+  },
+  {
+    "endpoint": "api_finance_record",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/finance/record"
+  },
+  {
+    "endpoint": "api_chat_send",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/chat/<id>/send"
+  },
+  {
+    "endpoint": "services_list",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/services"
+  },
+  {
+    "endpoint": "add_service",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/add_service"
+  },
+  {
+    "endpoint": "edit_service",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/edit_service/<id>"
+  },
+  {
+    "endpoint": "delete_service",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/delete_service/<id>"
+  },
+  {
+    "endpoint": "rooms_list",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/rooms"
+  },
+  {
+    "endpoint": "add_room",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/add_room"
+  },
+  {
+    "endpoint": "edit_room",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/edit_room/<id>"
+  },
+  {
+    "endpoint": "delete_room",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/delete_room/<id>"
+  },
+  {
+    "endpoint": "patients_list",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/patients"
+  },
+  {
+    "endpoint": "patients_debtors",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/patients/debtors"
+  },
+  {
+    "endpoint": "add_patient",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/add_patient"
+  },
+  {
+    "endpoint": "edit_patient",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/edit_patient/<id>"
+  },
+  {
+    "endpoint": "delete_patient",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/delete_patient/<id>"
+  },
+  {
+    "endpoint": "patient_card",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/patient_card/<id>"
+  },
+  {
+    "endpoint": "api_patient_update_info",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<id>/update_info"
+  },
+  {
+    "endpoint": "api_patient_update_questionary",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<id>/update_questionary"
+  },
+  {
+    "endpoint": "api_patient_generate_card_no",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients/<id>/generate_card_no"
+  },
+  {
+    "endpoint": "api_patient_full",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<id>/full"
+  },
+  {
+    "endpoint": "patient_questionnaire",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/patients/<patient_id>/questionnaire"
+  },
+  {
+    "endpoint": "patient_edit_form",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/patients/<pid>/edit"
+  },
+  {
+    "endpoint": "patient_edit_save",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/patients/<pid>/edit"
+  },
+  {
+    "endpoint": "api_patients_create",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/patients"
+  },
+  {
+    "endpoint": "api_appointments_create",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/appointments/create_core"
+  },
+  {
+    "endpoint": "api_appointments_create_router",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/schedule/api/create"
+  },
+  {
+    "endpoint": "api_appointments_create_router",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/appointments/create"
+  },
+  {
+    "endpoint": "api_appointments_create_router",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/appointments"
+  },
+  {
+    "endpoint": "healthz",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/healthz"
+  },
+  {
+    "endpoint": "api_patients_search",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/search"
+  },
+  {
+    "endpoint": "api_today_appointments_count",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/dashboard/today-appointments"
+  },
+  {
+    "endpoint": "api_doctor_plans_count",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/dashboard/doctor-plans"
+  },
+  {
+    "endpoint": "api_pending_plans_count",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/dashboard/pending-plans"
+  },
+  {
+    "endpoint": "api_debtors_count",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/dashboard/debtors"
+  },
+  {
+    "endpoint": "services",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/services"
+  },
+  {
+    "endpoint": "rooms",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/rooms"
+  },
+  {
+    "endpoint": "reports",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/reports"
+  },
+  {
+    "endpoint": "patients",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/patients"
+  },
+  {
+    "endpoint": "clean_all_demo",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/admin/clean_all_demo"
+  },
+  {
+    "endpoint": "create_test_patient",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/admin/create_test_patient"
+  },
+  {
+    "endpoint": "mass_cleanup",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/admin/mass_cleanup"
+  },
+  {
+    "endpoint": "init_production_data",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/admin/init_production_data"
+  },
+  {
+    "endpoint": "debug_patients",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/debug/patients"
+  },
+  {
+    "endpoint": "treatment_plan_new",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/patients/<patient_id>/treatment-plan/new"
+  },
+  {
+    "endpoint": "treatment_plan_edit",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/patients/<patient_id>/treatment-plan/<plan_id>/edit"
+  },
+  {
+    "endpoint": "chief_pending_plans",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/chief/pending-plans"
+  },
+  {
+    "endpoint": "doctor_my_plans",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/doctor/my-plans"
+  },
+  {
+    "endpoint": "chief_plan_details",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/chief/plan-details/<plan_id>"
+  },
+  {
+    "endpoint": "chief_approve_plan",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/chief/approve-plan/<plan_id>"
+  },
+  {
+    "endpoint": "chief_request_revision",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/chief/request-revision/<plan_id>"
+  },
+  {
+    "endpoint": "test_session",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/test-session"
+  },
+  {
+    "endpoint": "test_treatment_plan",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/test-treatment-plan"
+  },
+  {
+    "endpoint": "appointment_arrive",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/appointments/<appointment_id>/arrive"
+  },
+  {
+    "endpoint": "appointment_no_show",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/appointments/<appointment_id>/no-show"
+  },
+  {
+    "endpoint": "appointment_cancel",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/appointments/<appointment_id>/cancel"
+  },
+  {
+    "endpoint": "appointment_reschedule",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/appointments/<appointment_id>/reschedule"
+  },
+  {
+    "endpoint": "appointment_complete",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/appointments/<appointment_id>/complete"
+  },
+  {
+    "endpoint": "api_patient_debts",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/patients/<patient_id>/debts"
+  },
+  {
+    "endpoint": "services_list_debug",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/services"
+  },
+  {
+    "endpoint": "debug_info",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/debug/info"
+  }
+]

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Задачи</h2>
+<div style="display:flex;gap:14px;align-items:center;margin-bottom:24px;">
+  <select class="filter-select">
+    <option>Все исполнители</option>
+    <!-- ... -->
+  </select>
+  <select class="filter-select">
+    <option>Все приоритеты</option>
+    <!-- ... -->
+  </select>
+  <select class="filter-select">
+    <option>Все статусы</option>
+    <!-- ... -->
+  </select>
+  <a href="{{ url_for('add_task') }}" class="btn-add-task">
+    <i class="fa fa-plus"></i> Добавить задачу
+  </a>
+</div>
+
+<div class="tasks-table-wrap">
+  <table class="tasks-table">
+    <thead>
+      <tr>
+        <th>Задача</th>
+        <th>Описание</th>
+        <th>Исполнитель</th>
+        <th>Крайний срок</th>
+        <th>Статус</th>
+        <th>Приоритет</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr>
+        <td><b>{{ task.title }}</b></td>
+        <td>{{ task.description or task.desc or '-' }}</td>
+        <td>
+          <span class="user-avatar">
+            {% if task.assigned_avatar_url %}
+              <img src="{{ task.assigned_avatar_url }}" alt="">
+            {% else %}
+              ?
+            {% endif %}
+          </span>
+          {{ task.assigned_name or 'Без исполнителя' }}
+        </td>
+        <td>{{ task.due_date or task.deadline or '-' }}</td>
+        <td>
+          {% if task.status == 'done' %}
+            <span class="badge badge-done">Выполнена</span>
+          {% elif task.status == 'active' %}
+            <span class="badge badge-open">Открыта</span>
+          {% elif task.status == 'overdue' %}
+            <span class="badge badge-overdue">Просрочена</span>
+          {% else %}
+            <span class="badge badge-other">{{ task.status or '-' }}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if task.priority == 'high' %}
+            <span class="badge badge-high">Высокий</span>
+          {% elif task.priority == 'low' %}
+            <span class="badge badge-low">Низкий</span>
+          {% elif task.priority == 'normal' %}
+            <span class="badge badge-norm">Нормальный</span>
+          {% else %}
+            <span class="badge badge-norm">{{ task.priority or '-' }}</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('task_card', task_id=task._id) }}" class="btn-more">
+            Подробнее <i class="fa fa-angle-right"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+.btn-add-task {
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(90deg,#2196f3 60%,#21b445 100%);
+  color:#fff;font-weight:700;border-radius:10px;
+  padding:12px 28px;font-size:1.1em;box-shadow:0 4px 16px #b5e3cb22;
+  border:none;text-decoration:none;transition:.14s;background-size:200%;
+}
+.btn-add-task:hover {background-position:right;color:#fff;}
+.btn-add-task i {font-size:1.2em;}
+.tasks-table-wrap {
+  background:#fff;border-radius:20px;box-shadow:0 4px 26px #d7eafc40;
+  padding:22px;margin-top:10px;overflow-x:auto;
+}
+.tasks-table {width:100%;border-collapse:collapse;font-family:'Montserrat',sans-serif;font-size:1.08em;}
+.tasks-table thead tr {background:#f6fbff;}
+.tasks-table th, .tasks-table td {padding:13px 10px;}
+.tasks-table th {font-size:1.01em;color:#175ecb;font-weight:700;}
+.tasks-table tbody tr {transition:background .18s;}
+.tasks-table tbody tr:hover {background:#f2f7fe;}
+.user-avatar {
+  display:inline-block;vertical-align:middle;background:#e6eefb;color:#215fa6;
+  border-radius:50%;width:32px;height:32px;text-align:center;line-height:32px;font-weight:700;margin-right:7px;font-size:1.07em;
+  box-shadow:0 1px 6px #e3eaf9;
+}
+.user-avatar img {width:32px;height:32px;border-radius:50%;object-fit:cover;}
+.badge {display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:9px;font-size:0.99em;font-weight:600;}
+.badge-done     {background:#e7fbe6; color:#21b445;}
+.badge-open     {background:#e7f1fd; color:#2176bd;}
+.badge-overdue  {background:#ffeaea; color:#d82222;}
+.badge-high     {background:#f0e8ff; color:#7b3ef0;}
+.badge-low      {background:#fff9e5; color:#e6ac00;}
+.badge-norm     {background:#e8f4ff; color:#1567a0;}
+.badge-other    {background:#f4e6ff; color:#ae3ef0;}
+.btn-more {
+  background:#e9f4ff;color:#2176bd;border-radius:8px;
+  border:none;font-weight:600;padding:8px 22px;font-size:1em;transition:.16s;text-decoration:none;display:inline-flex;align-items:center;gap:7px;
+}
+.btn-more:hover {background:#d6e7fc;color:#105492;}
+</style>
+{% endblock %}
