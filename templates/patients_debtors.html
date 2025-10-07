@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 20px">
+  <!-- Заголовок -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px">
+    <div>
+      <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 600; color: #1f2937">
+        Список должников
+      </h1>
+      <p style="margin: 0; color: #6b7280; font-size: 14px">
+        Пациентов с задолженностью: <strong>{{ debtors_count }}</strong>
+        • Общая сумма: <strong style="color: #dc2626">{{ total_debt }} ₽</strong>
+      </p>
+    </div>
+    <a href="/patients" style="background: #6b7280; color: white; padding: 10px 16px; border-radius: 8px; text-decoration: none; font-weight: 500">
+      Все пациенты
+    </a>
+  </div>
+
+  <!-- Таблица должников -->
+  <div style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden">
+    {% if debtors %}
+    <table style="width: 100%; border-collapse: collapse">
+      <thead style="background: #f9fafb; border-bottom: 1px solid #e5e7eb">
+        <tr>
+          <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; font-size: 13px">
+            Карта №
+          </th>
+          <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; font-size: 13px">
+            ФИО
+          </th>
+          <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; font-size: 13px">
+            Телефон
+          </th>
+          <th style="padding: 12px 16px; text-align: right; font-weight: 600; color: #374151; font-size: 13px">
+            Сумма долга
+          </th>
+          <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #374151; font-size: 13px">
+            Действия
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for patient in debtors %}
+        <tr style="border-bottom: 1px solid #f3f4f6; {% if loop.index % 2 == 0 %}background: #fafafa{% endif %}">
+          <td style="padding: 12px 16px; font-size: 14px">
+            {{ patient.card_no or '—' }}
+          </td>
+          <td style="padding: 12px 16px">
+            <a href="/patients/{{ patient._id }}" style="color: #2563eb; text-decoration: none; font-weight: 500">
+              {{ patient.full_name }}
+            </a>
+          </td>
+          <td style="padding: 12px 16px; font-size: 14px; color: #6b7280">
+            {{ patient.phone or '—' }}
+          </td>
+          <td style="padding: 12px 16px; text-align: right">
+            <span style="
+              background: #fee2e2;
+              color: #dc2626;
+              padding: 4px 12px;
+              border-radius: 6px;
+              font-weight: 600;
+              font-size: 14px
+            ">
+              {{ patient.debt_balance }} ₽
+            </span>
+          </td>
+          <td style="padding: 12px 16px; text-align: center">
+            <a
+              href="/finance/add?patient_id={{ patient._id }}&type=income"
+              target="_blank"
+              style="
+                background: #10b981;
+                color: white;
+                padding: 6px 14px;
+                border-radius: 6px;
+                text-decoration: none;
+                font-size: 13px;
+                font-weight: 500;
+                display: inline-block
+              "
+            >
+              💳 Принять оплату
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 60px 20px; text-align: center; color: #9ca3af">
+      <p style="font-size: 18px; margin: 0">Нет пациентов с задолженностью</p>
+      <p style="font-size: 14px; margin: 8px 0 0 0">Все долги погашены! 🎉</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

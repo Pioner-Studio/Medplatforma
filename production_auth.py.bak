@@ -1,0 +1,283 @@
+# production_auth.py
+from __future__ import annotations
+
+from typing import Iterable, Callable, Optional
+
+from flask import (
+    Blueprint,
+    current_app,
+    request,
+    session,
+    redirect,
+    url_for,
+    render_template,
+    jsonify,
+    flash,
+)
+from functools import wraps
+from werkzeug.security import check_password_hash, generate_password_hash
+
+# Типы PyMongo (используем для безопасной проверки)
+try:
+    from pymongo.database import Database as _MongoDatabase
+    from pymongo.collection import Collection as _MongoCollection
+except Exception:  # чтобы не падало в окружениях без pymongo (на тестах)
+    _MongoDatabase = object  # type: ignore
+    _MongoCollection = object  # type: ignore
+
+
+# ---------------------------------------------------------------------
+# ВСПОМОГАТЕЛЬНОЕ
+# ---------------------------------------------------------------------
+
+
+def _get_db():
+    """Берём "источник данных" из конфигурации приложения.
+    Допускаем три варианта:
+      1) dict с ключом "users" (сидовые пользователи)
+      2) PyMongo Database
+      3) PyMongo Collection (именно коллекция users)
+    """
+    return current_app.config.get("DB")
+
+
+def _users_from_dict(db_dict: dict) -> list[dict]:
+    return list(db_dict.get("users", []))
+
+
+def _users() -> list[dict]:
+    """Возвращает всех пользователей:
+    - для PyMongo DB/Collection — list(find({}))
+    - для dict — содержимое ключа "users"
+    """
+    db = _get_db()
+    if db is None:
+        return []
+
+    # Вариант 1: словарь со списком пользователей
+    if isinstance(db, dict):
+        return _users_from_dict(db)
+
+    # Вариант 2а: нам передали саму БАЗУ (Database)
+    if isinstance(db, _MongoDatabase):
+        try:
+            return list(db.get_collection("users").find({}))
+        except Exception:
+            return []
+
+    # Вариант 2б: нам передали коллекцию (Collection)
+    if isinstance(db, _MongoCollection):
+        try:
+            return list(db.find({}))
+        except Exception:
+            return []
+
+    return []
+
+
+def _find_user(login: str) -> Optional[dict]:
+    """Находим пользователя по логину:
+    - для PyMongo делаем find_one
+    - для dict ищем в списке
+    """
+    login = (login or "").strip()
+    if not login:
+        return None
+
+    db = _get_db()
+
+    # PyMongo Database
+    if isinstance(db, _MongoDatabase):
+        try:
+            doc = db.get_collection("users").find_one({"login": login})
+            return doc or None
+        except Exception:
+            pass
+
+    # PyMongo Collection
+    if isinstance(db, _MongoCollection):
+        try:
+            doc = db.find_one({"login": login})
+            return doc or None
+        except Exception:
+            pass
+
+    # dict
+    if isinstance(db, dict):
+        for u in _users_from_dict(db):
+            if (u.get("login") or "").strip().lower() == login.lower():
+                return u
+
+    return None
+
+
+def _verify_password(user: dict, raw_password: str) -> bool:
+    """Проверяем пароль. Поддерживаем только хэш (bcrypt/scrypt/pbkdf2).
+    Если вдруг в БД лежит старое поле 'password' с *хэшем* — тоже ок.
+    """
+    if not raw_password:
+        return False
+
+    pwd_hash = user.get("password_hash") or user.get("password")
+    if not pwd_hash:
+        return False
+
+    try:
+        return check_password_hash(pwd_hash, raw_password)
+    except Exception:
+        # если лежит не-хэш — никого не пускаем
+        return False
+
+
+def _set_session_user(user: dict) -> None:
+    session["user"] = {
+        "login": user.get("login"),
+        "full_name": user.get("full_name") or user.get("name") or user.get("login"),
+        "role": user.get("role", "registrar"),
+        "doctor_id": user.get("doctor_id"),
+        "active": user.get("active", True),
+    }
+
+
+# ---------------------------------------------------------------------
+# ДЕКОРАТОРЫ ДОСТУПА
+# ---------------------------------------------------------------------
+
+
+def login_required(view: Callable) -> Callable:
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not session.get("user"):
+            next_url = request.path if request.method == "GET" else url_for("calendar_view")
+            return redirect(url_for("auth.login", next=next_url))
+        return view(*args, **kwargs)
+
+    return wrapper
+
+
+def role_required(roles: Iterable[str]) -> Callable:
+    roles = set(roles)
+
+    def decorator(view: Callable) -> Callable:
+        @wraps(view)
+        def wrapper(*args, **kwargs):
+            u = session.get("user")
+            if not u:
+                return redirect(url_for("auth.login", next=request.path))
+            if u.get("role") not in roles:
+                flash("Недостаточно прав доступа", "error")
+                return redirect(url_for("calendar_view"))
+            return view(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def admin_required(view: Callable) -> Callable:
+    return role_required({"admin"})(view)
+
+
+# ---------------------------------------------------------------------
+# BLUEPRINT AUTH
+# ---------------------------------------------------------------------
+
+auth_bp = Blueprint("auth", __name__, template_folder="templates")
+
+
+@auth_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "GET":
+        # Очищаем старые flash-сообщения
+        session.pop("_flashes", None)
+        return render_template("login.html")
+
+    login_ = (request.form.get("login") or "").strip()
+    password = request.form.get("password") or ""
+    # ... остальной код
+
+    user = _find_user(login_)
+    if not user or not user.get("active", True) or not _verify_password(user, password):
+        flash("Неверный логин или пароль", "error")
+        return render_template("login.html"), 401
+
+    # --- СЕССИЯ ---
+    session.clear()
+    session.permanent = True
+
+    # Нормализуем роль один раз
+    normalized_role = str((user.get("role") or "registrar")).strip().lower()
+
+    session["user"] = {
+        "login": user.get("login") or user.get("username"),
+        "username": user.get("username"),
+        "full_name": user.get("full_name") or user.get("name") or user.get("login"),
+        "role": normalized_role,
+        "avatar": user.get("avatar", "default.jpg"),
+        "active": True,
+    }
+    session["role"] = normalized_role
+    session.modified = True
+
+    flash("Вы успешно вошли в систему", "success")
+
+    # Безопасный next + корректное имя конечной точки
+    next_url = request.args.get("next")
+    if next_url and next_url.startswith("/"):
+        return redirect(next_url)
+    return redirect(url_for("calendar_view"))
+
+
+@auth_bp.route("/logout", methods=["GET"])
+def logout():
+    session.pop("user", None)
+    flash("Вы вышли из системы", "success")
+    return redirect(url_for("auth.login"))
+
+
+@auth_bp.route("/api/current-user", methods=["GET"])
+def current_user_api():
+    return jsonify({"ok": True, "user": session.get("user")})
+
+
+@auth_bp.route("/change-password", methods=["POST"])
+@login_required
+def change_password():
+    """Простая смена пароля текущему пользователю (JSON):
+    body: { "old_password": "...", "new_password": "..." }
+    Для dict-хранилища — перезапишем в памяти; для Mongo — потребуется код в проекте,
+    который реально сохранит изменения (здесь не трогаем БД).
+    """
+    data = request.get_json(silent=True) or {}
+    old_pwd = data.get("old_password", "")
+    new_pwd = data.get("new_password", "")
+
+    me = session.get("user") or {}
+    user = _find_user(me.get("login"))
+    if not user:
+        return jsonify({"ok": False, "error": "user_not_found"}), 404
+
+    if not _verify_password(user, old_pwd):
+        return jsonify({"ok": False, "error": "bad_old_password"}), 400
+
+    # меняем только в объекте; для реальной БД — нужна своя логика апдейта
+    user["password_hash"] = generate_password_hash(new_pwd)
+
+    flash("Пароль изменён", "success")
+    return jsonify({"ok": True})
+
+
+# ---------------------------------------------------------------------
+# ИНИЦИАЛИЗАЦИЯ
+# ---------------------------------------------------------------------
+
+
+def init_auth(app) -> None:
+    """Вызывается один раз из main.py:
+    from production_auth import init_auth
+    init_auth(app)
+    """
+    if not getattr(app, "secret_key", None):
+        app.secret_key = "change-me-in-production"
+    # Регистрируем blueprint 'auth'
+    app.register_blueprint(auth_bp)

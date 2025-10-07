@@ -1,0 +1,3376 @@
+{
+  "routes": [
+    {
+      "file": "D:\\Projects\\medplatforma\\add_missing_patient_routes.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\add_missing_patient_routes.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\add_missing_patient_routes.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\add_missing_patient_routes.py",
+      "route": "/patients/<patient_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\add_treatment_plan_api.py",
+      "route": "/api/patients/<patient_id>/treatment-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_calendar_role_filtering.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_calendar_role_filtering.py",
+      "route": "/calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_finance_integration.py",
+      "route": "/api/payments/process",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_finance_integration.py",
+      "route": "/api/reports/doctors_revenue",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_patients_crud.py",
+      "route": "/api/patients/<id>/history",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_patients_crud.py",
+      "route": "/api/patients/search",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/add_doctor",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/edit_doctor",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/add_service",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/edit_service",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/add_room",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/edit_room",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/add_patient",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/edit_patient",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/finance",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/data_tools",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\implement_role_system.py",
+      "route": "/backup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\integrate_patient_cards_and_navigation.py",
+      "route": "/patients/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/switch-user/<user_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/update",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<patient_id>/bonus",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<patient_id>/bonus/add",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<patient_id>/bonus/withdraw",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<patient_id>/bonus/history",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<patient_id>/treatment-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients/<patient_id>/current-visit/complete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/roadmap",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/free_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/favicon.ico",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/schedule",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/rooms/status_now",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/rooms/today_details",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/update_event_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/export_calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/export/csv",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/export/excel",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients/import",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/dashboard",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_event",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_event/<event_id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/busy_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_doctor",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/doctor_card/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/doctor_busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/doctor_schedule",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/finance_report",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/finance/debtors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/reports/doctors_revenue",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/finance_report/export",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/tasks",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_task",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/mark_task_done/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/task/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/messages",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/ztl",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_ztl",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/partners",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/logs",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/logs/export",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/audit",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/audit/<log_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/backup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/profile",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/settings",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/data_tools",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/export_data",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/import_data",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/cabinet/<cabinet_name>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/services/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_appointment/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/<id>/update",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/update_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/<id>",
+      "methods": [
+        "DELETE"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/delete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/schedule/api/delete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/services_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/visit_statuses_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/finance/record",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/chat/<id>/send",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_service",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_service/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_service/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_room",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_room/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_room/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients/debtors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_patient",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_patient/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_patient/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patient_card/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/update_info",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/update_questionary",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/generate_card_no",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/full",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients/<patient_id>/questionnaire",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/create_core",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/create",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/schedule/api/create",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/search",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/dashboard/today-appointments",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/dashboard/doctor-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/dashboard/pending-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/dashboard/debtors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/admin/clean_all_demo",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/admin/create_test_patient",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/admin/mass_cleanup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/admin/init_production_data",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/debug/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients/<patient_id>/treatment-plan/new",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients/<patient_id>/treatment-plan/<plan_id>/edit",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/chief/pending-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/doctor/my-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/chief/plan-details/<plan_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/chief/approve-plan/<plan_id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/chief/request-revision/<plan_id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/test-session",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/test-treatment-plan",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/appointments/<appointment_id>/arrive",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/appointments/<appointment_id>/no-show",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/appointments/<appointment_id>/cancel",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/appointments/<appointment_id>/reschedule",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/appointments/<appointment_id>/complete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<patient_id>/debts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/debug/info",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\production_auth.py",
+      "route": "/login",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\production_auth.py",
+      "route": "/logout",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\production_auth.py",
+      "route": "/api/current-user",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\production_auth.py",
+      "route": "/change-password",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\remove_duplicate_doctors_final.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\remove_duplicate_doctors_final.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\remove_duplicate_doctors_final.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\remove_duplicate_doctors_final.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\remove_duplicate_doctors_final.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\remove_duplicate_doctors_final.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_finance.py",
+      "route": "/add",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_finance.py",
+      "route": "/add",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_finance.py",
+      "route": "/delete/<operation_id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_schedule.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_schedule.py",
+      "route": "/add",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_schedule.py",
+      "route": "/free_slots",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_transfer.py",
+      "route": "/transfer",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_transfer.py",
+      "route": "/transfer",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_transfer.py",
+      "route": "/transfer/history",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\routes_transfer.py",
+      "route": "/transfer/delete/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\treatment_plan_api_insert.py",
+      "route": "/api/patients/<patient_id>/treatment-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\.venv\\Lib\\site-packages\\flask\\ctx.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\.venv\\Lib\\site-packages\\flask\\ctx.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\.venv\\Lib\\site-packages\\flask\\helpers.py",
+      "route": "/stream",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\.venv\\Lib\\site-packages\\flask\\helpers.py",
+      "route": "/stream",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\.venv\\Lib\\site-packages\\flask\\helpers.py",
+      "route": "/uploads/<path:name>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\.venv\\Lib\\site-packages\\flask\\sansio\\scaffold.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\.venv\\Lib\\site-packages\\flask\\sansio\\scaffold.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/switch-user/<user_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<id>/update",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<patient_id>/bonus",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<patient_id>/bonus/add",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<patient_id>/bonus/withdraw",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<patient_id>/bonus/history",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<patient_id>/treatment-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients/<patient_id>/current-visit/complete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/roadmap",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/free_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/favicon.ico",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/schedule",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/rooms/status_now",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/rooms/today_details",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/update_event_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/export_calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/export/csv",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/export/excel",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients/import",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/dashboard",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/add_event",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/edit_event/<event_id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/busy_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/add_doctor",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/doctor_card/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/doctor_busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/doctor_schedule",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/finance_report",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/finance/debtors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/reports/doctors_revenue",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/finance_report/export",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/tasks",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/add_task",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/mark_task_done/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/task/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/messages",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/ztl",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/add_ztl",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/partners",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/logs",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/logs/export",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/audit",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/audit/<log_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/backup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/profile",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/settings",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/data_tools",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/export_data",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/import_data",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/cabinet/<cabinet_name>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/services/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/delete_appointment/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments/<id>/update",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments/update_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments/<id>",
+      "methods": [
+        "DELETE"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments/delete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/schedule/api/delete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/services_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/visit_statuses_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/finance/record",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/chat/<id>/send",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/add_service",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/edit_service/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/delete_service/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/add_room",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/edit_room/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/delete_room/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients/debtors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/add_patient",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/edit_patient/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/delete_patient/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patient_card/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<id>/update_info",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<id>/update_questionary",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<id>/generate_card_no",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<id>/full",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients/<patient_id>/questionnaire",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments/create_core",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/appointments/create",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/schedule/api/create",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/search",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/dashboard/today-appointments",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/dashboard/doctor-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/dashboard/pending-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/dashboard/debtors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/admin/clean_all_demo",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/admin/create_test_patient",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/admin/mass_cleanup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/admin/init_production_data",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/debug/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients/<patient_id>/treatment-plan/new",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/patients/<patient_id>/treatment-plan/<plan_id>/edit",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/chief/pending-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/doctor/my-plans",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/chief/plan-details/<plan_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/chief/approve-plan/<plan_id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/chief/request-revision/<plan_id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/test-session",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/test-treatment-plan",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/appointments/<appointment_id>/arrive",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/appointments/<appointment_id>/no-show",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/appointments/<appointment_id>/cancel",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/appointments/<appointment_id>/reschedule",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/appointments/<appointment_id>/complete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/api/patients/<patient_id>/debts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\backups\\main_backup_2025-10-07_10-26.py",
+      "route": "/debug/info",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_and_fix_menu_directly.py",
+      "route": "{route}",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_and_fix_menu_directly.py",
+      "route": "{route}",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_and_fix_menu_directly.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_and_fix_menu_directly.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/add_doctor",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/add_service",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/edit_service",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/delete_service",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/add_room",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/edit_room",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/delete_room",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/data_tools",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/backup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/add_patient",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/edit_patient",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/finance",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/api/appointments/create",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\check_roles_and_fix_access.py",
+      "route": "/api/patients",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\debug_patients_route.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\debug_patients_route.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\debug_patients_route.py",
+      "route": "/patients/<patient_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_admin_seed_api.py",
+      "route": "/api/admin/seed/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_api_authentication.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_api_authentication.py",
+      "route": "/calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_api_dicts.py",
+      "route": "/api/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_api_dicts_correct.py",
+      "route": "/api/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_api_dicts_final.py",
+      "route": "/api/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_calendar_events_display.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_calendar_events_display.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_calendar_view.py",
+      "route": "/calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_duplicate_routes.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_duplicate_routes.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_duplicate_routes.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_duplicate_routes.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_duplicate_routes.py",
+      "route": "/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_integration.py",
+      "route": "/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_missing_pages.py",
+      "route": "{route}",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_missing_pages.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_missing_pages.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_navigation_and_missing_pages.py",
+      "route": "/debug/info",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_role_implementation.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_role_implementation.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_role_implementation.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_role_implementation.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_role_implementation.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\fix_role_implementation.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\missing_routes_fix.py",
+      "route": "/add_patient",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\missing_routes_fix.py",
+      "route": "/add_service",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\missing_routes_fix.py",
+      "route": "/edit_patient/<patient_id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\missing_routes_fix.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\missing_routes_fix.py",
+      "route": "/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/<id>/update",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/patients/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/roadmap",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/free_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/favicon.ico",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/rooms/status_now",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/rooms/today_details",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/update_event_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/export_calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/export/csv",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/export/excel",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/patients/import",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/dashboard",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/add_event",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/edit_event/<event_id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/busy_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/add_doctor",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/doctor_card/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/doctor_busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/doctor_schedule",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/finance_report",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/reports/doctors_revenue",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/finance_report/export",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/tasks",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/add_task",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/mark_task_done/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/task/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/messages",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/ztl",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/add_ztl",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/partners",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/logs",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/logs/export",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/audit",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/audit/<log_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/backup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/profile",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/settings",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/data_tools",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/export_data",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/import_data",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/cabinet/<cabinet_name>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/services/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/delete_appointment/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments/<id>/update",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments/update_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments/<id>",
+      "methods": [
+        "DELETE"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments/delete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/schedule/api/delete",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/services_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/visit_statuses_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/finance/record",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/chat/<id>/send",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/add_service",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/edit_service/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/delete_service/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/add_room",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/edit_room/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/delete_room/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/add_patient",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/edit_patient/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/delete_patient/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/patient_card/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/<id>/update_info",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/<id>/update_questionary",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/<id>/generate_card_no",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/<id>/full",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/patients/<patient_id>/questionnaire",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments/create_core",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/appointments/create",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/schedule/api/create",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/api/patients/search",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/admin/clean_all_demo",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/admin/create_test_patient",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/admin/mass_cleanup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/admin/init_production_data",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/debug/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\attic\\20251007_174627\\main_clean.py",
+      "route": "/debug/info",
+      "methods": [
+        "GET"
+      ]
+    }
+  ],
+  "templates": [
+    "404.html",
+    "add_doctor.html",
+    "add_event.html",
+    "add_patient.html",
+    "add_room.html",
+    "add_service.html",
+    "add_ztl.html",
+    "audit_logs.html",
+    "backup.html",
+    "cabinet_card.html",
+    "calendar.html",
+    "chief_pending_plans.html",
+    "data_tools.html",
+    "doctor_card.html",
+    "doctor_my_plans.html",
+    "doctors.html",
+    "edit_event.html",
+    "edit_patient.html",
+    "edit_room.html",
+    "edit_service.html",
+    "finance/add.html",
+    "finance/cashbox.html",
+    "finance/debtors.html",
+    "finance/list.html",
+    "finance/transfer.html",
+    "finance/transfer_history.html",
+    "finance_report.html",
+    "import_patients.html",
+    "index.html",
+    "login.html",
+    "messages.html",
+    "not_found.html",
+    "partners.html",
+    "patient_card.html",
+    "patient_edit.html",
+    "patient_questionnaire.html",
+    "patients.html",
+    "patients_debtors.html",
+    "profile.html",
+    "reports.html",
+    "roadmap.html",
+    "roadmap_missing.html",
+    "rooms.html",
+    "schedule/list.html",
+    "schedule_view.html",
+    "services.html",
+    "settings.html",
+    "task_card.html",
+    "tasks.html",
+    "treatment_plan_edit.html",
+    "treatment_plan_new.html",
+    "ztl.html"
+  ],
+  "js_calls": [
+    "/api/admin/seed/disable_demo",
+    "/api/admin/seed/load",
+    "/api/admin/seed/ping",
+    "/api/admin/seed/upload",
+    "/api/appointments/update_time",
+    "/api/dashboard/debtors",
+    "/api/dashboard/doctor-plans",
+    "/api/dashboard/pending-plans",
+    "/api/dashboard/today-appointments",
+    "/api/dicts",
+    "/api/doctor_schedule",
+    "/api/events?",
+    "/api/patients",
+    "/api/patients/",
+    "/api/patients/68dd28b620210e8e4cad772b/bonus/add",
+    "/api/patients/68dd28b620210e8e4cad772b/bonus/history",
+    "/api/patients/68dd28b620210e8e4cad772b/bonus/withdraw",
+    "/api/patients/{{ patient._id }}/bonus/add",
+    "/api/patients/{{ patient._id }}/bonus/history",
+    "/api/patients/{{ patient._id }}/bonus/withdraw",
+    "/api/rooms/status_now",
+    "/calendar?patient_id=68dd28b620210e8e4cad772b",
+    "/calendar?patient_id={{ patient._id }}",
+    "/finance/add?patient_id=68dd28b620210e8e4cad772b&type=income",
+    "/finance/add?patient_id={{ patient._id }}&type=income",
+    "/patients/68dd28b620210e8e4cad772b/edit",
+    "/patients/{{ patient._id }}/edit"
+  ]
+}

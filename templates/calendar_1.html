@@ -1,0 +1,2542 @@
+﻿{% extends "base.html" %} {% block content %}
+
+<!-- Метрики и действия -->
+<div
+  style="
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 6px 0 6px 12px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 8px #e3eaf9b7;
+    margin-bottom: 10px;
+  "
+>
+  <span title="Всего кабинетов">
+    <i class="fa-solid fa-house-chimney-medical" style="color: #467fe3"></i>
+    <b>{{ metrics.total_rooms }}</b>
+  </span>
+  <span title="Свободные">
+    <i class="fa-solid fa-circle-check" style="color: #21ba45"></i>
+    <b>{{ metrics.free_rooms }}</b>
+  </span>
+  <span style="margin-left: auto; display: flex; gap: 12px">
+    <a
+      href="{{ url_for('add_event') }}"
+      class="btn-main"
+      style="
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 22px;
+        font-size: 1.07em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      "
+    >
+      <i class="fa-solid fa-plus"></i> Добавить запись
+    </a>
+    <a
+      href="{{ url_for('export_calendar') }}"
+      class="btn-main btn-export"
+      style="
+        background: #fff;
+        color: #3185cb;
+        border: 1.5px solid #dbeafd;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 18px;
+        font-size: 1.07em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      "
+    >
+      <i class="fa-solid fa-file-arrow-down"></i> Выгрузка
+    </a>
+  </span>
+</div>
+
+<!-- Кабинеты и их статус -->
+<div
+  id="roomsBar"
+  style="display: flex; gap: 36px; margin: 14px 0 12px 8px; flex-wrap: wrap"
+>
+  {% for cab in cabinets %} {% set info = room_info.get(cab) if room_info else
+  None %}
+  <span
+    data-room-name="{{ cab }}"
+    style="font-size: 1.12em; font-weight: 600; cursor: default"
+  >
+    {{ cab }} —
+    <b
+      class="room-status-text"
+      style="color:{{ info.color if info else 'inherit' }}"
+    >
+      {{ info.text if info else '—' }}
+    </b>
+    <span
+      class="room-next"
+      style="opacity: 0.7; font-weight: 500; margin-left: 8px"
+    >
+      {% if info and info.state == 'available' and info.next %} {% set t =
+      info.next.start.split('T')[1] if info.next.start else '' %} Ближайший: {{
+      t }} {% if info.next.in_minutes is not none %} (через {% if
+      info.next.in_minutes < 0 %}0 мин {% elif info.next.in_minutes < 60 %}{{
+      info.next.in_minutes }} мин {% else %}{{ (info.next.in_minutes // 60)|int
+      }} ч {{ (info.next.in_minutes % 60)|int }} мин {% endif %} ) {% endif %}
+      {% if info.next.service or info.next.patient %} • {{ info.next.service
+      }}{% if info.next.service and info.next.patient %} — {% endif %}{{
+      info.next.patient }} {% endif %} {% endif %}
+    </span>
+  </span>
+  {% endfor %}
+</div>
+
+<div
+  class="calendar-filters"
+  style="display: flex; gap: 12px; align-items: center; margin-bottom: 18px"
+>
+  <select id="doctorFilter" class="filter-select">
+    <option value="">Все врачи</option>
+    {% for doc in doctors %}
+    <option value="{{ doc._id }}">{{ doc.full_name }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- ПОИСК ПАЦИЕНТА (унифицированный) -->
+  <div class="ps-wrap" style="position: relative; max-width: 320px">
+    <input
+      id="psInput"
+      class="form-control"
+      type="text"
+      autocomplete="off"
+      placeholder="Поиск пациента."
+    />
+    <div
+      id="psDrop"
+      class="ps-drop"
+      style="
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100%;
+        z-index: 4000;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-top: 0;
+        max-height: 280px;
+        overflow: auto;
+        border-radius: 0 0 8px 8px;
+      "
+    ></div>
+  </div>
+
+  <input type="hidden" id="psSelectedId" value="" />
+
+  <select id="serviceFilter" class="filter-select">
+    <option value="">Все услуги</option>
+    {% for service in services %}
+    <option value="{{ service._id }}">{{ service.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select id="cabinetFilter" class="filter-select">
+    <option value="">Все кабинеты</option>
+    {% for cab in cabinets %}
+    <option value="{{ cab }}">{{ cab }}</option>
+    {% endfor %}
+  </select>
+
+  <button id="btnResetFilters" class="btn btn-outline-secondary">
+    Сбросить
+  </button>
+</div>
+
+<!-- Календарь -->
+<div
+  id="calendar"
+  style="
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px #e3eaf9b7;
+    padding: 8px;
+    min-height: 72vh;
+  "
+></div>
+
+<!-- Модалка -->
+<div
+  id="quickModal"
+  style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 9999;
+  "
+>
+  <div
+    style="
+      background: #fff;
+      max-width: 680px;
+      margin: 7vh auto;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    "
+  >
+    <div
+      style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px"
+    >
+      <h3 style="margin: 0; flex: 1">Редактировать запись</h3>
+      <button
+        id="qmClose"
+        type="button"
+        style="
+          border: none;
+          background: #eee;
+          border-radius: 8px;
+          padding: 6px 10px;
+          cursor: pointer;
+        "
+      >
+        ×
+      </button>
+    </div>
+
+    <form
+      id="qmForm"
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+    >
+      <input type="hidden" id="qm_id" />
+
+      <label
+        >Врач
+        <select
+          id="qm_doctor"
+          class="filter-select"
+          required
+          style="width: 100%"
+        ></select>
+      </label>
+
+      <label
+        >Пациент
+        <div style="display: flex; gap: 8px; align-items: center; width: 100%">
+          <select
+            id="qm_patient"
+            class="filter-select"
+            required
+            style="width: 100%"
+          ></select>
+          <!-- ==== CONTACT BAR (над календарём) ==== -->
+          <div class="btn-group" role="group" aria-label="Контакты пациента">
+            {% if patient is defined and patient %}
+            <button
+              type="button"
+              class="btn btn-light"
+              title="Позвонить"
+              onclick="mpOpenContact('tel')"
+            >
+              📞
+            </button>
+            <button
+              type="button"
+              class="btn btn-light"
+              title="WhatsApp"
+              onclick="mpOpenContact('wa')"
+            >
+              🟢
+            </button>
+            <button
+              type="button"
+              class="btn btn-light"
+              title="Telegram"
+              onclick="mpOpenContact('tg')"
+            >
+              ✈️
+            </button>
+            <button
+              type="button"
+              class="btn btn-light"
+              title="E-mail"
+              onclick="mpOpenContact('mail')"
+            >
+              ✉️
+            </button>
+            <button
+              type="button"
+              class="btn btn-light"
+              title="Max"
+              onclick="mpOpenContact('max')"
+            >
+              Ⓜ️
+            </button>
+            {% endif %}
+          </div>
+          <!-- ======================================= -->
+
+          <button
+            type="button"
+            id="qm_patient_add"
+            class="btn"
+            style="white-space: nowrap"
+          >
+            + Новый
+          </button>
+        </div>
+
+        <!-- инлайн-форма создания пациента -->
+        <div
+          id="qm_patient_new"
+          style="display: none; margin-top: 8px; width: 100%"
+        >
+          <div class="qm-patient-grid">
+            <input
+              id="qm_new_full_name"
+              type="text"
+              placeholder="ФИО полностью"
+              autocomplete="name"
+            />
+            <input
+              id="qm_new_phone"
+              type="tel"
+              inputmode="tel"
+              pattern="[\+\d\s\-\(\)]{6,}"
+              title="+7 999 123-45-67"
+              placeholder="+7 999 123-45-67"
+            />
+            <input id="qm_new_birth" type="date" placeholder="Дата рождения" />
+            <div class="qm-patient-actions">
+              <button
+                type="button"
+                id="qm_patient_save"
+                class="btn btn-primary"
+              >
+                Создать
+              </button>
+              <button type="button" id="qm_patient_cancel" class="btn">
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Панель быстрых контактов -->
+        <div
+          id="qm_contact_bar"
+          style="
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 6px 0 2px 0;
+          "
+        >
+          <a
+            id="cb_tel"
+            class="btn"
+            target="_blank"
+            rel="noopener"
+            title="Позвонить"
+            style="padding: 4px 8px"
+            >📞 Tel</a
+          >
+          <a
+            id="cb_wa"
+            class="btn"
+            target="_blank"
+            rel="noopener"
+            title="WhatsApp"
+            style="padding: 4px 8px"
+            >🟢 WA</a
+          >
+          <a
+            id="cb_tg"
+            class="btn"
+            target="_blank"
+            rel="noopener"
+            title="Telegram"
+            style="padding: 4px 8px"
+            >🔵 TG</a
+          >
+          <a
+            id="cb_max"
+            class="btn"
+            target="_blank"
+            rel="noopener"
+            title="Max"
+            style="padding: 4px 8px"
+            >🟣 Max</a
+          >
+          <a
+            id="cb_email"
+            class="btn"
+            target="_blank"
+            rel="noopener"
+            title="Email"
+            style="padding: 4px 8px"
+            >✉️ Mail</a
+          >
+          <small id="cb_hint" style="opacity: 0.7; margin-left: 6px"></small>
+        </div>
+      </label>
+      <label
+        >Услуга
+        <select
+          id="qm_service"
+          class="filter-select"
+          required
+          style="width: 100%"
+        ></select>
+        <small id="qm_service_hint" style="opacity: 0.7"></small>
+      </label>
+
+      <label
+        >Кабинет
+        <select
+          id="qm_room"
+          class="filter-select"
+          required
+          style="width: 100%"
+        ></select>
+      </label>
+
+      <label
+        >Начало
+        <input
+          type="datetime-local"
+          id="qm_start"
+          required
+          step="300"
+          style="width: 100%"
+        />
+      </label>
+
+      <label
+        >Окончание
+        <input
+          type="datetime-local"
+          id="qm_end"
+          step="300"
+          style="width: 100%"
+        />
+      </label>
+
+      <label
+        >Статус
+        <select
+          id="qm_status"
+          class="filter-select"
+          required
+          style="width: 100%"
+        >
+          <option value="scheduled">Запланирован</option>
+          <option value="arrived">Прибыл</option>
+          <option value="done">Завершён</option>
+          <option value="cancelled">Отменён</option>
+        </select>
+      </label>
+
+      <label style="grid-column: 1 / -1"
+        >Комментарий
+        <textarea id="qm_comment" rows="3" style="width: 100%"></textarea>
+      </label>
+
+      <div
+        style="
+          grid-column: 1/-1;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          margin-top: -4px;
+        "
+      >
+        <button
+          type="button"
+          class="btn"
+          id="btn_plus_15"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          +15 мин
+        </button>
+        <button
+          type="button"
+          class="btn"
+          id="btn_plus_30"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          +30 мин
+        </button>
+        <button
+          type="button"
+          class="btn"
+          id="btn_plus_60"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          +60 мин
+        </button>
+        <span style="opacity: 0.6; margin: 0 6px">|</span>
+        <button
+          type="button"
+          class="btn"
+          id="btn_move_tomorrow"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          На завтра (то же время)
+        </button>
+        <span style="opacity: 0.6; margin: 0 6px">|</span>
+        <button
+          type="button"
+          class="btn"
+          id="btn_first_free"
+          style="
+            border: 1px solid #dbeafd;
+            border-radius: 8px;
+            padding: 6px 10px;
+          "
+        >
+          Первый свободный слот (кабинет)
+        </button>
+      </div>
+      <small
+        id="qm_warn"
+        style="grid-column: 1/-1; color: #b45309; display: none"
+        >Предупреждение</small
+      >
+
+      <div
+        style="
+          grid-column: 1/-1;
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+        "
+      >
+        <button
+          type="button"
+          id="qmDelete"
+          class="btn"
+          style="background: #fee2e2; border: 1px solid #fecaca"
+        >
+          Удалить
+        </button>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div
+  id="toastStack"
+  style="
+    position: fixed;
+    right: 16px;
+    top: 16px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  "
+></div>
+
+{% endblock %} {% block scripts %}
+
+<script>
+  // Единая точка правды для всех API-эндпоинтов.
+  window.ROUTES = {
+    dictsApi: "/api/dicts",
+    patientsApi: "/api/patients",
+    contactsApi: "/api/contacts",
+    doctorSchedule: "/api/doctor_schedule",
+    eventsApi: "/api/events",
+    freeSlots: "/api/free_slots",
+    roomsStatusNow: "/api/rooms/status_now",
+    roomsBusy: "/api/rooms/busy",
+    todayDetailsApi: "/api/rooms/today_details",
+    appointments: "/api/appointments",
+    appointmentsCreate: "/api/appointments/create",
+    appointmentsUpdateTime: "/api/appointments/update_time",
+    appointmentsDelete: "/api/appointments/delete",
+  };
+</script>
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
+<link
+  href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales-all.global.min.js"></script>
+
+<script>
+  // Точки API для тултипа «свободные слоты» и попапа «... — сегодня»
+  const ROUTES = {
+    freeSlots: "/api/free_slots",
+    todayDetailsApi: "/api/rooms/today_details",
+  };
+</script>
+
+<style>
+  /* форма нового пациента — стабильно, без «вылазов» */
+  #quickModal .qm-patient-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+  #quickModal .qm-patient-grid input {
+    width: 100%;
+    height: 36px;
+    padding: 8px 10px;
+    border: 1px solid #dbeafd;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+  #quickModal .qm-patient-grid input:focus {
+    outline: none;
+    border-color: #a5c5ff;
+    box-shadow: 0 0 0 3px rgba(73, 133, 255, 0.12);
+  }
+  #quickModal .qm-patient-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  @media (min-width: 740px) {
+    #quickModal .qm-patient-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    #quickModal .qm-patient-grid > :first-child {
+      grid-column: 1 / -1;
+    } /* ФИО */
+    #quickModal .qm-patient-actions {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 900px) {
+    #quickModal .qm-patient-grid {
+      grid-template-columns: 1fr 180px;
+    }
+  }
+
+  /* PATCH: кликабельность и поведение подсказок */
+  .ps-room-clickable {
+    cursor: pointer;
+  }
+  .ps-free-hint,
+  [data-free-hint] {
+    pointer-events: auto;
+  }
+  [data-room],
+  .ps-room,
+  .room,
+  .ps-rooms-item,
+  [data-open-room] {
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  // --- простой toast ---
+  function showToast(msg, type = "info", ms = 2200) {
+    const stack = document.getElementById("toastStack");
+    if (!stack) {
+      alert(msg);
+      return;
+    }
+    const el = document.createElement("div");
+    el.textContent = msg;
+    el.style.cssText = `
+      background:${
+        type === "error" ? "#fee2e2" : type === "ok" ? "#e6ffed" : "#eef2ff"
+      };
+      color:${
+        type === "error" ? "#991b1b" : type === "ok" ? "#065f46" : "#1e40af"
+      };
+      border:1px solid ${
+        type === "error" ? "#fecaca" : type === "ok" ? "#bbf7d0" : "#c7d2fe"
+      };
+      box-shadow:0 6px 18px rgba(0,0,0,.08);padding:10px 14px;border-radius:10px;font-weight:600;max-width:420px`;
+    stack.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = "opacity .25s";
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), 260);
+    }, ms);
+  }
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // ---------- helpers ----------
+    const $ = (s) => document.querySelector(s);
+    const addMin = (d, m) => new Date(d.getTime() + m * 60000);
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const fmtISO = (d) =>
+      `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(
+        d.getHours()
+      )}:${pad2(d.getMinutes())}`;
+
+    // кэш словарей
+    window.__DICT_CACHE__ = window.__DICT_CACHE__ || null;
+
+    // Универсальная заливка options
+    function fillOptions(selectEl, items, selectedId = "") {
+      if (!selectEl) return;
+      const toId = (x) => x._id ?? x.id ?? "";
+      const toName = (x) => x.full_name ?? x.name ?? "";
+      const html = (items || [])
+        .map((x) => {
+          const id = toId(x),
+            name = toName(x);
+          return `<option value="${id}">${name}</option>`;
+        })
+        .join("");
+      selectEl.innerHTML = html;
+      if (selectedId) selectEl.value = selectedId;
+      if (!selectEl.value || selectEl.value === "undefined") {
+        const first = selectEl.querySelector("option")?.value || "";
+        selectEl.value = first;
+      }
+    }
+
+    // Загрузка словарей (нормализация)
+    async function loadDictsOnce() {
+      if (window.__DICT_CACHE__) return window.__DICT_CACHE__;
+      const r = await fetch(
+        (window.ROUTES && window.ROUTES.dictsApi) || "/api/dicts"
+      );
+      const raw = await r.json();
+      if (!raw?.ok) throw new Error("dicts load failed");
+
+      const norm = (arr) =>
+        (arr || []).map((x) => ({
+          id: x._id ?? x.id ?? "",
+          name: x.full_name ?? x.name ?? "",
+          duration_min: x.duration_min,
+        }));
+      const data = {
+        ok: true,
+        doctors: norm(raw.doctors),
+        patients: norm(raw.patients),
+        rooms: norm(raw.rooms),
+        services: norm(raw.services).map((s) => ({
+          ...s,
+          duration_min: s.duration_min ?? 30,
+        })),
+      };
+      window.__DICT_CACHE__ = data;
+      return data;
+    }
+
+    // ---------- элементы модалки ----------
+    const qm = {
+      modal: $("#quickModal"),
+      close: $("#qmClose"),
+      form: $("#qmForm"),
+      id: $("#qm_id"),
+      doctor: $("#qm_doctor"),
+      patient: $("#qm_patient"),
+      service: $("#qm_service"),
+      serviceHint: $("#qm_service_hint"),
+      room: $("#qm_room"),
+      start: $("#qm_start"),
+      end: $("#qm_end"),
+      status: $("#qm_status"),
+      comment: $("#qm_comment"),
+      warn: $("#qm_warn"),
+      btnDel: $("#qmDelete"),
+      btnPlus15: document.querySelector("#quickModal #btn_plus_15"),
+      btnPlus30: document.querySelector("#quickModal #btn_plus_30"),
+      btnPlus60: document.querySelector("#quickModal #btn_plus_60"),
+      btnTomorrow: document.querySelector("#quickModal #btn_move_tomorrow"),
+      btnFirstFree: document.querySelector("#quickModal #btn_first_free"),
+
+      // блок «Новый пациент»
+      patientAddBtn: document.getElementById("qm_patient_add"),
+      patientNewRow: document.getElementById("qm_patient_new"),
+      newFullName: document.getElementById("qm_new_full_name"),
+      newPhone: document.getElementById("qm_new_phone"),
+      newBirth: document.getElementById("qm_new_birth"),
+      patientSaveBtn: document.getElementById("qm_patient_save"),
+      patientCancelBtn: document.getElementById("qm_patient_cancel"),
+    };
+
+    function hideNewPatientRow() {
+      if (!qm) return;
+      if (qm.patientNewRow) qm.patientNewRow.style.display = "none";
+      if (qm.newFullName) qm.newFullName.value = "";
+      if (qm.newPhone) qm.newPhone.value = "";
+      if (qm.newBirth) qm.newBirth.value = "";
+    }
+
+    // --- contacts bar (Tel/WA/TG/Max/Mail) ---------------------------------
+    function setDisabledAnchor(a, disabled) {
+      if (!a) return;
+      if (disabled) {
+        a.setAttribute("aria-disabled", "true");
+        a.style.opacity = ".5";
+        a.style.pointerEvents = "none";
+        a.removeAttribute("href");
+      } else {
+        a.removeAttribute("aria-disabled");
+        a.style.opacity = "1";
+        a.style.pointerEvents = "auto";
+      }
+    }
+    function onlyDigits(s) {
+      return String(s || "").replace(/\D+/g, "");
+    }
+
+    async function fillContactBar(patientId) {
+      const tel = document.getElementById("cb_tel");
+      const wa = document.getElementById("cb_wa");
+      const tg = document.getElementById("cb_tg");
+      const mx = document.getElementById("cb_max");
+      const em = document.getElementById("cb_email");
+      const hint = document.getElementById("cb_hint");
+
+      [tel, wa, tg, mx, em].forEach((a) => setDisabledAnchor(a, true));
+      if (hint) hint.textContent = "";
+      if (!patientId) return;
+
+      try {
+        const r = await fetch(
+          `/api/patients/${encodeURIComponent(patientId)}/contacts`
+        );
+        const data = await r.json();
+        if (!r.ok || !data.ok) return;
+
+        const c = data.contacts || {};
+        const phonePlus = (c.phone || "").trim();
+        const phone = onlyDigits(phonePlus);
+        const waNum = onlyDigits(c.whatsapp || c.phone || "");
+        const mail = (c.email || "").trim();
+        const tgHandle = (c.telegram || "").replace(/^@/, "").trim();
+
+        if (phonePlus) {
+          tel.href = `tel:${phonePlus}`;
+          setDisabledAnchor(tel, false);
+        }
+        if (waNum) {
+          wa.href = `https://wa.me/${waNum}`;
+          setDisabledAnchor(wa, false);
+        }
+        if (tgHandle) {
+          tg.href = `https://t.me/${tgHandle}`;
+          setDisabledAnchor(tg, false);
+        } else if (phone) {
+          tg.href = `https://t.me/+${phone}`;
+          setDisabledAnchor(tg, false);
+        }
+
+        // Max: аналог WhatsApp — открываем веб-клиент; при появлении deep-link подменим тут
+        mx.href = `https://web.max.ru/`;
+        setDisabledAnchor(mx, false);
+
+        if (mail) {
+          em.href = `mailto:${encodeURIComponent(mail)}`;
+          setDisabledAnchor(em, false);
+        }
+
+        if (hint) {
+          const parts = [];
+          if (phonePlus) parts.push(phonePlus);
+          if (mail) parts.push(mail);
+          hint.textContent = parts.join(" • ");
+        }
+      } catch {}
+    }
+    // при смене выбранного пациента — обновить панель
+    qm.patient?.addEventListener("change", () =>
+      fillContactBar(qm.patient.value)
+    );
+    // --- создание пациента из модалки ---
+    qm.patientAddBtn?.addEventListener("click", () => {
+      qm.patientNewRow.style.display = "block";
+      qm.newFullName?.focus();
+    });
+    qm.patientCancelBtn?.addEventListener("click", () => {
+      qm.patientNewRow.style.display = "none";
+      if (qm.newFullName) qm.newFullName.value = "";
+      if (qm.newPhone) qm.newPhone.value = "";
+      if (qm.newBirth) qm.newBirth.value = "";
+    });
+    qm.patientSaveBtn?.addEventListener("click", async () => {
+      const full_name = (qm.newFullName?.value || "").trim();
+      const phone = (qm.newPhone?.value || "").trim();
+      const birth_date = (qm.newBirth?.value || "").trim();
+      if (!full_name) {
+        showToast("Укажи ФИО пациента", "error");
+        return;
+      }
+      try {
+        const r = await fetch("/api/patients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ full_name, phone, birth_date }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.ok) {
+          showToast(
+            data?.error || `Ошибка создания (HTTP ${r.status})`,
+            "error"
+          );
+          return;
+        }
+        const opt = document.createElement("option");
+        opt.value = data.id;
+        opt.textContent = data.full_name || full_name;
+        qm.patient?.appendChild(opt);
+        qm.patient.value = data.id;
+        qm.newFullName.value = "";
+        qm.newPhone.value = "";
+        qm.newBirth.value = "";
+        qm.patientNewRow.style.display = "none";
+        if (window.__DICT_CACHE__) {
+          window.__DICT_CACHE__.patients.unshift({
+            id: data.id,
+            name: data.full_name || full_name,
+          });
+        }
+        showToast("Пациент создан", "ok");
+      } catch {
+        showToast("Сеть недоступна", "error");
+      }
+    });
+
+    function isValidSelectValue(v) {
+      return v && v !== "undefined" && v !== "null";
+    }
+    function updateFirstFreeBtnState() {
+      const enable =
+        isValidSelectValue(qm.room?.value) &&
+        isValidSelectValue(qm.service?.value) &&
+        !!qm.start?.value;
+      if (qm.btnFirstFree) {
+        qm.btnFirstFree.disabled = !enable;
+        qm.btnFirstFree.style.opacity = enable ? "1" : "0.6";
+        qm.btnFirstFree.style.pointerEvents = enable ? "auto" : "none";
+      }
+    }
+    [qm.room, qm.service, qm.start].forEach((el) =>
+      el?.addEventListener("change", updateFirstFreeBtnState)
+    );
+
+    const qmTitle = document.querySelector("#quickModal h3");
+    const qmDeleteBtn = document.getElementById("qmDelete");
+    function setModalMode(mode) {
+      hideNewPatientRow(); // при любом режиме закрываем и чистим мини-форму
+      if (!qmTitle) return;
+      if (mode === "create") {
+        qmTitle.textContent = "Новая запись";
+        qmDeleteBtn?.setAttribute("disabled", "disabled");
+        qmDeleteBtn?.classList.add("disabled");
+      } else {
+        qmTitle.textContent = "Редактировать запись";
+        qmDeleteBtn?.removeAttribute("disabled");
+        qmDeleteBtn?.classList.remove("disabled");
+      }
+    }
+    function openModal() {
+      if (qm.modal) qm.modal.style.display = "block";
+    }
+    function closeModal() {
+      if (qm.modal) qm.modal.style.display = "none";
+    }
+    qm.close?.addEventListener("click", closeModal);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    // время
+    function setStartEnd(ns, ne) {
+      if (qm.start) qm.start.value = fmtISO(ns);
+      if (qm.end) qm.end.value = fmtISO(ne);
+    }
+    function shiftAppointment(minutes) {
+      if (!qm.start?.value) return;
+      const s = new Date(qm.start.value);
+      const e = qm.end?.value ? new Date(qm.end.value) : s;
+      const dur = Math.max(5, Math.round((e - s) / 60000));
+      const ns = addMin(s, minutes),
+        ne = addMin(ns, dur);
+      setStartEnd(ns, ne);
+    }
+    qm.btnPlus15?.addEventListener("click", () => shiftAppointment(15));
+    qm.btnPlus30?.addEventListener("click", () => shiftAppointment(30));
+    qm.btnPlus60?.addEventListener("click", () => shiftAppointment(60));
+    qm.btnTomorrow?.addEventListener("click", () => {
+      if (!qm.start?.value) return;
+      const s = new Date(qm.start.value);
+      const e = qm.end?.value ? new Date(qm.end.value) : s;
+      const dur = Math.max(5, Math.round((e - s) / 60000));
+      s.setDate(s.getDate() + 1);
+      setStartEnd(s, addMin(s, dur));
+    });
+
+    // первый свободный слот в кабинете
+    async function moveToFirstFreeInRoom() {
+      const roomId = qm.room?.value,
+        sid = qm.service?.value;
+      if (
+        !isValidSelectValue(roomId) ||
+        !isValidSelectValue(sid) ||
+        !qm.start?.value
+      ) {
+        showToast("Выбери кабинет, услугу и время начала", "error");
+        updateFirstFreeBtnState();
+        return;
+      }
+      const d = await loadDictsOnce();
+      const sRec = d.services.find((x) => x.id === sid);
+      const dur = parseInt(sRec?.duration_min ?? 30, 10);
+
+      let cursor = new Date(qm.start.value);
+      const limit = new Date();
+      limit.setDate(limit.getDate() + 7);
+
+      while (cursor < limit) {
+        const day = `${cursor.getFullYear()}-${String(
+          cursor.getMonth() + 1
+        ).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+        const resp = await fetch(
+          `/api/rooms/busy?room_id=${encodeURIComponent(roomId)}&date=${day}`
+        );
+        if (!resp.ok) {
+          showToast("Не удалось проверить занятость кабинета", "error");
+          return;
+        }
+        const data = await resp.json();
+        if (!data.ok) {
+          showToast("Не удалось проверить занятость кабинета", "error");
+          return;
+        }
+
+        const busy = (data.items || [])
+          .map((i) => {
+            const [sh, sm] = i.start.split(":").map(Number),
+              [eh, em] = i.end.split(":").map(Number);
+            return { s: sh * 60 + sm, e: eh * 60 + em };
+          })
+          .sort((a, b) => a.s - b.s);
+
+        const st = cursor.getHours() * 60 + cursor.getMinutes(),
+          en = st + dur;
+        const overlap = busy.some((b) => !(en <= b.s || st >= b.e));
+        if (!overlap) {
+          setStartEnd(cursor, addMin(cursor, dur));
+          return;
+        }
+        cursor = addMin(cursor, 5);
+      }
+      showToast("Не найден свободный слот в ближайшие 7 дней", "error");
+    }
+    qm.btnFirstFree?.addEventListener("click", moveToFirstFreeInRoom);
+
+    // длительность/подсказка
+    async function recalcEndByService() {
+      if (!qm.service?.value || !qm.start?.value) return;
+      const d = await loadDictsOnce();
+      const srv = d.services.find((s) => s.id === qm.service.value);
+      const dur = parseInt(srv?.duration_min ?? 30, 10);
+      const s = new Date(qm.start.value),
+        e = addMin(s, isFinite(dur) ? dur : 30);
+      if (qm.end) qm.end.value = fmtISO(e);
+      if (qm.serviceHint)
+        qm.serviceHint.textContent = `Длительность услуги: ${
+          isFinite(dur) ? dur : 30
+        } мин.`;
+    }
+
+    // мягкая проверка графика врача
+    async function checkDoctorWorking() {
+      const start = qm.start?.value;
+      if (!qm.doctor?.value || !start) {
+        qm.warn && (qm.warn.style.display = "none");
+        return;
+      }
+      try {
+        const r = await fetch("/api/doctor_schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ doctor_id: qm.doctor.value }),
+        });
+        if (!r.ok) {
+          qm.warn && (qm.warn.style.display = "none");
+          return;
+        }
+        const data = await r.json();
+        const sched = data?.schedule || {};
+        const s = new Date(start);
+        const e = qm.end?.value ? new Date(qm.end.value) : new Date(start);
+        const dow = (s.getDay() + 6) % 7;
+        const day = sched[String(dow)];
+        if (!day || !day.start || !day.end) {
+          qm.warn && (qm.warn.style.display = "none");
+          return;
+        }
+        const hm2m = (hm) => {
+          const [h, m] = hm.split(":").map(Number);
+          return h * 60 + m;
+        };
+        const st = s.getHours() * 60 + s.getMinutes(),
+          en = e.getHours() * 60 + e.getMinutes();
+        const outside = st < hm2m(day.start) || en > hm2m(day.end);
+        if (outside) {
+          qm.warn.textContent = `Время вне графика врача (${day.start}–${day.end}). Сохранение возможно.`;
+          qm.warn.style.display = "block";
+        } else {
+          qm.warn.style.display = "none";
+        }
+      } catch {
+        qm.warn && (qm.warn.style.display = "none");
+      }
+    }
+
+    // ---------- FullCalendar ----------
+    // глобальное состояние фильтра по пациенту (мини-поиск наверху)
+    window.psSelectedPatientId = window.psSelectedPatientId || "";
+    const calEl = document.getElementById("calendar");
+    const calendar = new FullCalendar.Calendar(calEl, {
+      initialView: "timeGridWeek",
+      locale: "ru",
+      buttonText: {
+        today: "сегодня",
+        month: "месяц",
+        week: "неделя",
+        day: "день",
+      },
+      allDayText: "Весь день",
+      timeZone: "local",
+      firstDay: 1,
+      height: "auto",
+      headerToolbar: {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay",
+      },
+      slotDuration: "00:15:00",
+      snapDuration: "00:15:00",
+      slotMinTime: "09:00:00",
+      slotMaxTime: "21:00:00",
+      businessHours: {
+        daysOfWeek: [1, 2, 3, 4, 5, 6],
+        startTime: "09:00",
+        endTime: "21:00",
+      },
+
+      editable: true,
+      eventDurationEditable: true,
+      eventStartEditable: true,
+      eventOverlap: true,
+
+      // ЗАГРУЗКА СОБЫТИЙ
+      events: (fetchInfo, success, failure) => {
+        const params = new URLSearchParams({
+          start: fetchInfo.startStr,
+          end: fetchInfo.endStr,
+        });
+
+        const doctorSel = document.querySelector("#doctorFilter");
+        const serviceSel = document.querySelector("#serviceFilter");
+        const cabinetSel = document.querySelector("#cabinetFilter");
+
+        if (doctorSel?.value) params.set("doctor_id", doctorSel.value);
+        if (serviceSel?.value) params.set("service_id", serviceSel.value);
+        if (cabinetSel?.value) params.set("room_name", cabinetSel.value);
+
+        // ✦ наш фильтр по пациенту (унифицировано)
+        (function () {
+          const psInput = document.getElementById("psInput");
+          const a = (psInput?.dataset?.selId || "").trim();
+          const b = (window.__PS_SELECTED_PATIENT_ID__ || "").trim();
+          const c = (window.psSelectedPatientId || "").trim();
+          const pid = a || b || c;
+          if (pid) params.set("patient_id", pid);
+        })();
+
+        fetch("/api/events?" + params.toString())
+          .then((r) => r.json())
+          .then((data) => success(data))
+          .catch((err) => {
+            console.error("events load error", err);
+            failure(err);
+          });
+      },
+
+      eventDidMount(info) {
+        const status = info.event.extendedProps.status || 'scheduled';
+        const colors = {
+          'scheduled': '#0d6efd',
+          'arrived': '#198754',
+          'completed': '#6c757d',
+          'cancelled': '#dc3545',
+          'no_show': '#fd7e14'
+        };
+        if (colors[status]) {
+          info.el.style.backgroundColor = colors[status];
+          info.el.style.borderColor = colors[status];
+        }
+
+        const p = info.event.extendedProps || {};
+        info.el.title = [p.service, p.patient, p.status]
+          .filter(Boolean)
+          .join(" • ");
+
+        // Добавляем кнопку "Оплатить"
+        // Показываем кнопку для всех неоплаченных записей
+        if (p.status !== "paid") {
+          const payBtn = document.createElement("button");
+          payBtn.innerHTML = "💳";
+          payBtn.title = "Оплатить";
+          payBtn.style.cssText =
+            "position:absolute;top:2px;right:2px;background:#10b981;color:white;border:none;border-radius:3px;padding:2px 4px;font-size:10px;cursor:pointer;z-index:1000;";
+
+          payBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.open(
+              `/finance/add?appointment_id=${info.event.id}`,
+              "_blank"
+            );
+          };
+
+          info.el.appendChild(payBtn);
+        }
+      },
+
+      eventDrop: saveMoveOrResize,
+      eventResize: saveMoveOrResize,
+
+      eventClick: async (info) => {
+        await openStatusModal(info.event);
+      },
+
+      dateClick: async (arg) => {
+        try {
+          const d = await loadDictsOnce();
+          const doctorSel = document.getElementById("doctorFilter");
+          fillOptions(qm.doctor, d.doctors, doctorSel?.value || "");
+          fillOptions(qm.patient, d.patients);
+          fillOptions(qm.service, d.services);
+          fillOptions(qm.room, d.rooms);
+          await fillContactBar(qm.patient?.value || "");
+
+          hideNewPatientRow(); // по умолчанию скрыто; откроется только по кнопке «+ Новый»
+
+          const roundTo = 15;
+          const s = new Date(arg.date);
+          s.setMinutes(Math.round(s.getMinutes() / roundTo) * roundTo, 0, 0);
+          const e = addMin(s, 30);
+
+          if (qm.id) qm.id.value = "";
+          if (qm.start) qm.start.value = fmtISO(s);
+          if (qm.end) qm.end.value = fmtISO(e);
+
+          updateFirstFreeBtnState();
+          await recalcEndByService().catch(() => {});
+          await checkDoctorWorking().catch(() => {});
+
+          setModalMode("create");
+          openModal();
+        } catch (e) {
+          console.error(e);
+          showToast("Не удалось открыть форму создания", "error");
+        }
+      },
+    });
+
+    calendar.render();
+    window._calendar = calendar;
+    window.calendar = calendar;
+
+    // === [PATCH] Фильтры сверху: подгрузка услуг + рефетч ===
+    (async function initTopFilters() {
+      const doctorSel = document.getElementById("doctorFilter");
+      const serviceSel = document.getElementById("serviceFilter");
+      const cabinetSel = document.getElementById("cabinetFilter");
+
+      try {
+        const d = await loadDictsOnce();
+
+        if (doctorSel) {
+          doctorSel.innerHTML =
+            '<option value="">Все врачи</option>' +
+            (d.doctors || [])
+              .map(
+                (x) =>
+                  `<option value="${x.id}">${x.full_name || x.name}</option>`
+              )
+              .join("");
+        }
+
+        if (serviceSel) {
+          serviceSel.innerHTML =
+            '<option value="">Все услуги</option>' +
+            (d.services || [])
+              .map((s) => `<option value="${s.id}">${s.name}</option>`)
+              .join("");
+        }
+
+        if (cabinetSel) {
+          const names = Array.from(
+            new Set((d.rooms || []).map((r) => r.name).filter(Boolean))
+          );
+          cabinetSel.innerHTML =
+            '<option value="">Все кабинеты</option>' +
+            names.map((n) => `<option value="${n}">${n}</option>`).join("");
+        }
+      } catch (e) {
+        console.warn("dicts load failed", e);
+      }
+
+      [doctorSel, serviceSel, cabinetSel].forEach((el) => {
+        el &&
+          el.addEventListener("change", () =>
+            window.calendar?.refetchEvents?.()
+          );
+      });
+    })();
+
+    // === [PATCH] Кнопка "Сбросить" ===
+    (function initResetButton() {
+      const btn = document.getElementById("btnResetFilters");
+      const doctorSel = document.getElementById("doctorFilter");
+      const serviceSel = document.getElementById("serviceFilter");
+      const cabinetSel = document.getElementById("cabinetFilter");
+      const psInput = document.getElementById("psInput");
+
+      btn &&
+        btn.addEventListener("click", () => {
+          if (doctorSel) doctorSel.value = "";
+          if (serviceSel) serviceSel.value = "";
+          if (cabinetSel) cabinetSel.value = "";
+
+          // Сброс мини-поиска пациента (оба глобальных флага + dataset + визуально)
+          if (psInput) {
+            delete psInput.dataset.selId;
+            psInput.value = "";
+          }
+          window.__PS_SELECTED_PATIENT_ID__ = "";
+          window.psSelectedPatientId = "";
+
+          window.calendar?.refetchEvents?.();
+        });
+    })();
+
+    /* === HOVER ПО КАБИНЕТУ: показать ближайшие свободные слоты (stable + без прошедшего времени) === */
+    (function initRoomHoverFreeSlots() {
+      const container = document.getElementById("roomsBar");
+      if (!container) return;
+
+      const tip = document.createElement("div");
+      tip.id = "roomTip";
+      tip.style.cssText = [
+        "position:fixed",
+        "z-index:9999",
+        "display:none",
+        "max-width:420px",
+        "padding:10px 12px",
+        "border-radius:10px",
+        "box-shadow:0 8px 24px rgba(0,0,0,.18)",
+        "background:#fff",
+        "font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial",
+        "pointer-events:auto",
+        "cursor:pointer",
+      ].join(";");
+      document.body.appendChild(tip);
+
+      let hideTimer = null,
+        abortCtrl = null,
+        lastRoom = "",
+        lastRoomEl = null;
+
+      function fmtYMD(d) {
+        const y = d.getFullYear(),
+          m = String(d.getMonth() + 1).padStart(2, "0"),
+          day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+      function showTip(html, rect) {
+        tip.innerHTML = html;
+        tip.style.left = Math.round(rect.left) + "px";
+        tip.style.top = Math.round(rect.bottom + 6 + window.scrollY) + "px";
+        tip.style.display = "block";
+      }
+      function hideLater() {
+        if (hideTimer) clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          tip.style.display = "none";
+          if (abortCtrl) abortCtrl.abort();
+          abortCtrl = null;
+        }, 320);
+      }
+
+      tip.addEventListener("mouseenter", () => {
+        if (hideTimer) {
+          clearTimeout(hideTimer);
+          hideTimer = null;
+        }
+      });
+      tip.addEventListener("mouseleave", hideLater);
+      tip.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!lastRoom || !lastRoomEl) return;
+        document.dispatchEvent(
+          new CustomEvent("open-room-today", {
+            detail: { roomEl: lastRoomEl, roomName: lastRoom },
+          })
+        );
+      });
+
+      const $doctor = document.getElementById("doctorFilter");
+      const $service = document.getElementById("serviceFilter");
+
+      container.querySelectorAll("[data-room-name]").forEach((el) => {
+        el.addEventListener("mouseenter", async () => {
+          lastRoomEl = el;
+          lastRoom =
+            el.dataset.roomName || el.getAttribute("data-room-name") || "";
+          const rect = el.getBoundingClientRect();
+
+          if (!$doctor || !$doctor.value) {
+            showTip("Выберите врача в фильтре ↑", rect);
+            return;
+          }
+
+          let durMin = 30;
+          try {
+            const dicts = await loadDictsOnce?.();
+            const sId = $service?.value || "";
+            const svc = (dicts?.services || []).find(
+              (x) => String(x.id) === String(sId)
+            );
+            durMin = svc?.duration_min || 30;
+          } catch {}
+
+          const viewDate = window.calendar?.getDate
+            ? window.calendar.getDate()
+            : new Date();
+          const day = fmtYMD(viewDate);
+          const today = fmtYMD(new Date());
+          const isToday = day === today;
+          const nowHM = new Date().toTimeString().slice(0, 5); // "HH:MM"
+
+          try {
+            if (abortCtrl) abortCtrl.abort();
+            abortCtrl = new AbortController();
+            showTip("Загрузка свободных слотов…", rect);
+
+            const r = await fetch(ROUTES.freeSlots, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                doctor_id: $doctor.value,
+                room_name: lastRoom,
+                date: day,
+                duration_min: durMin,
+              }),
+              signal: abortCtrl.signal,
+            });
+            const data = await r.json();
+
+            const min = (
+              window.calendar?.getOption?.("slotMinTime") || "09:00:00"
+            ).slice(0, 5);
+            const max = (
+              window.calendar?.getOption?.("slotMaxTime") || "21:00:00"
+            ).slice(0, 5);
+
+            const slots = (data?.slots || [])
+              .filter((t) => t >= min && t < max)
+              .filter((t) => !isToday || t >= nowHM)
+              .slice(0, 8);
+
+            const title = `<div style="font-weight:600;margin-bottom:4px;">${lastRoom}</div>`;
+            const body = slots.length
+              ? `Свободно: <b>${slots.join("</b>, <b>")}</b>`
+              : "Свободных слотов нет";
+            const hint = `<div style="margin-top:8px;opacity:.7;font-size:12px;">Клик — откроет «${lastRoom} — сегодня»</div>`;
+            showTip(`${title}<div>${body}</div>${hint}`, rect);
+          } catch (e) {
+            if (e.name !== "AbortError") showTip("Ошибка сети", rect);
+          }
+        });
+        el.addEventListener("mouseleave", hideLater);
+      });
+
+      window.addEventListener("scroll", () => {
+        if (tip.style.display === "block") tip.style.display = "none";
+      });
+      window.addEventListener("resize", () => {
+        if (tip.style.display === "block") tip.style.display = "none";
+      });
+    })();
+
+    /* === LIVE rooms bar: status + next slot === */
+    (function initRoomsBarLive() {
+      const bar = document.getElementById("roomsBar");
+      if (!bar) return;
+
+      function render(data) {
+        bar.querySelectorAll("[data-room-name]").forEach((el) => {
+          const name =
+            el.dataset.roomName || el.getAttribute("data-room-name") || "";
+          const nfo = data && data[name];
+          if (!nfo) return;
+
+          // чистим элемент полностью и собираем заново (не будет дублей)
+          el.textContent = "";
+
+          // кликабельное имя кабинета (увеличиваем зону клика)
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "room-name";
+          nameSpan.textContent = name;
+          nameSpan.style.cursor = "pointer";
+          el.appendChild(nameSpan);
+
+          // динамический статус (зелёный по умолчанию)
+          const state = document.createElement("span");
+          state.className = "room-state";
+          state.textContent = " — " + (nfo.text || "");
+          state.style.marginLeft = "2px";
+          state.style.fontWeight = "600";
+          state.style.color = nfo.color || "#2e7d32";
+          el.appendChild(state);
+
+          // ближайший слот (если есть)
+          if (
+            nfo.next &&
+            (nfo.next.start || nfo.next.patient || nfo.next.service)
+          ) {
+            const next = document.createElement("span");
+            next.className = "room-next";
+            const hhmm = String(nfo.next.start || "").slice(-5);
+            next.textContent = ` · Ближайший: ${hhmm}${
+              nfo.next.patient ? ` — ${nfo.next.patient}` : ""
+            }`;
+
+            el.appendChild(next);
+            el.title = `Следующий: ${hhmm} · ${(
+              nfo.next.service || ""
+            ).trim()} · ${(nfo.next.patient || "").trim()}`;
+          } else {
+            el.title = (nfo.text || "").trim();
+          }
+        });
+      }
+
+      async function tick() {
+        try {
+          const r = await fetch("/api/rooms/status_now");
+          render(await r.json());
+        } catch (e) {
+          /* noop */
+        }
+        setTimeout(tick, 60000);
+      }
+      tick();
+    })();
+
+    /* === Click room -> today details popup (toggle + outside close) === */
+    (function initRoomClickTodayDetails() {
+      const bar = document.getElementById("roomsBar");
+      if (!bar) return;
+
+      const pop = document.createElement("div");
+      pop.id = "roomDayPopup";
+      pop.style.cssText =
+        "position:fixed;z-index:5000;display:none;min-width:320px;max-width:420px;background:#fff;border:1px solid #dbeafd;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:10px 12px;font-size:.95rem;line-height:1.35;";
+      document.body.appendChild(pop);
+
+      let openedRoom = "";
+
+      function hide() {
+        pop.style.display = "none";
+        openedRoom = "";
+      }
+      function showNear(el) {
+        const rect = el.getBoundingClientRect();
+        pop.style.left = Math.round(rect.left) + "px";
+        pop.style.top = Math.round(rect.bottom + 6 + window.scrollY) + "px";
+        pop.style.display = "block";
+      }
+      async function renderRoomToday(name) {
+        try {
+          const url =
+            (window.ROUTES?.todayDetailsApi || "/api/rooms/today_details") +
+            "?room=" +
+            encodeURIComponent(name);
+
+          const r = await fetch(url, {
+            headers: { accept: "application/json" },
+          });
+          const ct = r.headers.get("content-type") || "";
+
+          if (ct.includes("json")) {
+            const data = await r.json();
+            const now = new Date();
+            const nowHHMM = (() => {
+              const d = new Date();
+              return `${String(d.getHours()).padStart(2, "0")}:${String(
+                d.getMinutes()
+              ).padStart(2, "0")}`;
+            })();
+
+            // универсально достаём HH:MM (работает и для "HH:MM", и для "YYYY-MM-DDTHH:MM")
+            const hhmm = (s) => String(s || "").slice(-5);
+
+            const visible = (data.items || []).filter((x) => {
+              // показываем текущие (is_now) и будущие по времени окончания
+              return x.is_now || hhmm(x.end) >= nowHHMM;
+            });
+
+            const rows =
+              visible
+                .map((x) => {
+                  const hh1 = hhmm(x.start);
+                  const hh2 = hhmm(x.end);
+                  const who = [x.service, x.patient]
+                    .filter(Boolean)
+                    .join(" — ");
+                  return `<div style="padding:4px 0;border-bottom:1px dashed #eef2ff;">
+          <b>${hh1}–${hh2}</b>${who ? ` · ${who}` : ""}
+        </div>`;
+                })
+                .join("") || "<i>На сегодня записей нет</i>";
+
+            pop.innerHTML = `
+            <div style="font-weight:600;margin-bottom:6px;">${name} — сегодня</div>
+            ${rows}
+          `;
+          } else {
+            // легаси: сервер прислал готовый HTML
+            pop.innerHTML =
+              (await r.text()).trim() || "<i>На сегодня записей нет</i>";
+          }
+        } catch (e) {
+          pop.innerHTML = "Ошибка сети";
+        }
+      }
+
+      // Глобальная функция для открытия попапа из тултипа
+      window.openRoomTodayFromTip = async function (roomEl, roomName) {
+        // погасим тултип, если открыт
+        const tip = document.getElementById("roomTip");
+        if (tip) tip.style.display = "none";
+
+        // toggle: если уже открыт этот же кабинет — закрыть
+        if (pop.style.display === "block" && openedRoom === roomName) {
+          hide();
+          return;
+        }
+
+        openedRoom = roomName;
+        showNear(roomEl);
+        pop.innerHTML = "Загрузка…";
+        await renderRoomToday(roomName);
+      };
+
+      // ОТКРЫТИЕ/ЗАКРЫТИЕ: клик по строке кабинета (делегирование)
+
+      document.addEventListener("click", async (e) => {
+        const el = e.target.closest("#roomsBar [data-room-name]");
+        if (!el) return;
+
+        // убираем hover-tooltip
+        const tip = document.getElementById("roomTip");
+        if (tip) tip.style.display = "none";
+
+        const name =
+          el.dataset.roomName || el.getAttribute("data-room-name") || "";
+
+        // если уже открыт этот же кабинет — считаем как toggle и закрываем
+        if (pop.style.display === "block" && openedRoom === name) {
+          hide();
+          return;
+        }
+
+        openedRoom = name;
+        showNear(el);
+        pop.innerHTML = "Загрузка…";
+        await renderRoomToday(name);
+      });
+
+      // универсальный поиск якоря по имени кабинета
+      function findRoomAnchor(name) {
+        if (!name) return null;
+        const esc = CSS && CSS.escape ? CSS.escape(name) : name;
+        return (
+          document.querySelector(`[data-room="${esc}"]`) ||
+          document.querySelector(`[data-open-room="${esc}"]`) ||
+          document.querySelector(`[data-room-name="${esc}"]`) ||
+          [...document.querySelectorAll(".ps-room, .ps-rooms-item")].find(
+            (el) => (el.textContent.split("—")[0] || "").trim() === name
+          ) ||
+          null
+        );
+      }
+
+      // ОТКРЫТИЕ по «сигналу» из тултипа / из любого места
+      document.addEventListener("open-room-today", async (e) => {
+        let { roomEl, roomName } = (e && e.detail) || {};
+        if (!roomName) return;
+        roomEl = roomEl || findRoomAnchor(roomName); // <-- ВАЖНО
+        if (!roomEl) return;
+        const tip = document.getElementById("roomTip");
+        if (tip) tip.style.display = "none";
+        if (pop.style.display === "block" && openedRoom === roomName) {
+          hide();
+          return;
+        }
+        openedRoom = roomName;
+        showNear(roomEl);
+        pop.innerHTML = "Загрузка…";
+        await renderRoomToday(roomName);
+      });
+
+      // клик вне попапа — НЕ закрывать, если клик по тултипу
+      document.addEventListener("click", (e) => {
+        if (pop.style.display !== "block") return;
+        if (pop.contains(e.target)) return;
+        if (e.target.closest("#roomsBar")) return;
+        if (e.target.closest("#roomTip")) return; // <-- ВАЖНО
+        hide();
+      });
+
+      // Esc / scroll / resize — закрыть
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") hide();
+      });
+      window.addEventListener("scroll", hide);
+      window.addEventListener("resize", hide);
+    })();
+
+    async function saveMoveOrResize(info) {
+      const payload = {
+        id: info.event.id,
+        start: info.event.startStr,
+        end: info.event.endStr || info.event.startStr,
+      };
+      try {
+        const r = await fetch("/api/appointments/update_time", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await r.json();
+        if (!data.ok) {
+          alert(
+            data.error === "room_conflict"
+              ? "Конфликт: кабинет занят"
+              : "Ошибка сохранения"
+          );
+          info.revert();
+          return;
+        }
+        calendar.refetchEvents();
+      } catch {
+        alert("Сеть недоступна");
+        info.revert();
+      }
+    }
+
+    // открыть существующую
+    async function openQuickModal(id) {
+      try {
+        const d = await loadDictsOnce();
+        fillOptions(qm.doctor, d.doctors);
+        fillOptions(qm.patient, d.patients);
+        fillOptions(qm.service, d.services);
+        fillOptions(qm.room, d.rooms);
+
+        hideNewPatientRow(); // всегда скрываем «Новый пациент» в режиме редактирования
+
+        const r = await fetch(`/api/appointments/${id}`);
+        const data = await r.json();
+        if (!data.ok) {
+          showToast("Не удалось получить запись", "error");
+          return;
+        }
+        const it = data.item;
+
+        if (qm.id) qm.id.value = it.id || "";
+        if (qm.doctor) qm.doctor.value = it.doctor_id || "";
+        if (qm.patient) qm.patient.value = it.patient_id || "";
+        await fillContactBar(qm.patient?.value || "");
+        if (qm.service) qm.service.value = it.service_id || "";
+        if (qm.room) qm.room.value = it.room_id || "";
+        if (qm.start) qm.start.value = (it.start || "").slice(0, 16);
+        if (qm.end) qm.end.value = (it.end || "").slice(0, 16);
+        if (qm.status) qm.status.value = it.status_key || "scheduled";
+        if (qm.comment) qm.comment.value = it.comment || "";
+
+        qm.service?.addEventListener(
+          "change",
+          () => {
+            recalcEndByService();
+            checkDoctorWorking();
+          },
+          { once: true }
+        );
+        qm.start?.addEventListener(
+          "change",
+          () => {
+            recalcEndByService();
+            checkDoctorWorking();
+          },
+          { once: true }
+        );
+        qm.end?.addEventListener("change", checkDoctorWorking, { once: true });
+        qm.doctor?.addEventListener("change", checkDoctorWorking, {
+          once: true,
+        });
+
+        await recalcEndByService();
+        await checkDoctorWorking();
+        setModalMode("edit");
+        openModal();
+      } catch (e) {
+        console.error(e);
+        showToast("Ошибка открытия модалки", "error");
+      }
+    }
+
+    // submit / delete
+    qm.form?.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      // [MP] Автосоздание пациента при сохранении (если заполнен блок "Новый")
+      async function mpEnsurePatientSelected() {
+        let patientId = (qm.patient?.value || "").trim();
+        const full_name = (qm.newFullName?.value || "").trim();
+        const phone = (qm.newPhone?.value || "").trim();
+        const birth_date = (qm.newBirth?.value || "").trim();
+
+        // если пользователь что-то ввёл в "Новый пациент"
+        if (full_name) {
+          const needCreate =
+            !patientId ||
+            confirm(
+              `Создать нового пациента «${full_name}» и использовать его вместо выбранного?`
+            );
+          if (needCreate) {
+            try {
+              const r = await fetch("/api/patients", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ full_name, phone, birth_date }),
+              });
+              const data = await r.json().catch(() => ({}));
+              if (!r.ok || !(data.ok ?? true) || !data.id) {
+                showToast(
+                  data?.error || `Ошибка создания пациента (HTTP ${r.status})`,
+                  "error"
+                );
+                return null; // отменяем сохранение
+              }
+              // добавить в селект и выбрать
+              const opt = document.createElement("option");
+              opt.value = data.id;
+              opt.textContent = data.full_name || full_name;
+              qm.patient?.appendChild(opt);
+              qm.patient.value = data.id;
+              patientId = data.id;
+
+              // обновить кэш, очистить и скрыть блок "Новый"
+              if (window.__DICT_CACHE__) {
+                window.__DICT_CACHE__.patients?.unshift({
+                  id: data.id,
+                  name: data.full_name || full_name,
+                });
+              }
+              if (qm.patientNewRow) qm.patientNewRow.style.display = "none";
+              if (qm.newFullName) qm.newFullName.value = "";
+              if (qm.newPhone) qm.newPhone.value = "";
+              if (qm.newBirth) qm.newBirth.value = "";
+              showToast("Пациент создан", "ok");
+            } catch {
+              showToast("Сеть недоступна (создание пациента)", "error");
+              return null; // отменяем сохранение
+            }
+          }
+        }
+        return patientId;
+      }
+
+      const ensuredPatientId = await mpEnsurePatientSelected();
+      if (!ensuredPatientId) return; // ошибка/отмена — не продолжаем сохранение
+
+      const base = {
+        doctor_id: qm.doctor?.value || "",
+        patient_id: ensuredPatientId,
+        service_id: qm.service?.value || "",
+        room_id: qm.room?.value || "",
+        start: qm.start?.value || "",
+        end: qm.end?.value || "",
+        status_key: qm.status?.value || "scheduled",
+        comment: qm.comment?.value || "",
+      };
+
+      // CREATE
+      if (!qm.id?.value) {
+        if (
+          !base.doctor_id ||
+          !base.patient_id ||
+          !base.service_id ||
+          !base.room_id
+        ) {
+          showToast("Заполни поля: врач, пациент, услуга, кабинет", "error");
+          return;
+        }
+        const payload = {
+          start: base.start,
+          end: base.end,
+          room_id: base.room_id,
+          doctor_id: base.doctor_id,
+          patient_id: base.patient_id,
+          service_id: base.service_id,
+          note: base.comment || "",
+        };
+        let ok = false,
+          lastErr = "";
+        const endpoints = [
+          "/api/appointments",
+          "/api/appointments/create",
+          "/schedule/api/create",
+        ];
+        for (const url of endpoints) {
+          try {
+            const r = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            const data = await r.json().catch(() => ({}));
+            if (
+              r.status === 409 ||
+              data?.error === "conflict" ||
+              data?.error === "room_conflict"
+            ) {
+              showToast("Конфликт: кабинет/врач занят", "error");
+              return;
+            }
+            if (r.ok && (data?.ok ?? true)) {
+              ok = true;
+              break;
+            }
+            lastErr = data?.error || `HTTP ${r.status}`;
+          } catch {
+            lastErr = "network";
+          }
+        }
+        if (!ok) {
+          showToast(
+            `Ошибка создания${lastErr ? ` (${lastErr})` : ""}`,
+            "error"
+          );
+          return;
+        }
+        showToast("Запись создана", "ok");
+      }
+      // UPDATE
+      else {
+        const r = await fetch(`/api/appointments/${qm.id.value}/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(base),
+        });
+        const data = await r.json();
+        if (!r.ok || !data.ok) {
+          const err =
+            data?.error === "room_conflict"
+              ? "Конфликт: кабинет занят"
+              : "Ошибка сохранения";
+          showToast(err, "error");
+          return;
+        }
+        showToast("Изменения сохранены", "ok");
+      }
+
+      closeModal();
+      calendar.refetchEvents();
+    });
+
+    // удаление
+    qm.btnDel?.addEventListener("click", async () => {
+      const id = qm.id?.value;
+      if (!id) {
+        showToast("Эта запись ещё не сохранена", "error");
+        return;
+      }
+      if (!confirm("Удалить запись?")) return;
+      const candidates = [
+        { url: "/schedule/api/delete", body: { id } },
+        { url: "/api/appointments/delete", body: { id } },
+        {
+          url: `/api/appointments/${encodeURIComponent(id)}`,
+          method: "DELETE",
+          body: {},
+        },
+      ];
+      let ok = false;
+      for (const c of candidates) {
+        try {
+          const r = await fetch(c.url, {
+            method: c.method || "POST",
+            headers: { "Content-Type": "application/json" },
+            body: Object.keys(c.body || {}).length
+              ? JSON.stringify(c.body)
+              : undefined,
+          });
+          const data = await r.json().catch(() => ({}));
+          if (r.ok && (data.ok ?? true)) {
+            ok = true;
+            break;
+          }
+        } catch {}
+      }
+      if (!ok) {
+        showToast("Не удалось удалить", "error");
+        return;
+      }
+      closeModal();
+      calendar.refetchEvents();
+      showToast("Запись удалена", "ok");
+    });
+  }); // DOMContentLoaded
+</script>
+
+<script>
+  // === MINI SEARCH (patients) — единый рабочий вариант =========================
+  (function () {
+    const psInput = document.getElementById("psInput");
+    const psDrop = document.getElementById("psDrop");
+    if (!psInput || !psDrop) return;
+
+    // Глобалка, которую читает лоадер событий
+    window.__PS_SELECTED_PATIENT_ID__ = window.__PS_SELECTED_PATIENT_ID__ || "";
+
+    psDrop.style.zIndex = "4000";
+    psDrop.style.pointerEvents = "auto";
+
+    function debounce(fn, ms = 220) {
+      let t;
+      return (...a) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...a), ms);
+      };
+    }
+    function hideDrop() {
+      psDrop.style.display = "none";
+      psDrop.innerHTML = "";
+    }
+    function showDrop() {
+      psDrop.style.display = "block";
+    }
+
+    function renderDrop(items) {
+      if (!items?.length) {
+        hideDrop();
+        return;
+      }
+      psDrop.innerHTML = items
+        .map(
+          (i) => `
+      <div class="ps-item" data-id="${i.id}" data-name="${i.name}"
+           style="padding:8px 10px; cursor:pointer; border-top:1px solid #f0f2f5;">
+        <div style="display:flex; justify-content:space-between; gap:8px;">
+          <span class="ps-name">${i.name}</span>
+          <small style="opacity:.6">${i.birthdate || ""}${
+            i.card_no ? " · #" + i.card_no : ""
+          }</small>
+        </div>
+      </div>`
+        )
+        .join("");
+      showDrop();
+    }
+
+    function applyPatientFilter(id, name) {
+      const selId = (id || "").trim();
+      const selName = (name || "").trim();
+
+      // 1) dataset у инпута
+      psInput.dataset.selId = selId;
+
+      // 2) обе глобалки (для совместимости с любыми читателями)
+      window.__PS_SELECTED_PATIENT_ID__ = selId;
+      window.psSelectedPatientId = selId;
+
+      // 3) видимое значение поля
+      psInput.value = selName;
+
+      hideDrop();
+
+      // 4) рефетч событий
+      if (window.calendar?.refetchEvents) window.calendar.refetchEvents();
+      else setTimeout(() => window.calendar?.refetchEvents?.(), 0);
+
+      // 5) «приклейка» значения после возможной перерисовки
+      setTimeout(() => {
+        psInput.value = selName;
+      }, 0);
+    }
+
+    const search = debounce(async () => {
+      const q = (psInput.value || "").trim();
+      if (q.length < 2) {
+        hideDrop();
+        return;
+      }
+      try {
+        // короткий поиск (бэкенд уже есть)
+        const r = await fetch(
+          `/api/patients/min?q=${encodeURIComponent(q)}&limit=8`,
+          { cache: "no-store" }
+        );
+
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data?.ok) {
+          hideDrop();
+          return;
+        }
+        renderDrop(data.items || []);
+      } catch {
+        hideDrop();
+      }
+    }, 220);
+
+    // показываем/обновляем список
+    psInput.addEventListener("input", search);
+    psInput.addEventListener("focus", search);
+
+    // Выбор ДО blur: на mousedown
+    psDrop.addEventListener("mousedown", (e) => {
+      const item = e.target.closest(".ps-item");
+      if (!item) return;
+      // ВАЖНО: отключаем bubbling и blur до конца цикла
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      applyPatientFilter(
+        item.dataset.id,
+        item.dataset.name || item.querySelector(".ps-name")?.textContent || ""
+      );
+    });
+
+    // Enter — выбрать первый
+    psInput.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const first = psDrop.querySelector(".ps-item");
+      if (!first) return;
+      e.preventDefault();
+      first.dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true })
+      );
+    });
+
+    // Клик вне — закрыть
+    document.addEventListener("click", (e) => {
+      if (e.target === psInput) return;
+      if (psDrop.contains(e.target)) return;
+      hideDrop();
+    });
+
+    // «Сбросить» — очистка фильтра и рефетч
+    document
+      .getElementById("btnResetFilters")
+      ?.addEventListener("click", () => {
+        delete psInput.dataset.selId;
+        window.__PS_SELECTED_PATIENT_ID__ = "";
+        window.psSelectedPatientId = ""; // ← добавили очистку 2-й глобалки
+        psInput.value = "";
+        hideDrop();
+        window.calendar?.refetchEvents?.();
+      });
+  })();
+</script>
+
+<!-- MP-CONTACTS: JS -->
+<script>
+  async function mpOpenContact(type, patientId) {
+    function normPhone(s) {
+      const d = (s || "").replace(/\D+/g, "");
+      if (!d) return "";
+      // нормализуем к формату 7xxxxxxxxxx
+      if (d.startsWith("8") && d.length === 11) return "7" + d.slice(1);
+      if (d.startsWith("7") && d.length === 11) return d;
+      if (d.length === 10) return "7" + d; // без кода страны
+      return d;
+    }
+    function buildLink(t, contacts, linksFromServer) {
+      // если сервер прислал готовые ссылки — используем их
+      if (linksFromServer && linksFromServer[t]) return linksFromServer[t];
+
+      const phone = normPhone(contacts?.phone || contacts?.whatsapp || "");
+      const tg = (contacts?.telegram || "").replace(/^@/, "");
+      const mail = (contacts?.email || "").trim();
+      const max = (contacts?.max || "").trim();
+
+      switch (t) {
+        case "tel":
+          return phone ? `tel:+${phone}` : null;
+        case "wa":
+          return phone ? `https://wa.me/${phone}` : null;
+        case "tg":
+          // если есть ник — открываем по нику, иначе по телефону
+          return tg
+            ? `https://t.me/${encodeURIComponent(tg)}`
+            : phone
+            ? `https://t.me/+${phone}`
+            : null;
+        case "mail":
+          return mail ? `mailto:${mail}` : null;
+        case "max":
+          // Макс «как WhatsApp»: пробуем открыть web.max.ru с телефоном,
+          // если формат не подходит — просто открываем главную
+          if (phone) return `https://web.max.ru/?phone=${phone}`;
+          return `https://web.max.ru/`;
+        default:
+          return null;
+      }
+    }
+
+    try {
+      if (!patientId) {
+        const sel = document.getElementById("patient"); // <select id="patient"> в модалке
+        if (sel) patientId = sel.value;
+      }
+      if (!patientId) {
+        alert("Не выбран пациент");
+        return;
+      }
+
+      const res = await fetch(
+        `/api/patients/${encodeURIComponent(patientId)}/contacts`,
+        { cache: "no-store" }
+      );
+      if (!res.ok) {
+        alert("Контакты недоступны");
+        return;
+      }
+
+      const j = await res.json().catch(() => ({}));
+      if (!j.ok) {
+        alert("Контакты не найдены");
+        return;
+      }
+
+      const url = buildLink(type, j.contacts || {}, j.links || null);
+      if (!url) {
+        alert("Нет ссылки для: " + type);
+        return;
+      }
+
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      console.error(e);
+      alert("Ошибка открытия контакта");
+    }
+  }
+
+  try {
+    window._calendar &&
+      typeof window._calendar.render === "function" &&
+      window._calendar.render();
+  } catch (e) {}
+
+
+let currentAppointmentId = null;
+
+async function openStatusModal(event) {
+  currentAppointmentId = event.id;
+  const extendedProps = event.extendedProps || {};
+  const status = extendedProps.status || 'scheduled';
+
+  const info = document.getElementById('statusInfo');
+  const buttons = document.getElementById('statusButtons');
+
+  // Информация о записи
+  info.innerHTML = `
+    <p><strong>Пациент:</strong> ${extendedProps.patient_name || 'Не указан'}</p>
+    <p><strong>Врач:</strong> ${extendedProps.doctor_name || 'Не указан'}</p>
+    <p><strong>Услуга:</strong> ${extendedProps.service_name || 'Не указана'}</p>
+    <p><strong>Время:</strong> ${event.start.toLocaleString('ru-RU')}</p>
+    <p><strong>Статус:</strong> <span class="badge bg-${getStatusColor(status)}">${getStatusText(status)}</span></p>
+  `;
+
+  // Кнопки в зависимости от статуса
+  if (status === 'scheduled') {
+    buttons.innerHTML = `
+      <button class="btn btn-success w-100 mb-2" onclick="arriveAppointment()">
+        <i class="fa fa-check"></i> Пациент пришёл
+      </button>
+      <button class="btn btn-warning w-100 mb-2" onclick="noShowAppointment()">
+        <i class="fa fa-times"></i> Не явился
+      </button>
+      <button class="btn btn-secondary w-100" onclick="editAppointment()">
+        <i class="fa fa-edit"></i> Редактировать
+      </button>
+    `;
+  } else if (status === 'arrived') {
+    buttons.innerHTML = `
+      <button class="btn btn-primary w-100 mb-2" onclick="showCompleteModal()">
+        <i class="fa fa-check-circle"></i> Завершить приём
+      </button>
+      <button class="btn btn-danger w-100" onclick="cancelAppointment()">
+        <i class="fa fa-ban"></i> Отменить
+      </button>
+    `;
+  } else if (status === 'completed') {
+    buttons.innerHTML = `
+      <button class="btn btn-info w-100 mb-2" onclick="viewDetails()">
+        <i class="fa fa-info-circle"></i> Подробнее
+      </button>
+      <button class="btn btn-success w-100" onclick="repeatAppointment()">
+        <i class="fa fa-redo"></i> Записать повторно
+      </button>
+    `;
+  } else {
+    buttons.innerHTML = `<p class="text-muted">Нет доступных действий</p>`;
+  }
+
+  new bootstrap.Modal(document.getElementById('statusModal')).show();
+}
+
+function getStatusColor(status) {
+  const colors = {
+    'scheduled': 'primary',
+    'arrived': 'success',
+    'completed': 'secondary',
+    'cancelled': 'danger',
+    'no_show': 'warning'
+  };
+  return colors[status] || 'secondary';
+}
+
+function getStatusText(status) {
+  const texts = {
+    'scheduled': 'Запланировано',
+    'arrived': 'Пациент пришёл',
+    'completed': 'Завершено',
+    'cancelled': 'Отменено',
+    'no_show': 'Не явился'
+  };
+  return texts[status] || status;
+}
+
+async function arriveAppointment() {
+  const res = await fetch(`/appointments/${currentAppointmentId}/arrive`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'}
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+    calendar.refetchEvents();
+    showToast('Пациент отмечен как пришедший', 'success');
+  }
+}
+
+async function noShowAppointment() {
+  if (!confirm('Отметить что пациент не явился?')) return;
+
+  const res = await fetch(`/appointments/${currentAppointmentId}/no-show`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'}
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+    calendar.refetchEvents();
+    showToast('Отмечено: пациент не явился', 'warning');
+  }
+}
+
+function showCompleteModal() {
+  bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+  const modal = new bootstrap.Modal(document.getElementById('completeModal'));
+  modal.show();
+  
+  // Инициализация обработчика при открытии модала
+  const followupCheckbox = document.getElementById('needsFollowup');
+  const followupFields = document.getElementById('followupFields');
+  
+  if (followupCheckbox && followupFields) {
+    // Удалить старый обработчик если был
+    followupCheckbox.replaceWith(followupCheckbox.cloneNode(true));
+    const newCheckbox = document.getElementById('needsFollowup');
+    
+    newCheckbox.addEventListener('change', function() {
+      followupFields.style.display = this.checked ? 'block' : 'none';
+    });
+  }
+}
+}
+
+async function completeAppointment() {
+  const comment = document.getElementById('visitComment').value;
+  if (!comment.trim()) {
+    alert('Комментарий обязателен!');
+    return;
+  }
+
+  const data = {
+    visit_comment: comment,
+    visit_number: parseInt(document.getElementById('visitNumber').value),
+    total_visits: parseInt(document.getElementById('totalVisits').value),
+    needs_repeat: document.getElementById('needsFollowup').checked
+  };
+
+  const res = await fetch(`/appointments/${currentAppointmentId}/complete`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+
+  if (result.success) {
+    const resultDiv = document.getElementById('completeResult');
+    resultDiv.innerHTML = `
+      <div class="alert alert-success">
+        <strong>Приём завершён!</strong><br>
+        Создан долг: ${result.debt_created}₽<br>
+        Использовано депозита: ${result.deposit_used}₽
+      </div>
+    `;
+
+    setTimeout(() => {
+      bootstrap.Modal.getInstance(document.getElementById('completeModal')).hide();
+      calendar.refetchEvents();
+    }, 2000);
+  }
+}
+
+function editAppointment() {
+  bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+
+  // Открыть старое модальное окно редактирования
+  const modal = document.getElementById('quickModal');
+  if (modal) {
+    // Загрузить данные записи
+    fetch(`/api/appointment/${currentAppointmentId}`)
+      .then(r => r.json())
+      .then(data => {
+        // Заполнить форму (если есть функция)
+        if (typeof openQuickModal === 'function') {
+          openQuickModal(currentAppointmentId);
+        } else {
+          // Просто открыть модал
+          new bootstrap.Modal(modal).show();
+        }
+      });
+  }
+}
+
+
+function viewDetails() {
+  alert('Функция "Подробнее" в разработке');
+}
+
+function repeatAppointment() {
+  alert('Функция "Записать повторно" в разработке');
+}
+
+function showToast(message, type) {
+  // Простое уведомление (можно заменить на toast)
+  alert(message);
+}
+
+</script>
+
+
+<!-- Модальное окно управления записью -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Управление записью</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="statusInfo"></div>
+        <div id="statusButtons" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно завершения приёма -->
+<div class="modal fade" id="completeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Завершить приём</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Комментарий к визиту <span class="text-danger">*</span></label>
+          <textarea id="visitComment" class="form-control" rows="3" required></textarea>
+        </div>
+        <!-- Блок повторной записи -->
+        <div class="mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="needsFollowup">
+            <label class="form-check-label" for="needsFollowup">
+            ✅ Требуется повторный визит
+            </label>
+        </div>
+        </div>
+
+        <!-- Опциональные поля для плана визитов -->
+        <div id="followupFields" style="display: none;">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+            <label class="form-label">Номер визита:</label>
+            <input type="number" class="form-control" id="visitNumber" min="1" value="1">
+            </div>
+            <div class="col-md-6 mb-3">
+            <label class="form-label">Всего визитов:</label>
+            <input type="number" class="form-control" id="totalVisits" min="1" value="1">
+            </div>
+        </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" onclick="completeAppointment()">Завершить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

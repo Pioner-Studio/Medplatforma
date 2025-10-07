@@ -1,0 +1,26 @@
+﻿{
+    "items":  [
+                  {
+                      "birthdate":  "",
+                      "card_no":  13,
+                      "id":  "689af8bc6f3856b8ed8d774a",
+                      "name":  "Алексей Иванов",
+                      "phone":  ""
+                  },
+                  {
+                      "birthdate":  "",
+                      "card_no":  11,
+                      "id":  "689af8bc6f3856b8ed8d7748",
+                      "name":  "Иван Петров",
+                      "phone":  ""
+                  },
+                  {
+                      "birthdate":  "1982-09-02",
+                      "card_no":  1,
+                      "id":  "68809b9ca3366315c9d55fbc",
+                      "name":  "Петров Иван",
+                      "phone":  "+7999000201"
+                  }
+              ],
+    "ok":  true
+}

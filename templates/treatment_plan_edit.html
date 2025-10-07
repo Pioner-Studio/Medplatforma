@@ -1,0 +1,330 @@
+﻿{% extends "base.html" %} {% block content %}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>Редактирование плана лечения</h2>
+          <p class="text-muted mb-0">
+            Пациент: <strong>{{ patient.full_name }}</strong>
+          </p>
+        </div>
+        <a href="/patients/{{ patient._id }}" class="btn btn-secondary">
+          <i class="fa fa-arrow-left"></i> Назад к карте
+        </a>
+      </div>
+
+      <form
+        method="POST"
+        action="/patients/{{ patient._id }}/treatment-plan/{{ plan._id }}/edit"
+        id="planForm"
+      >
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fa fa-list"></i> Услуги в плане</h5>
+          </div>
+          <div class="card-body">
+            <!-- Кнопка добавления услуги -->
+            <button
+              type="button"
+              class="btn btn-success mb-3"
+              data-bs-toggle="modal"
+              data-bs-target="#addServiceModal"
+            >
+              <i class="fa fa-plus"></i> Добавить услугу
+            </button>
+
+            <!-- Список добавленных услуг -->
+            <div id="servicesList">
+              <p class="text-muted">
+                Услуги ещё не добавлены. Нажмите кнопку выше, чтобы добавить
+                услугу из прайса.
+              </p>
+            </div>
+
+            <!-- Итого -->
+            <div class="mt-3 p-3 bg-light rounded">
+              <h5>Итого: <span id="totalAmount">0</span> ₽</h5>
+            </div>
+          </div>
+        </div>
+
+        <!-- Примечания -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="fa fa-comment"></i> Примечания к плану
+            </h5>
+          </div>
+          <div class="card-body">
+            <textarea
+              name="notes"
+              class="form-control"
+              rows="4"
+              placeholder="Общие комментарии к плану лечения (опционально)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Скрытое поле для передачи услуг -->
+        <input type="hidden" name="services" id="servicesInput" />
+
+        <!-- Кнопки действий -->
+        <div class="d-flex justify-content-between">
+          <button
+            type="submit"
+            name="action"
+            value="save_draft"
+            class="btn btn-secondary btn-lg"
+          >
+            <i class="fa fa-save"></i> Сохранить черновик
+          </button>
+          <button
+            type="submit"
+            name="action"
+            value="submit"
+            class="btn btn-primary btn-lg"
+            id="submitBtn"
+          >
+            <i class="fa fa-paper-plane"></i> Отправить главврачу
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно добавления услуги -->
+<div class="modal fade" id="addServiceModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавить услугу из прайса</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <!-- Поиск -->
+        <input
+          type="text"
+          id="serviceSearch"
+          class="form-control mb-3"
+          placeholder="Поиск услуги..."
+        />
+
+        <!-- Список услуг -->
+        <div id="servicesListModal" style="max-height: 400px; overflow-y: auto">
+          {% for service in services %}
+          <div
+            class="service-item border rounded p-3 mb-2"
+            style="cursor: pointer"
+            data-service-id="{{ service._id }}"
+            data-service-name="{{ service.name }}"
+            data-service-price="{{ service.price }}"
+          >
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ service.name }}</strong>
+              </div>
+              <div class="text-end">
+                <span class="badge bg-success fs-6"
+                  >{{ "{:,}".format(service.price).replace(",", " ") }} ₽</span
+                >
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно комментария к услуге -->
+<div class="modal fade" id="commentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Комментарий к услуге</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p><strong id="commentServiceName"></strong></p>
+        <textarea
+          id="serviceComment"
+          class="form-control"
+          rows="3"
+          placeholder="Например: кариес 2.6, скрытый кариес"
+        ></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Отмена
+        </button>
+        <button type="button" class="btn btn-primary" id="saveCommentBtn">
+          Добавить в план
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Хранилище добавленных услуг
+  let addedServices = [];
+
+  // ПРЕДЗАГРУЗКА существующих услуг из плана
+  {% if plan and plan.services %}
+  addedServices = [
+      {% for service in plan.services %}
+      {
+          service_id: "{{ service.service_id }}",
+          service_name: "{{ service.service_name }}",
+          price: {{ service.price }},
+          comment: "{{ service.comment or '' }}"
+      }{% if not loop.last %},{% endif %}
+      {% endfor %}
+  ];
+
+  // Отрисовать при загрузке страницы
+  document.addEventListener('DOMContentLoaded', function() {
+      renderServicesList();
+      updateTotal();
+  });
+  {% endif %}
+  // Клик на услугу в модальном окне
+  document.querySelectorAll('.service-item').forEach(item => {
+      item.addEventListener('click', function() {
+          const serviceId = this.dataset.serviceId;
+          const serviceName = this.dataset.serviceName;
+          const servicePrice = parseInt(this.dataset.servicePrice);
+
+          // Сохранить данные для комментария
+          document.getElementById('commentServiceName').textContent = serviceName;
+          document.getElementById('serviceComment').value = '';
+
+          // Сохранить ID услуги временно
+          document.getElementById('saveCommentBtn').dataset.serviceId = serviceId;
+          document.getElementById('saveCommentBtn').dataset.serviceName = serviceName;
+          document.getElementById('saveCommentBtn').dataset.servicePrice = servicePrice;
+
+          // Закрыть модальное окно услуг
+          bootstrap.Modal.getInstance(document.getElementById('addServiceModal')).hide();
+
+          // Открыть модальное окно комментария
+          new bootstrap.Modal(document.getElementById('commentModal')).show();
+      });
+  });
+
+  // Сохранить комментарий и добавить услугу
+  document.getElementById('saveCommentBtn').addEventListener('click', function() {
+      const serviceId = this.dataset.serviceId;
+      const serviceName = this.dataset.serviceName;
+      const servicePrice = parseInt(this.dataset.servicePrice);
+      const comment = document.getElementById('serviceComment').value.trim();
+
+      // Добавить в массив
+      addedServices.push({
+          service_id: serviceId,
+          service_name: serviceName,
+          price: servicePrice,
+          comment: comment
+      });
+
+      // Обновить отображение
+      renderServicesList();
+      updateTotal();
+
+      // Закрыть модальное окно
+      bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
+  });
+
+  // Отрисовка списка услуг
+  function renderServicesList() {
+      const container = document.getElementById('servicesList');
+
+      if (addedServices.length === 0) {
+          container.innerHTML = '<p class="text-muted">Услуги ещё не добавлены.</p>';
+          return;
+      }
+
+      let html = '<div class="list-group">';
+      addedServices.forEach((service, index) => {
+          html += `
+              <div class="list-group-item">
+                  <div class="d-flex justify-content-between align-items-start">
+                      <div class="flex-grow-1">
+                          <h6 class="mb-1">${service.service_name}</h6>
+                          ${service.comment ? `<p class="mb-0 text-muted small">${service.comment}</p>` : ''}
+                      </div>
+                      <div class="text-end">
+                          <div class="mb-2">
+                              <strong>${service.price.toLocaleString('ru-RU')} ₽</strong>
+                          </div>
+                          <button type="button" class="btn btn-sm btn-danger" onclick="removeService(${index})">
+                              <i class="fa fa-trash"></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          `;
+      });
+      html += '</div>';
+
+      container.innerHTML = html;
+  }
+
+  // Удаление услуги
+  function removeService(index) {
+      addedServices.splice(index, 1);
+      renderServicesList();
+      updateTotal();
+  }
+
+  // Обновление итоговой суммы
+  function updateTotal() {
+      const total = addedServices.reduce((sum, service) => sum + service.price, 0);
+      document.getElementById('totalAmount').textContent = total.toLocaleString('ru-RU');
+  }
+
+  // Отправка формы
+  document.getElementById('planForm').addEventListener('submit', function(e) {
+      if (addedServices.length === 0) {
+          e.preventDefault();
+          alert('Добавьте хотя бы одну услугу в план');
+          return false;
+      }
+
+      // Записать услуги в скрытое поле
+      document.getElementById('servicesInput').value = JSON.stringify(addedServices);
+  });
+
+  // Поиск услуг в модальном окне
+  document.getElementById('serviceSearch').addEventListener('input', function() {
+      const query = this.value.toLowerCase();
+      document.querySelectorAll('.service-item').forEach(item => {
+          const name = item.dataset.serviceName.toLowerCase();
+          item.style.display = name.includes(query) ? 'block' : 'none';
+      });
+  });
+</script>
+
+<style>
+  .service-item:hover {
+    background-color: #f8f9fa;
+    border-color: #0d6efd !important;
+  }
+
+  .list-group-item {
+    border-left: 4px solid #0d6efd;
+  }
+</style>
+
+{% endblock %}

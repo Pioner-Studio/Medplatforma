@@ -1,0 +1,109 @@
+{% extends "base.html" %} {% block title %}Расписание — {{ date_str }}{%
+endblock %} {% block head %}
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+  }
+  .rooms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .slot {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px;
+    background: #fff;
+    min-height: 34px;
+  }
+  .muted {
+    color: #6b7280;
+  }
+  .toolbar a {
+    margin-right: 10px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #fff;
+  }
+  form.inline {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  input,
+  select {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 4px 6px;
+  }
+  .room-head {
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .timecell {
+    color: #6b7280;
+  }
+</style>
+{% endblock %} {% block content %}
+<h1>Расписание</h1>
+
+<div class="toolbar" style="margin-bottom: 10px">
+  <a class="pill" href="/schedule?date={{ prev_day }}">← Назад</a>
+  <a class="pill" href="/schedule?date={{ today }}">Сегодня</a>
+  <a class="pill" href="/schedule?date={{ next_day }}">Вперёд →</a>
+  <span class="muted" style="margin-left: 10px">День: {{ date_str }}</span>
+</div>
+
+<div class="grid">
+  <!-- Левая колонка — время -->
+  <div>
+    {% for t in slots %}
+    <div class="timecell" style="height: 34px">{{ t }}</div>
+    {% endfor %}
+  </div>
+
+  <!-- Правая колонка — комнаты со слотами -->
+  <div class="rooms">
+    {% for r in rooms %}
+    <div>
+      <div class="room-head">{{ r.name }}</div>
+      {% for t in slots %} {% set k = (t, r.code) %}
+      <div class="slot">
+        {% if cell.get(k) %} {% for ap in cell.get(k) %}
+        <div>
+          <b>{{ ap.patient_name or "Пациент" }}</b> — {{ ap.duration or 15 }}
+          мин.
+          <span class="muted">{{ ap.doctor_name or "" }}</span>
+        </div>
+        {% if ap.note %}
+        <div class="muted">{{ ap.note }}</div>
+        {% endif %} {% endfor %} {% else %}
+        <!-- Быстрое добавление записи в пустой слот -->
+        <form class="inline" method="post" action="/schedule/add">
+          <input type="hidden" name="date" value="{{ date_str }}" />
+          <input type="hidden" name="room" value="{{ r.code }}" />
+          <input type="hidden" name="time" value="{{ t }}" />
+          <select name="duration">
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="60">60</option>
+          </select>
+          <input name="patient_name" placeholder="Пациент" required />
+          <input name="doctor_name" placeholder="Врач" />
+          <button>OK</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

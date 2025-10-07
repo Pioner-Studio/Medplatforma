@@ -1,0 +1,119 @@
+{% extends "base.html" %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>История переводов</h2>
+    <div>
+      <a href="{{ url_for('transfer.transfer_page') }}" class="btn btn-primary">
+        Новый перевод
+      </a>
+      <a href="/finance" class="btn btn-outline-secondary"> К финансам </a>
+    </div>
+  </div>
+
+  {% if transfers %}
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Дата операции</th>
+              <th>Из кассы</th>
+              <th>В кассу</th>
+              <th>Сумма</th>
+              <th>Комментарий</th>
+              <th>Статус</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in transfers %}
+            <tr>
+              <td>{{ t.ts.strftime('%d.%m.%Y') }}</td>
+              <td>
+                <span class="badge bg-danger"> {{ t.from_source_name }} </span>
+              </td>
+              <td>
+                <span class="badge bg-success"> {{ t.to_source_name }} </span>
+              </td>
+              <td class="fw-bold">{{ "{:,.0f}".format(t.amount) }}₽</td>
+              <td>{{ t.comment }}</td>
+              <td>
+                <span class="badge bg-success">Выполнен</span>
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-danger"
+                  onclick="confirmDelete('{{ t._id }}', '{{ t.amount }}', '{{ t.from_source_name }}', '{{ t.to_source_name }}')"
+                >
+                  <i class="fas fa-trash"></i> Удалить
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    <h4>История переводов пуста</h4>
+    <p>Переводы между кассами ещё не выполнялись.</p>
+    <a href="{{ url_for('transfer.transfer_page') }}" class="btn btn-primary">
+      Выполнить первый перевод
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Подтверждение удаления</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>Вы уверены, что хотите удалить перевод?</p>
+        <div id="deleteInfo" class="alert alert-warning"></div>
+        <p>
+          <strong>Внимание:</strong> Балансы касс будут восстановлены (откат
+          операции).
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Отмена
+        </button>
+        <form id="deleteForm" method="POST" style="display: inline">
+          <button type="submit" class="btn btn-danger">Удалить перевод</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(transferId, amount, fromSource, toSource) {
+    // Заполняем информацию о переводе
+    document.getElementById(
+      "deleteInfo"
+    ).innerHTML = `<strong>${amount}₽</strong> из <strong>${fromSource}</strong> в <strong>${toSource}</strong>`;
+
+    // Устанавливаем action формы
+    document.getElementById(
+      "deleteForm"
+    ).action = `/finance/transfer/delete/${transferId}`;
+
+    // Открываем модальное окно
+    var modal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    modal.show();
+  }
+</script>
+{% endblock %}
