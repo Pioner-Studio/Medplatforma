@@ -1,10 +1,10 @@
-* text=auto
-*.py   text eol=lf
-*.html text eol=lf
-*.css  text eol=lf
-*.js   text eol=lf
-*.md   text eol=lf
-*.yml  text eol=lf
-*.yaml text eol=lf
-*.ps1  text eol=crlf
-*.bat  text eol=crlf
+* text=auto eol=lf
+
+# бинарные
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.ico binary
