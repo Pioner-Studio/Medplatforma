@@ -31,3 +31,5 @@ remove_*_final*.py
 *backup*.html
 *backup*.py
 *backup*.txt
+**/.venv/
+docs/ai_export/.venv/
