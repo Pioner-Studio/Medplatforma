@@ -52,7 +52,8 @@ python main.py
 * `/static/` — стили, лого, аватары
 * `requirements.txt` — зависимости
 
----
+* `arch_verify.py` сканирует проект → пишет `docs/routes.json`
+* `update_routes.py` делает Markdown-таблицы из `routes.json` → `docs/ROUTES.md` и корневой `ROUTES.md`.
 
 ## 🔐 Доступ и роли
 
