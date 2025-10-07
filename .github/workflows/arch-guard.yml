@@ -1,9 +1,13 @@
 name: Arch Guard
 
 on:
-  pull_request:
+  workflow_dispatch:  # запуск вручную из Actions
+  push:               # запуск на каждый коммит
+    branches: [main, dev]
+  pull_request:       # запуск на PR (как было)
     types: [opened, synchronize, reopened, labeled, unlabeled]
     branches: [dev, main]
+
 
 jobs:
   guard:
