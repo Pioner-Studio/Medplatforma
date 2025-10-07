@@ -1,0 +1,544 @@
+{
+  "routes": [
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/healthz",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/roadmap",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/free_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/login",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/logout",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/rooms/status_now",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/rooms/today_details",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/update_event_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/export_calendar",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_event",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_event/<event_id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/busy_slots",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/doctors",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_doctor",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/doctor_card/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/doctor_busy_slots/<doctor_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/doctor_schedule",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/finance_report",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/finance_report/export",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/tasks",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_task",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/mark_task_done/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/task/<task_id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/messages",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/xray_room",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_xray",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/ztl",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_ztl",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/partners",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/logs",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/backup",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/profile",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/settings",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/data_tools",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/export_data",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/import_data",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/cabinet/<cabinet_name>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/services/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/dicts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/rooms/busy",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_appointment/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/<id>/update",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/appointments/update_time",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/services_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/visit_statuses_min",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/finance/record",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/chat/<id>/send",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/services",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_service",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_service/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_service/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/rooms",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_room",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_room/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_room/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patients",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/add_patient",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/edit_patient/<id>",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/delete_patient/<id>",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/patient_card/<id>",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/update_info",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/update_questionary",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/generate_card_no",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "file": "D:\\Projects\\medplatforma\\main.py",
+      "route": "/api/patients/<id>/full",
+      "methods": [
+        "GET"
+      ]
+    }
+  ],
+  "templates": [
+    "404.html",
+    "add_doctor.html",
+    "add_event.html",
+    "add_patient.html",
+    "add_room.html",
+    "add_service.html",
+    "add_xray.html",
+    "add_ztl.html",
+    "backup.html",
+    "cabinet_card.html",
+    "calendar.html",
+    "data_tools.html",
+    "doctor_card.html",
+    "doctors.html",
+    "edit_event.html",
+    "edit_patient.html",
+    "edit_room.html",
+    "edit_service.html",
+    "finance_report.html",
+    "journal.html",
+    "login.html",
+    "messages.html",
+    "partners.html",
+    "patient_card.html",
+    "patients.html",
+    "profile.html",
+    "roadmap.html",
+    "roadmap_missing.html",
+    "rooms.html",
+    "services.html",
+    "settings.html",
+    "task_card.html",
+    "tasks.html",
+    "xray_room.html",
+    "ztl.html"
+  ],
+  "js_calls": [
+    "/api/appointments/update_time",
+    "/api/dicts",
+    "/api/doctor_schedule",
+    "/api/events?",
+    "/api/finance/record"
+  ]
+}
