@@ -1,0 +1,7 @@
+﻿{
+    "status":  "ok",
+    "update_time":  "2025-09-11T10:30:00Z",
+    "message":  "Time updated",
+    "appointment_id":  123,
+    "action":  "update_time"
+}

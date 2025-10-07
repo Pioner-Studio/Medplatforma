@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="xray-cabinet-wrap">
+    <div class="xray-header-row">
+        <h2>Рентген-кабинет</h2>
+        <a href="{{ url_for('add_xray') }}" class="btn-main">
+            <i class="fa fa-plus"></i> Добавить снимок
+        </a>
+    </div>
+    <form method="get" class="xray-filters">
+        <select name="patient" class="filter-select">
+            <option value="">Все пациенты</option>
+            {% for p in patients.values() %}
+            <option value="{{ p['_id'] }}">{{ p['full_name'] }}</option>
+            {% endfor %}
+        </select>
+        <select name="doctor" class="filter-select">
+            <option value="">Все врачи</option>
+            {% for d in doctors.values() %}
+            <option value="{{ d['_id'] }}">{{ d['full_name'] }}</option>
+            {% endfor %}
+        </select>
+        <select name="type" class="filter-select">
+            <option value="">Все типы</option>
+            <option>Панорама</option>
+            <option>Прицельный</option>
+            <option>КТ</option>
+        </select>
+        <input type="date" name="date" class="filter-select">
+        <button type="submit" class="btn btn-secondary">Фильтр</button>
+    </form>
+
+    <div class="xray-table-zone">
+        <table class="xray-table">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Пациент</th>
+                    <th>Врач</th>
+                    <th>Тип</th>
+                    <th>Превью</th>
+                    <th>Заключение</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for x in xrays %}
+                <tr>
+                    <td style="font-weight:600;font-size:1.09em;">{{ x.date }}</td>
+                    <td>
+                        <div class="xray-cell">
+                            <img src="{{ patients[x.patient_id]['avatar_url'] if x.patient_id in patients else '/static/avatars/demo-patient.png' }}" class="xray-avatar">
+                            <div>
+                                <b>{{ patients[x.patient_id]['full_name'] if x.patient_id in patients else "—" }}</b>
+                                <div class="xray-meta">{{ patients[x.patient_id]['phone'] if x.patient_id in patients else "" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="xray-cell">
+                            <img src="{{ doctors[x.doctor_id]['avatar_url'] if x.doctor_id in doctors else '/static/avatars/demo-doctor.png' }}" class="xray-avatar">
+                            <div>
+                                <b>{{ doctors[x.doctor_id]['full_name'] if x.doctor_id in doctors else "—" }}</b>
+                                <div class="xray-meta">{{ doctors[x.doctor_id]['specialty'] if x.doctor_id in doctors else "" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="xray-badge {{ x.type }}">{{ x.type }}</span>
+                    </td>
+                    <td>
+                        <img src="{{ x.image_url }}" class="xray-img-preview"
+                             onclick="showXrayModal('{{ x.image_url }}', '{{ x.comment|e }}', '{{ x.report|e }}')" alt="X-ray">
+                    </td>
+                    <td>
+                        <span>{{ x.comment or '-' }}</span>
+                    </td>
+                    <td>
+                        <a href="{{ x.image_url }}" download class="btn-download">
+                            <i class="fa fa-download"></i> Скачать
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Модалка для увеличения снимка -->
+<div class="modal" id="xrayModal" style="display:none;">
+    <div class="modal-content" style="max-width:670px;">
+        <span class="close" onclick="document.getElementById('xrayModal').style.display='none'">&times;</span>
+        <img id="modalXrayImg" src="" style="width:98%;border-radius:14px;box-shadow:0 4px 22px #8fc7fa44;margin-bottom:16px;">
+        <div id="modalComment" style="margin-bottom:8px;color:#2563eb;font-weight:500;"></div>
+        <div id="modalReport" style="font-size:1.13em;color:#222;"></div>
+    </div>
+</div>
+<script>
+function showXrayModal(url, comment, report) {
+    document.getElementById('modalXrayImg').src = url;
+    document.getElementById('modalComment').innerText = comment || '';
+    document.getElementById('modalReport').innerText = report || '';
+    document.getElementById('xrayModal').style.display = 'flex';
+}
+window.onclick = function(e) {
+    let modal = document.getElementById('xrayModal');
+    if (e.target === modal) modal.style.display = 'none';
+}
+</script>
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+.xray-cabinet-wrap { max-width: 1250px; margin: 0 auto; padding: 38px 0 36px 0; }
+.xray-header-row {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;
+}
+.xray-filters {
+    display: flex; gap: 14px; margin-bottom: 30px; flex-wrap: wrap; align-items: center;
+}
+.xray-table-zone {
+    background: #fff; border-radius: 20px; box-shadow: 0 4px 26px #e3eaf935;
+    padding: 22px 26px; margin-top: 0;
+}
+.xray-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 1.07em; }
+.xray-table th, .xray-table td { padding: 15px 8px; vertical-align: middle; text-align: center; }
+.xray-table th { background: #f4f8ff; color: #145dbd; font-size: 1.04em; }
+.xray-table tbody tr { transition: background .13s; border-bottom: 1.5px solid #f1f4fa; }
+.xray-table tbody tr:hover { background: #f5fafd; }
+.xray-avatar { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; margin-right: 8px; box-shadow:0 2px 8px #b9e4fa22; }
+.xray-cell { display: flex; align-items: center; gap: 8px; text-align: left; }
+.xray-meta { font-size: 0.98em; color: #8493b5; }
+.xray-badge { display: inline-block; padding: 6px 15px; border-radius: 8px; font-size: 0.97em; font-weight: 600; color: #fff; margin-bottom: 2px;}
+.xray-badge.Панорама { background: #2196f3; }
+.xray-badge.КТ { background: #21b445; }
+.xray-badge.Прицельный { background: #ffa600; color: #222;}
+.xray-img-preview {
+    width: 62px; height: 62px; object-fit: cover; border-radius: 11px;
+    box-shadow: 0 2px 10px #a7d4fd33; transition: transform .17s, box-shadow .17s;
+    cursor: pointer;
+    border: 1.5px solid #e5ecf7;
+}
+.xray-img-preview:hover {
+    transform: scale(1.12) rotate(-2.5deg);
+    box-shadow: 0 6px 24px #2196f333;
+}
+.btn-main {
+    display:inline-flex;align-items:center;gap:9px;
+    background:linear-gradient(90deg,#2196f3 60%,#21b445 100%);
+    color:#fff;font-weight:700;border-radius:10px;
+    padding:12px 28px;font-size:1.08em;box-shadow:0 4px 16px #b5e3cb22;
+    border:none;text-decoration:none;transition:.14s;background-size:200%;
+}
+.btn-main:hover {background-position:right;color:#fff;}
+.btn-download {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 17px; font-size: 0.97em; font-weight: 600;
+    background: #e8f3ff; color: #2576c6; border-radius: 8px; border: none;
+    box-shadow: 0 2px 7px #e3eaf933; text-decoration: none;
+    transition: background .13s, color .13s;
+}
+.btn-download:hover { background: #d1eaff; color: #1859b3; }
+.modal { align-items: center; justify-content: center; }
+.modal-content { animation: xraypop .3s; }
+@keyframes xraypop {
+    from { opacity:0; transform: scale(0.94);}
+    to   { opacity:1; transform: scale(1);}
+}
+</style>
+{% endblock %}
+{% endblock %}

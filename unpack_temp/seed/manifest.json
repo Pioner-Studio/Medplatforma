@@ -1,0 +1,48 @@
+{
+  "services_price_dual.normalized.csv": {
+    "rows": 55,
+    "columns": [
+      "id",
+      "name",
+      "duration_min",
+      "price_client",
+      "price_staff",
+      "active"
+    ]
+  },
+  "doctors.normalized.csv": {
+    "rows": 6,
+    "columns": [
+      "id",
+      "full_name",
+      "specialty",
+      "phone",
+      "email",
+      "telegram",
+      "active"
+    ]
+  },
+  "rooms.normalized.csv": {
+    "rows": 5,
+    "columns": [
+      "id",
+      "name",
+      "active"
+    ]
+  },
+  "users.normalized.csv": {
+    "rows": 3,
+    "columns": [
+      "id",
+      "full_name",
+      "login",
+      "role",
+      "doctor_id",
+      "temp_password",
+      "active"
+    ]
+  },
+  "users_doctor_linked.csv": {
+    "error": "No columns to parse from file"
+  }
+}

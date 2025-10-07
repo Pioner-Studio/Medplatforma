@@ -1,0 +1,5 @@
+id,full_name,login,role,doctor_id,temp_password,active,phone
+U001,,Gogueva ,admin,,113322,True,+79251837932
+U002,,Nakonechnyi ,admin,,223311,True,+79852788171
+U003,,Nakonechnaia,admin,,331122,True,+79164848085
+U004,Аксенова Ульяна Денисовна,Aksenova,registrar,,142536,True,+79175051978

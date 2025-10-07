@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Редактировать кабинет</h2>
+
+<form method="post" style="background:#fff;border-radius:12px;box-shadow:0 1px 8px #e3eaf9b7;padding:16px;max-width:720px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <label>Название
+      <input type="text" name="name" value="{{ item.name }}" required>
+    </label>
+
+    <label>Тип
+      <select name="type" required>
+        {% for v,t in ROOM_TYPES %}
+          <option value="{{ v }}" {% if item.type==v %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Статус
+      <select name="status" required>
+        {% for v,t in ROOM_STATUSES %}
+          <option value="{{ v }}" {% if item.status==v %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Цвет
+      <input type="color" name="color" value="{{ item.color or '#1abc9c' }}" style="height:42px;">
+    </label>
+  </div>
+
+  <div style="margin-top:14px;display:flex;gap:10px;">
+    <button type="submit" class="btn-main" style="background:#1976d2;color:#fff;padding:8px 14px;border-radius:8px;">Сохранить</button>
+    <a href="{{ url_for('rooms_list') }}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

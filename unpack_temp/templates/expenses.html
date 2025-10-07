@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Учёт расходов{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 6px 32px rgba(20,40,80,.08);padding:38px;">
+    <h2>Учёт расходов</h2>
+    <div><b>Общий доход:</b> <span style="color:#25c045">{{ total_income|round(2) }} ₽</span></div>
+    <div><b>Общие расходы:</b> <span style="color:red;">{{ total_expenses|round(2) }} ₽</span></div>
+    <div><b>Чистая прибыль:</b> <span style="color:{{ 'green' if profit >= 0 else 'red' }};font-weight:700;">{{ profit|round(2) }} ₽</span></div>
+    <hr style="margin:24px 0;">
+    <table style="width:100%;">
+        <tr>
+            <th>Дата</th>
+            <th>Категория</th>
+            <th>Сумма</th>
+            <th>Комментарий</th>
+        </tr>
+        {% for e in expenses %}
+        <tr>
+            <td>{{ e.date }}</td>
+            <td>{{ e.category }}</td>
+            <td>{{ e.amount|round(2) }} ₽</td>
+            <td>{{ e.comment }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="/add_expense" style="margin-top:24px;display:inline-block;background:#445be2;color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;">Добавить расход</a>
+</div>
+{% endblock %}

@@ -1,0 +1,4 @@
+templates\patients\*.html
+static\js\*patient*.js
+routes*\*patient*.py
+main.py

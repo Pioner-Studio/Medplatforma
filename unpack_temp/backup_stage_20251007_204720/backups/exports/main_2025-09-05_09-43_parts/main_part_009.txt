@@ -1,0 +1,253 @@
+﻿### main.py (часть 9/12)
+```python
+                    "ts_iso": doc["ts_iso"],
+                }
+            )
+
+    return jsonify({"ok": True})
+
+
+@app.route("/api/chat/<id>/send", methods=["POST"])
+def api_chat_send(id):
+    _id = oid(id)
+    if not _id:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+    data = request.get_json(force=True, silent=True) or {}
+    text = (data.get("text") or "").strip()
+    if not text:
+        return jsonify({"ok": False, "error": "empty"}), 400
+    ts = datetime.now()
+    db.messages.insert_one(
+        {
+            "patient_id": _id,
+            "from": "admin",  # дальше можем хранить user_id роли (админ/куратор)
+            "text": text,
+            "ts": ts,
+            "ts_iso": ts.strftime("%Y-%m-%dT%H:%M"),
+        }
+    )
+    return jsonify({"ok": True})
+
+
+# ===================== УСЛУГИ (services) =====================
+
+
+def _service_form_data():
+    """Считываем и валидируем поля формы услуги."""
+    name = (request.form.get("name") or "").strip()
+    code = (request.form.get("code") or "").strip().upper()
+    description = (request.form.get("description") or "").strip()
+    price = request.form.get("price") or ""
+    duration_min = request.form.get("duration_min") or ""
+    color = request.form.get("color") or "#3498db"
+    is_active = True if request.form.get("is_active") == "on" else False
+
+    errors = []
+    if not name:
+        errors.append("Название обязательно.")
+    if not code:
+        errors.append("Код обязателен.")
+    try:
+        price = int(price)
+        if price < 0:
+            errors.append("Цена не может быть отрицательной.")
+    except ValueError:
+        errors.append("Цена должна быть числом.")
+    try:
+        duration_min = int(duration_min)
+        if duration_min <= 0:
+            errors.append("Длительность должна быть > 0.")
+    except ValueError:
+        errors.append("Длительность должна быть числом.")
+
+    data = {
+        "name": name,
+        "code": code,
+        "description": description,
+        "price": price if not isinstance(price, str) else 0,
+        "duration_min": duration_min if not isinstance(duration_min, str) else 30,
+        "color": color,
+        "is_active": is_active,
+    }
+    return data, errors
+
+
+@app.route("/services")
+def services_list():
+    q = {}
+    status = request.args.get("status")
+    if status == "active":
+        q["is_active"] = True
+    elif status == "archived":
+        q["is_active"] = False
+
+    items = list(db.services.find(q).sort([("is_active", -1), ("name", 1)]))
+    return render_template("services.html", items=items)
+
+
+@app.route("/add_service", methods=["GET", "POST"])
+def add_service():
+    if request.method == "POST":
+        data, errors = _service_form_data()
+        # проверка уникальности кода
+        if db.services.find_one({"code": data["code"]}):
+            errors.append("Код услуги уже используется.")
+        if errors:
+            for e in errors:
+                flash(e, "danger")
+            return render_template("add_service.html", form=data)
+        data["created_at"] = datetime.utcnow()
+        data["updated_at"] = datetime.utcnow()
+        db.services.insert_one(data)
+        flash("Услуга добавлена.", "success")
+        return redirect(url_for("services_list"))
+    # GET
+    return render_template(
+        "add_service.html",
+        form={"color": "#3498db", "duration_min": 30, "price": 0, "is_active": True},
+    )
+
+
+@app.route("/edit_service/<id>", methods=["GET", "POST"])
+def edit_service(id):
+    item = db.services.find_one({"_id": ObjectId(id)})
+    if not item:
+        flash("Услуга не найдена.", "danger")
+        return redirect(url_for("services_list"))
+
+    if request.method == "POST":
+        data, errors = _service_form_data()
+        # уникальность кода (не считая текущую запись)
+        other = db.services.find_one({"code": data["code"], "_id": {"$ne": ObjectId(id)}})
+        if other:
+            errors.append("Код услуги уже используется.")
+        if errors:
+            for e in errors:
+                flash(e, "danger")
+            # вернуть введённые данные
+            item.update(data)
+            return render_template("edit_service.html", item=item)
+        db.services.update_one(
+            {"_id": ObjectId(id)}, {"$set": {**data, "updated_at": datetime.utcnow()}}
+        )
+        flash("Изменения сохранены.", "success")
+        return redirect(url_for("services_list"))
+
+    return render_template("edit_service.html", item=item)
+
+
+@app.route("/delete_service/<id>", methods=["POST"])
+def delete_service(id):
+    db.services.delete_one({"_id": ObjectId(id)})
+    flash("Услуга удалена.", "success")
+    return redirect(url_for("services_list"))
+
+
+# =================== /УСЛУГИ (services) ======================
+
+# ===================== КАБИНЕТЫ (rooms) =====================
+
+# Справочники для удобного выбора в формах
+ROOM_TYPES = [
+    ("Терапия", "Терапия"),
+    ("Хирургия", "Хирургия"),
+    ("Рентген", "Рентген"),
+    ("Гигиена", "Гигиена"),
+    ("Ортопедия", "Ортопедия"),
+    ("Ортодонтия", "Ортодонтия"),
+]
+ROOM_STATUSES = [
+    ("available", "Свободен"),
+    ("occupied", "Занят"),
+    ("maintenance", "Обслуживание"),
+]
+
+
+def _room_form_data():
+    name = (request.form.get("name") or "").strip()
+    rtype = (request.form.get("type") or "").strip()
+    status = (request.form.get("status") or "available").strip()
+    color = (request.form.get("color") or "#1abc9c").strip()
+    errors = []
+    if not name:
+        errors.append("Название кабинета обязательно.")
+    if rtype not in [t[0] for t in ROOM_TYPES]:
+        errors.append("Некорректный тип кабинета.")
+    if status not in [s[0] for s in ROOM_STATUSES]:
+        errors.append("Некорректный статус кабинета.")
+    return {"name": name, "type": rtype, "status": status, "color": color}, errors
+
+
+@app.route("/rooms")
+def rooms_list():
+    items = list(db.rooms.find({}).sort([("name", 1)]))
+    # Для тултипа статуса на русском
+    status_title = dict(ROOM_STATUSES)
+    return render_template("rooms.html", items=items, status_title=status_title)
+
+
+@app.route("/add_room", methods=["GET", "POST"])
+def add_room():
+    if request.method == "POST":
+        data, errors = _room_form_data()
+        # уникальность имени кабинета
+        if db.rooms.find_one({"name": data["name"]}):
+            errors.append("Кабинет с таким названием уже существует.")
+        if errors:
+            for e in errors:
+                flash(e, "danger")
+            return render_template(
+                "add_room.html", form=data, ROOM_TYPES=ROOM_TYPES, ROOM_STATUSES=ROOM_STATUSES
+            )
+        data["created_at"] = datetime.utcnow()
+        data["updated_at"] = datetime.utcnow()
+        db.rooms.insert_one(data)
+        flash("Кабинет добавлен.", "success")
+        return redirect(url_for("rooms_list"))
+
+    # GET
+    return render_template(
+        "add_room.html",
+        form={"type": "Терапия", "status": "available", "color": "#1abc9c"},
+        ROOM_TYPES=ROOM_TYPES,
+        ROOM_STATUSES=ROOM_STATUSES,
+    )
+
+
+@app.route("/edit_room/<id>", methods=["GET", "POST"])
+def edit_room(id):
+    item = db.rooms.find_one({"_id": ObjectId(id)})
+    if not item:
+        flash("Кабинет не найден.", "danger")
+        return redirect(url_for("rooms_list"))
+
+    if request.method == "POST":
+        data, errors = _room_form_data()
+        # уникальность имени (кроме текущего)
+        other = db.rooms.find_one({"name": data["name"], "_id": {"$ne": ObjectId(id)}})
+        if other:
+            errors.append("Кабинет с таким названием уже существует.")
+        if errors:
+            for e in errors:
+                flash(e, "danger")
+            item.update(data)
+            return render_template(
+                "edit_room.html", item=item, ROOM_TYPES=ROOM_TYPES, ROOM_STATUSES=ROOM_STATUSES
+            )
+        db.rooms.update_one(
+            {"_id": ObjectId(id)}, {"$set": {**data, "updated_at": datetime.utcnow()}}
+        )
+        flash("Изменения сохранены.", "success")
+        return redirect(url_for("rooms_list"))
+
+    return render_template(
+        "edit_room.html", item=item, ROOM_TYPES=ROOM_TYPES, ROOM_STATUSES=ROOM_STATUSES
+    )
+
+
+@app.route("/delete_room/<id>", methods=["POST"])
+def delete_room(id):
+    db.rooms.delete_one({"_id": ObjectId(id)})
+    flash("Кабинет удалён.", "success")
+    return redirect(url_for("rooms_list"))
+```

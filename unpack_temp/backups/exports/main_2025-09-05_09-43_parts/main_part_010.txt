@@ -1,0 +1,253 @@
+﻿### main.py (часть 10/12)
+```python
+
+
+# =================== /КАБИНЕТЫ (rooms) ======================
+
+# ===================== ПАЦИЕНТЫ (patients) =====================
+
+
+def _patient_form_data():
+    full_name = (request.form.get("full_name") or "").strip()
+    birthday = (request.form.get("birthday") or "").strip()  # 'YYYY-MM-DD'
+    gender = (request.form.get("gender") or "").strip()  # male/female/other
+    phone = (request.form.get("phone") or "").strip()
+    email = (request.form.get("email") or "").strip()
+    whatsapp = (request.form.get("whatsapp") or "").strip()
+    telegram = (request.form.get("telegram") or "").strip()
+    city = (request.form.get("city") or "").strip()
+    street = (request.form.get("street") or "").strip()
+    zipc = (request.form.get("zip") or "").strip()
+    notes = (request.form.get("notes") or "").strip()
+    avatar = (
+        request.form.get("avatar") or ""
+    ).strip()  # относительный путь '/static/avatars/patients/p1.jpg'
+
+    errors = []
+    if not full_name:
+        errors.append("ФИО обязательно.")
+    # простая валидация даты
+    bdate = None
+    if birthday:
+        try:
+            bdate = datetime.strptime(birthday, "%Y-%m-%d")
+        except ValueError:
+            errors.append("Дата рождения должна быть в формате ГГГГ-ММ-ДД.")
+
+    data = {
+        "full_name": full_name,
+        "birthday": bdate,
+        "gender": gender or "other",
+        "contacts": {"phone": phone, "email": email, "whatsapp": whatsapp, "telegram": telegram},
+        "address": {"city": city, "street": street, "zip": zipc},
+        "notes": notes,
+        "avatar": avatar or "/static/avatars/patients/default.jpg",
+        "updated_at": datetime.utcnow(),
+    }
+    return data, errors
+
+
+@app.route("/patients")
+def patients_list():
+    q = {}
+    # Поиск по ФИО или телефону/почте
+    search = (request.args.get("q") or "").strip()
+    if search:
+        q = {
+            "$or": [
+                {"full_name": {"$regex": search, "$options": "i"}},
+                {"contacts.phone": {"$regex": search, "$options": "i"}},
+                {"contacts.email": {"$regex": search, "$options": "i"}},
+            ]
+        }
+
+    items = list(db.patients.find(q).sort([("full_name", 1)]))
+
+    # НОРМАЛИЗАЦИЯ: гарантируем contacts/avatar/адреса, строковый _id
+    for p in items:
+        p["_id"] = str(p.get("_id"))
+        # contacts
+        contacts = p.get("contacts") or {}
+        if not isinstance(contacts, dict):
+            contacts = {}
+        contacts.setdefault("phone", "")
+        contacts.setdefault("email", "")
+        contacts.setdefault("whatsapp", "")
+        contacts.setdefault("telegram", "")
+        p["contacts"] = contacts
+        # avatar
+        if not p.get("avatar"):
+            p["avatar"] = "/static/avatars/patients/default.jpg"
+        # address
+        addr = p.get("address") or {}
+        if not isinstance(addr, dict):
+            addr = {}
+        addr.setdefault("city", "")
+        addr.setdefault("street", "")
+        addr.setdefault("zip", "")
+        p["address"] = addr
+
+    # Быстрый счётчик визитов
+    appts_count = {}
+    if items:
+        ids = [ObjectId(p["_id"]) for p in items if p.get("_id")]
+        if ids:
+            pipeline = [
+                {"$match": {"patient_id": {"$in": ids}}},
+                {"$group": {"_id": "$patient_id", "cnt": {"$sum": 1}}},
+            ]
+            for r in db.appointments.aggregate(pipeline):
+                appts_count[str(r["_id"])] = r["cnt"]
+
+    return render_template("patients.html", items=items, appts_count=appts_count, search=search)
+
+
+@app.route("/add_patient", methods=["GET", "POST"])
+def add_patient():
+    if request.method == "POST":
+        data, errors = _patient_form_data()
+        if errors:
+            for e in errors:
+                flash(e, "danger")
+            return render_template("add_patient.html", form=data)
+        data["created_at"] = datetime.utcnow()
+        db.patients.insert_one(data)
+        flash("Пациент добавлен.", "success")
+        return redirect(url_for("patients_list"))
+    # GET
+    return render_template("add_patient.html", form={})
+
+
+@app.route("/edit_patient/<id>", methods=["GET", "POST"])
+def edit_patient(id):
+    item = db.patients.find_one({"_id": ObjectId(id)})
+    if not item:
+        flash("Пациент не найден.", "danger")
+        return redirect(url_for("patients_list"))
+
+    if request.method == "POST":
+        data, errors = _patient_form_data()
+        if errors:
+            for e in errors:
+                flash(e, "danger")
+            # подставим обратно введённые значения
+            item.update(data)
+            return render_template("edit_patient.html", item=item)
+        db.patients.update_one({"_id": ObjectId(id)}, {"$set": data})
+        flash("Изменения сохранены.", "success")
+        return redirect(url_for("patients_list"))
+
+    # GET
+    return render_template("edit_patient.html", item=item)
+
+
+@app.route("/delete_patient/<id>", methods=["POST"])
+def delete_patient(id):
+    db.patients.delete_one({"_id": ObjectId(id)})
+    # связанные визиты умышленно не трогаем (историчность)
+    flash("Пациент удалён.", "success")
+    return redirect(url_for("patients_list"))
+
+
+@app.route("/patient_card/<id>")
+def patient_card(id):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        flash("Некорректный ID пациента.", "danger")
+        return redirect(url_for("patients_list"))
+
+    p = db.patients.find_one({"_id": oid})
+    if not p:
+        flash("Пациент не найден.", "danger")
+        return redirect(url_for("patients_list"))
+
+    # Нормализуем поля, чтоб шаблон не падал
+    p.setdefault("card_no", "")
+    p.setdefault("sex", "")
+    p.setdefault("birthdate", "")  # храним строкой 'YYYY-MM-DD'
+    p.setdefault("phone", "")
+    p.setdefault("email", "")
+    p.setdefault("full_name", "")
+    p.setdefault("notes", "")
+
+    # Анкета
+    q = p.get("questionary", {}) or {}
+    questionary = {
+        "allergy": s(q.get("allergy")),
+        "chronic": s(q.get("chronic")),
+        "surgeries": s(q.get("surgeries")),
+        "medications": s(q.get("medications")),
+        "infections": s(q.get("infections")),
+        "pregnancy": s(q.get("pregnancy")),
+        "other": s(q.get("other")),
+    }
+
+    return render_template("patient_card.html", p=p, questionary=questionary)
+
+
+@app.route("/api/patients/<id>/update_info", methods=["POST"])
+def api_patient_update_info(id):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    p = db.patients.find_one({"_id": oid})
+    if not p:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    data = request.get_json(force=True, silent=True) or {}
+
+    upd = {
+        "full_name": s(data.get("full_name")),
+        "phone": s(data.get("phone")),
+        "email": s(data.get("email")),
+        "sex": s(data.get("sex")),  # 'm' | 'f' | ''
+        "birthdate": parse_date_yyyy_mm_dd(data.get("birthdate")),
+        "notes": s(data.get("notes")),
+    }
+
+    # card_no можно менять вручную (или сгенерировать отдельной кнопкой)
+    if "card_no" in data:
+        upd["card_no"] = s(data.get("card_no"))
+
+    db.patients.update_one({"_id": oid}, {"$set": upd})
+    return jsonify({"ok": True})
+
+
+@app.route("/api/patients/<id>/update_questionary", methods=["POST"])
+def api_patient_update_questionary(id):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    if not db.patients.find_one({"_id": oid}):
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    data = request.get_json(force=True, silent=True) or {}
+    q = {
+        "allergy": s(data.get("allergy")),
+        "chronic": s(data.get("chronic")),
+        "surgeries": s(data.get("surgeries")),
+        "medications": s(data.get("medications")),
+        "infections": s(data.get("infections")),
+        "pregnancy": s(data.get("pregnancy")),
+        "other": s(data.get("other")),
+    }
+    db.patients.update_one({"_id": oid}, {"$set": {"questionary": q}})
+    return jsonify({"ok": True})
+
+
+@app.route("/api/patients/<id>/generate_card_no", methods=["POST"])
+def api_patient_generate_card_no(id):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    p = db.patients.find_one({"_id": oid})
+    if not p:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+```

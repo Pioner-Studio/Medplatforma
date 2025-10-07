@@ -1,0 +1,4 @@
+templates\tooth\*.html
+static\js\*tooth*.js
+routes*\*tooth*.py
+main.py

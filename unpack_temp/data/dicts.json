@@ -1,0 +1,547 @@
+{
+  "ok": true,
+  "loaded_at": "2025-09-17T00:08:11",
+  "source_dir": "D:\\Projects\\medplatforma\\seed",
+  "services": [
+    {
+      "id": "S001",
+      "name": "КТ",
+      "duration_min": 60,
+      "price_client": 6000,
+      "price_staff": 4000,
+      "active": true
+    },
+    {
+      "id": "S002",
+      "name": "Гигиена полости рта взр",
+      "duration_min": 60,
+      "price_client": 13000,
+      "price_staff": 10000,
+      "active": true
+    },
+    {
+      "id": "S003",
+      "name": "Гигиена полости рта дет",
+      "duration_min": 60,
+      "price_client": 12000,
+      "price_staff": 9500,
+      "active": true
+    },
+    {
+      "id": "S004",
+      "name": "Пародонтологическое лечение десен мембранами",
+      "duration_min": 60,
+      "price_client": 13000,
+      "price_staff": 9500,
+      "active": true
+    },
+    {
+      "id": "S005",
+      "name": "Отбеливание",
+      "duration_min": 60,
+      "price_client": 35000,
+      "price_staff": 31500,
+      "active": true
+    },
+    {
+      "id": "S006",
+      "name": "Каппы для домашнего отбеливания с гелем",
+      "duration_min": 60,
+      "price_client": 27000,
+      "price_staff": 20500,
+      "active": true
+    },
+    {
+      "id": "S007",
+      "name": "ICON",
+      "duration_min": 60,
+      "price_client": 15000,
+      "price_staff": 11500,
+      "active": true
+    },
+    {
+      "id": "S008",
+      "name": "Кариес поверхностный взр",
+      "duration_min": 60,
+      "price_client": 13000,
+      "price_staff": 10000,
+      "active": true
+    },
+    {
+      "id": "S009",
+      "name": "Кариес поверхностный дет",
+      "duration_min": 60,
+      "price_client": 11000,
+      "price_staff": 9000,
+      "active": true
+    },
+    {
+      "id": "S010",
+      "name": "Кариес глубокий взр",
+      "duration_min": 60,
+      "price_client": 19000,
+      "price_staff": 14500,
+      "active": true
+    },
+    {
+      "id": "S011",
+      "name": "Кариес глубокий детск",
+      "duration_min": 60,
+      "price_client": 17000,
+      "price_staff": 13500,
+      "active": true
+    },
+    {
+      "id": "S012",
+      "name": "Коронка детская",
+      "duration_min": 60,
+      "price_client": 25000,
+      "price_staff": 18000,
+      "active": true
+    },
+    {
+      "id": "S013",
+      "name": "Клиновидные дефекты",
+      "duration_min": 60,
+      "price_client": 17000,
+      "price_staff": 12000,
+      "active": true
+    },
+    {
+      "id": "S014",
+      "name": "Реставрация эстетическая (сколы)",
+      "duration_min": 60,
+      "price_client": 19000,
+      "price_staff": 14000,
+      "active": true
+    },
+    {
+      "id": "S015",
+      "name": "Восстановление стенки зуба со штифтом (Build up)",
+      "duration_min": 60,
+      "price_client": 21000,
+      "price_staff": 14500,
+      "active": true
+    },
+    {
+      "id": "S016",
+      "name": "Реставрация художественная= аналог виниров",
+      "duration_min": 60,
+      "price_client": 30000,
+      "price_staff": 23500,
+      "active": true
+    },
+    {
+      "id": "S017",
+      "name": "Кюретаж, 1 зуб",
+      "duration_min": 60,
+      "price_client": 3000,
+      "price_staff": 2200,
+      "active": true
+    },
+    {
+      "id": "S018",
+      "name": "Первичное лечение 1канального зуба в одно посещение (пульпит)",
+      "duration_min": 60,
+      "price_client": 27000,
+      "price_staff": 23500,
+      "active": true
+    },
+    {
+      "id": "S019",
+      "name": "Перелечивание 1 канала",
+      "duration_min": 60,
+      "price_client": 27000,
+      "price_staff": 22000,
+      "active": true
+    },
+    {
+      "id": "S020",
+      "name": "Удаление зуба простой",
+      "duration_min": 60,
+      "price_client": 15000,
+      "price_staff": 12500,
+      "active": true
+    },
+    {
+      "id": "S021",
+      "name": "Удаление зуба сложный",
+      "duration_min": 60,
+      "price_client": 22000,
+      "price_staff": 17000,
+      "active": true
+    },
+    {
+      "id": "S022",
+      "name": "Имплант shtraumann",
+      "duration_min": 60,
+      "price_client": 100000,
+      "price_staff": 81500,
+      "active": true
+    },
+    {
+      "id": "S023",
+      "name": "Имплант Nobel",
+      "duration_min": 60,
+      "price_client": 100000,
+      "price_staff": 81500,
+      "active": true
+    },
+    {
+      "id": "S024",
+      "name": "Имплант Dentium",
+      "duration_min": 60,
+      "price_client": 80000,
+      "price_staff": 66000,
+      "active": true
+    },
+    {
+      "id": "S025",
+      "name": "Синус-лифтинг",
+      "duration_min": 60,
+      "price_client": 65000,
+      "price_staff": 54000,
+      "active": true
+    },
+    {
+      "id": "S026",
+      "name": "Костная пластика",
+      "duration_min": 60,
+      "price_client": 75000,
+      "price_staff": 63000,
+      "active": true
+    },
+    {
+      "id": "S027",
+      "name": "Формирователь десны",
+      "duration_min": 60,
+      "price_client": 13000,
+      "price_staff": 12500,
+      "active": true
+    },
+    {
+      "id": "S028",
+      "name": "Пластика десны",
+      "duration_min": 60,
+      "price_client": 13000,
+      "price_staff": 11000,
+      "active": true
+    },
+    {
+      "id": "S029",
+      "name": "ALL oin 4 1 челюсть Nobel",
+      "duration_min": 60,
+      "price_client": 400000,
+      "price_staff": 31500,
+      "active": true
+    },
+    {
+      "id": "S030",
+      "name": "ALL on 6 1 челюсть Nobel",
+      "duration_min": 60,
+      "price_client": 600000,
+      "price_staff": 464000,
+      "active": true
+    },
+    {
+      "id": "S031",
+      "name": "ALL oin 4 1 челюсть Dentium",
+      "duration_min": 60,
+      "price_client": 320000,
+      "price_staff": 232000,
+      "active": true
+    },
+    {
+      "id": "S032",
+      "name": "ALL on 6 1 челюсть Dentium",
+      "duration_min": 60,
+      "price_client": 480000,
+      "price_staff": 341000,
+      "active": true
+    },
+    {
+      "id": "S033",
+      "name": "Ортопедическая конструкция ALL on 6 1 челюсть протез временный",
+      "duration_min": 60,
+      "price_client": 250000,
+      "price_staff": 201000,
+      "active": true
+    },
+    {
+      "id": "S034",
+      "name": "Ортопедическая конструкция ALL on 4 1 челюсть протез временный",
+      "duration_min": 60,
+      "price_client": 200000,
+      "price_staff": 163000,
+      "active": true
+    },
+    {
+      "id": "S035",
+      "name": "Ортопедическая конструкция ALL on 6 1 челюсть протез постоянный",
+      "duration_min": 60,
+      "price_client": 300000,
+      "price_staff": 237000,
+      "active": true
+    },
+    {
+      "id": "S036",
+      "name": "Ортопедическая конструкция ALL on 4 1 челюсть протез постоянный",
+      "duration_min": 60,
+      "price_client": 250000,
+      "price_staff": 199000,
+      "active": true
+    },
+    {
+      "id": "S037",
+      "name": "Постоянный протез сьемный пластик без имплантации 1 челюсть",
+      "duration_min": 60,
+      "price_client": 100000,
+      "price_staff": 79000,
+      "active": true
+    },
+    {
+      "id": "S038",
+      "name": "Брекеты",
+      "duration_min": 60,
+      "price_client": 450000,
+      "price_staff": 354000,
+      "active": true
+    },
+    {
+      "id": "S039",
+      "name": "Брекеты частичные локальные на 2 зуба",
+      "duration_min": 60,
+      "price_client": 60000,
+      "price_staff": 55000,
+      "active": true
+    },
+    {
+      "id": "S040",
+      "name": "Аппарат Марка Росса (несьемный аппарат для расширения верх челюсти)",
+      "duration_min": 60,
+      "price_client": 100000,
+      "price_staff": 85000,
+      "active": true
+    },
+    {
+      "id": "S041",
+      "name": "Элайнеры",
+      "duration_min": 60,
+      "price_client": 500000,
+      "price_staff": 440000,
+      "active": true
+    },
+    {
+      "id": "S042",
+      "name": "Временная коронка на зубе пластик",
+      "duration_min": 60,
+      "price_client": 20000,
+      "price_staff": 17500,
+      "active": true
+    },
+    {
+      "id": "S043",
+      "name": "Временная коронка на имплантате",
+      "duration_min": 60,
+      "price_client": 30000,
+      "price_staff": 26000,
+      "active": true
+    },
+    {
+      "id": "S044",
+      "name": "Постоянная коронка на зубе Emax керамика",
+      "duration_min": 60,
+      "price_client": 55000,
+      "price_staff": 41500,
+      "active": true
+    },
+    {
+      "id": "S045",
+      "name": "Постоянная коронка на зубе диоксид циркония",
+      "duration_min": 60,
+      "price_client": 50000,
+      "price_staff": 37500,
+      "active": true
+    },
+    {
+      "id": "S046",
+      "name": "Постоянная коронка на импланте Емах",
+      "duration_min": 60,
+      "price_client": 55000,
+      "price_staff": 45500,
+      "active": true
+    },
+    {
+      "id": "S047",
+      "name": "Постоянная коронка на импланте на основе диоксида циркония",
+      "duration_min": 60,
+      "price_client": 50000,
+      "price_staff": 41500,
+      "active": true
+    },
+    {
+      "id": "S048",
+      "name": "Виниры авторские\\высокая эстетика",
+      "duration_min": 60,
+      "price_client": 85000,
+      "price_staff": 67000,
+      "active": true
+    },
+    {
+      "id": "S049",
+      "name": "Винир простой",
+      "duration_min": 60,
+      "price_client": 55000,
+      "price_staff": 46500,
+      "active": true
+    },
+    {
+      "id": "S050",
+      "name": "Сплинт",
+      "duration_min": 60,
+      "price_client": 120000,
+      "price_staff": 100500,
+      "active": true
+    },
+    {
+      "id": "S051",
+      "name": "Миосплинт для профилактики стираемости",
+      "duration_min": 60,
+      "price_client": 30000,
+      "price_staff": 24000,
+      "active": true
+    },
+    {
+      "id": "S052",
+      "name": "Восковое моделирование для тотальных работ 1 челюсть 14 зубов, на 6 мес",
+      "duration_min": 60,
+      "price_client": 120000,
+      "price_staff": 116000,
+      "active": true
+    },
+    {
+      "id": "S053",
+      "name": "Временная композитная накладка длительного ношения (в кресле) 14 шт, 1 челюсть, на 6 мес",
+      "duration_min": 60,
+      "price_client": 140000,
+      "price_staff": 83500,
+      "active": true
+    },
+    {
+      "id": "S054",
+      "name": "этап 1. воск моделир+накладка, 2 нед работа на 6 мес",
+      "duration_min": 60,
+      "price_client": 260000,
+      "price_staff": 200000,
+      "active": true
+    },
+    {
+      "id": "S055",
+      "name": "Вкладка",
+      "duration_min": 60,
+      "price_client": 40000,
+      "price_staff": 33500,
+      "active": true
+    }
+  ],
+  "doctors": [
+    {
+      "id": "D001",
+      "full_name": "Гогуева Алина Темурлановна",
+      "name": "Гогуева Алина Темурлановна",
+      "specialty": "Главный врач, Терапевт",
+      "phone": "+79251837932",
+      "email": null,
+      "telegram": null,
+      "active": true
+    },
+    {
+      "id": "D002",
+      "full_name": "Айвазян Альберт Гагикович",
+      "name": "Айвазян Альберт Гагикович",
+      "specialty": "Хирург-имплантолог",
+      "phone": "+79150424721",
+      "email": null,
+      "telegram": null,
+      "active": true
+    },
+    {
+      "id": "D003",
+      "full_name": "Курдов Кадыр Мурадович",
+      "name": "Курдов Кадыр Мурадович",
+      "specialty": "Ортопед",
+      "phone": "+79015713021",
+      "email": null,
+      "telegram": null,
+      "active": true
+    },
+    {
+      "id": "D004",
+      "full_name": "Калачев Алексей Николаевич",
+      "name": "Калачев Алексей Николаевич",
+      "specialty": "Ортодонт",
+      "phone": "+79191093938",
+      "email": null,
+      "telegram": null,
+      "active": true
+    },
+    {
+      "id": "D005",
+      "full_name": "Миргатия Ольга Сергеевна",
+      "name": "Миргатия Ольга Сергеевна",
+      "specialty": "Детский стоматолог, Терапевт",
+      "phone": "+79164422955",
+      "email": null,
+      "telegram": null,
+      "active": true
+    },
+    {
+      "id": "D006",
+      "full_name": "‪",
+      "name": "‪",
+      "specialty": null,
+      "phone": null,
+      "email": null,
+      "telegram": null,
+      "active": false
+    }
+  ],
+  "rooms": [
+    {
+      "id": "R001",
+      "name": "Терапия",
+      "active": true
+    },
+    {
+      "id": "R002",
+      "name": "Эндодонтия",
+      "active": true
+    },
+    {
+      "id": "R003",
+      "name": "Ортопедия",
+      "active": true
+    },
+    {
+      "id": "R004",
+      "name": "Хирургия",
+      "active": true
+    },
+    {
+      "id": "R005",
+      "name": "Детский",
+      "active": true
+    }
+  ],
+  "users": [
+    {
+      "login": "Aksenova",
+      "full_name": "Аксенова Ульяна Денисовна",
+      "role": "registrar",
+      "doctor_id": null,
+      "phone": "+79175051978",
+      "password": null,
+      "active": true
+    }
+  ]
+}

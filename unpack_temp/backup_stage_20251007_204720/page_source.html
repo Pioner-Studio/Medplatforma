@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Маша Старцева - Карточка
+пациента</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    
+</head>
+<body class="">
+  <div class="layout">
+    <aside class="sidebar">
+      <aside class="sidebar">
+  <div
+    class="sidebar-header"
+    style="padding: 24px 0 50px 0; display: flex; justify-content: center"
+  >
+    <img
+      src="/static/logo_test123.png"
+      alt="ClubStom"
+      class="sidebar-logo-img"
+    />
+  </div>
+  <nav>
+    <ul>
+      <li>
+        <a
+          href="/calendar"
+          class=""
+        >
+          <i class="fa-solid fa-calendar-days"></i> Расписание
+        </a>
+      </li>
+      <li>
+        <a href="/patients">
+          <i class="fa-solid fa-user"></i> Пациенты
+        </a>
+      </li>
+      <li>
+        <a
+          href="/doctors"
+          class=""
+        >
+          <i class="fa-solid fa-user-md"></i> Врачи
+        </a>
+      </li>
+      <li>
+        <a
+          href="/rooms"
+          class=""
+        >
+          <i class="fa-solid fa-door-open"></i> Кабинеты
+        </a>
+      </li>
+      <li>
+        <a
+          href="/services"
+          class=""
+        >
+          <i class="fa-solid fa-list"></i> Услуги
+        </a>
+      </li>
+      <li>
+        <a
+          href="/finance"
+          class=""
+        >
+          <i class="fa-solid fa-file-invoice-dollar"></i> Финансы
+        </a>
+      </li>
+      <li>
+        <a
+          href="/logs"
+          class=""
+        >
+          <i class="fa-solid fa-book"></i> Журнал действий
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>
+    </aside>
+    <div class="main-area">
+      <header class="topbar">
+  <div class="topbar-left">
+    <img
+      src="/static/logo_test123.png"
+      alt="ClubStom"
+      style="height: 36px; margin-right: 12px"
+    />
+    <div>
+      <div style="font-weight: 700; color: #1e40af; font-size: 1.1em">
+        Клиника CLUBSTOM
+      </div>
+      <div style="font-size: 0.9em; color: #64748b">
+        Стоматологическая клиника
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar-center">
+    <div style="display: flex; gap: 24px; align-items: center; font-size: 0.95em">
+      <div style="text-align: center">
+        <div style="font-weight: 600; color: #1e40af">
+          6
+        </div>
+        <div style="color: #64748b">кабинетов</div>
+      </div>
+      <div style="text-align: center">
+        <div style="font-weight: 600; color: #059669">
+          6
+        </div>
+        <div style="color: #64748b">свободно</div>
+      </div>
+      <div style="text-align: center">
+        <div style="font-weight: 600; color: #2563eb">Сегодня</div>
+        <div style="color: #64748b">рабочий день</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar-right" style="display: flex; align-items: center; gap: 16px;">
+
+  <!-- Компактные счетчики -->
+  <div style="display: flex; gap: 12px;">
+    <!-- Записи -->
+    <a href="/calendar" style="text-decoration: none;">
+      <div style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: #eff6ff; border-radius: 6px; cursor: pointer;">
+        <i class="fa fa-calendar-check" style="color: #2563eb; font-size: 1.1em;"></i>
+        <span style="font-weight: 600; color: #1e40af; font-size: 1.1em;" id="todayAppointmentsCount">0</span>
+        <span style="font-size: 0.85em; color: #64748b;">записей</span>
+      </div>
+    </a>
+
+    <!-- Долги -->
+    <a href="/finance/debtors" style="text-decoration: none;">
+      <div style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: #fef2f2; border-radius: 6px; cursor: pointer;">
+        <i class="fa fa-exclamation-circle" style="color: #dc2626; font-size: 1.1em;"></i>
+        <span style="font-weight: 600; color: #dc2626; font-size: 1.1em;" id="debtorsCount">0</span>
+        <span style="font-size: 0.85em; color: #64748b;">долгов</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Quick Add кнопка -->
+  <div class="dropdown" style="margin-right: 12px;">
+    <button class="btn btn-success rounded-circle d-flex align-items-center justify-content-center"
+            data-bs-toggle="dropdown"
+            style="width: 42px; height: 42px; padding: 0;">
+      <i class="fa fa-plus fs-5"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li>
+        <a class="dropdown-item" href="/add_event">
+          <i class="fa fa-calendar-plus text-primary"></i> Новый приём
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="/add_patient">
+          <i class="fa fa-user-plus text-success"></i> Новый пациент
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="/finance/add">
+          <i class="fa fa-money-bill text-info"></i> Платёж
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Профиль -->
+  <div class="profile-block" onclick="toggleProfileMenu()" style="position: relative; cursor: pointer;">
+    
+    
+    
+    
+
+    <img
+      src="/static/avatars/default.jpg"
+      alt="Пользователь"
+      class="profile-avatar"
+      style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 10px;"
+      onerror="this.src='/static/investor_avatar.png'"
+    />
+    <div style="display: flex; flex-direction: column;">
+      <span style="font-weight: 600; font-size: 0.95em;">Пользователь</span>
+      <span style="font-size: 0.75em; color: #94a3b8;">
+        Пользователь
+      </span>
+    </div>
+    <i class="fa fa-chevron-down" style="margin-left: 8px; font-size: 0.85em; color: #94a3b8;"></i>
+
+    <div class="profile-menu" id="profileMenu" style="display: none;">
+      <a href="/profile">
+        <i class="fa fa-user"></i> Личный кабинет
+      </a>
+      <a href="/settings">
+        <i class="fa fa-cog"></i> Настройки
+      </a>
+      <hr style="margin: 8px 0; border: none; border-top: 1px solid #e2e8f0;">
+
+      <div style="padding: 8px 12px;">
+        <small style="color: #94a3b8; font-weight: 600;">СМЕНИТЬ ПОЛЬЗОВАТЕЛЯ</small>
+      </div>
+
+      
+      <a href="/switch-user/68dd0c7fcf22e781ad23db8b" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/ayvazyan.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Айвазян Альберт Гагикович</div>
+          <small style="color: #94a3b8;">
+            Врач
+          </small>
+        </div>
+        
+      </a>
+      
+      <a href="/switch-user/68ceefb500a8dfe76f6f32b4" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/default.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Аксенова Ульяна Денисовна</div>
+          <small style="color: #94a3b8;">
+            Регистратор
+          </small>
+        </div>
+        
+      </a>
+      
+      <a href="/switch-user/68ceefb500a8dfe76f6f32b1" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/gogueva.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Гогуева Алина Темурлановна</div>
+          <small style="color: #94a3b8;">
+            Регистратор
+          </small>
+        </div>
+        
+      </a>
+      
+      <a href="/switch-user/68dd0d8b1e05cf8b77e42712" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/kalachev.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Калачев Алексей Николаевич</div>
+          <small style="color: #94a3b8;">
+            Врач
+          </small>
+        </div>
+        
+      </a>
+      
+      <a href="/switch-user/68dd0d8b1e05cf8b77e42711" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/kurdov.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Курдов Кадыр Мурадович</div>
+          <small style="color: #94a3b8;">
+            Врач
+          </small>
+        </div>
+        
+      </a>
+      
+      <a href="/switch-user/68dd0d8c1e05cf8b77e42713" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/mirgatiya.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Миргатия Ольга Сергеевна</div>
+          <small style="color: #94a3b8;">
+            Врач
+          </small>
+        </div>
+        
+      </a>
+      
+      <a href="/switch-user/68ceefb500a8dfe76f6f32b3" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/nakonechnaya.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Наконечная Елена Ивановна</div>
+          <small style="color: #94a3b8;">
+            Администратор
+          </small>
+        </div>
+        
+      </a>
+      
+      <a href="/switch-user/68dd0d8d1e05cf8b77e42714" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+        <img src="/static/avatars/nakonechny.jpg"
+            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+            onerror="this.src='/static/investor_avatar.png'">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 0.9em;">Наконечный Алексей Владимирович</div>
+          <small style="color: #94a3b8;">
+            Администратор
+          </small>
+        </div>
+        
+      </a>
+      
+
+      <hr style="margin: 8px 0; border: none; border-top: 1px solid #e2e8f0;">
+      <a href="/logout" style="color: #dc2626;">
+        <i class="fa fa-sign-out-alt"></i> Выйти
+      </a>
+    </div>
+
+</div>
+</header>
+
+<script>
+// Загрузка счетчиков при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  loadTopbarCounters();
+  // Обновляем каждую минуту
+  setInterval(loadTopbarCounters, 60000);
+});
+
+function loadTopbarCounters() {
+  // Записи сегодня
+  fetch('/api/dashboard/today-appointments')
+    .then(res => res.json())
+    .then(data => {
+      const el = document.getElementById('todayAppointmentsCount');
+      if (el) el.textContent = data.count || 0;
+    })
+    .catch(err => console.log('Error loading today appointments:', err));
+
+  // Должники
+  fetch('/api/dashboard/debtors')
+    .then(res => res.json())
+    .then(data => {
+      const el = document.getElementById('debtorsCount');
+      if (el) el.textContent = data.count || 0;
+    })
+    .catch(err => console.log('Error loading debtors:', err));
+}
+</script>
+
+<main class="content">
+        
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8">
+    <!-- ТАБЫ (ВКЛАДКИ) -->
+    <ul class="nav nav-tabs mb-3" id="patientTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="info-tab" data-bs-toggle="tab"
+                data-bs-target="#info" type="button" role="tab">
+        <i class="fas fa-user"></i> Основная информация
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="current-visit-tab" data-bs-toggle="tab"
+                data-bs-target="#current-visit" type="button" role="tab">
+        <i class="fas fa-stethoscope"></i> Текущий приём
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="history-tab" data-bs-toggle="tab"
+                data-bs-target="#history" type="button" role="tab">
+        <i class="fas fa-history"></i> История записей
+        </button>
+    </li>
+    </ul>
+
+<div class="tab-content" id="patientTabsContent">
+      <!-- Вкладка: Основная информация -->
+      <div class="tab-pane fade show active" id="info" role="tabpanel">
+      <!-- Основная информация -->
+      <div class="card mb-4">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">Маша Старцева</h5>
+          <div>
+            <button
+              class="btn btn-sm btn-outline-primary"
+              onclick="editPatient()"
+            >
+              <i class="fas fa-edit"></i> Редактировать
+            </button>
+            <button
+              class="btn btn-sm btn-outline-success"
+              onclick="createAppointment()"
+            >
+              <i class="fas fa-calendar-plus"></i> Новая запись
+            </button>
+
+            <!-- Кнопка медицинской анкеты -->
+            
+            <a
+              href="/patients/68dd28b620210e8e4cad772b/questionnaire"
+              class="btn btn-sm btn-warning"
+            >
+              <i class="fas fa-exclamation-triangle"></i> Заполнить анкету
+            </a>
+            
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Телефон:</strong> +79168524512</p>
+              <p><strong>Email:</strong> —</p>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="use_preferential"
+                    
+                    onchange="updatePreferentialPricing('68dd28b620210e8e4cad772b')"
+                  />
+                  <label class="form-check-label" for="use_preferential">
+                    🎁 Использовать льготный прайс
+                  </label>
+                </div>
+                <small class="text-muted">Для сотрудников/друзей клиники</small>
+              </div>
+              <p>
+                <strong>Дата рождения:</strong> 1981-08-05
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Карта №:</strong> CT-000003</p>
+              <p>
+                <strong>Создан:</strong> 01.10.2025
+              </p>
+            </div>
+          </div>
+
+          
+        </div>
+      </div>
+      </div>
+      <!-- Конец вкладки: Основная информация -->
+
+      <!-- Вкладка: Текущий приём -->
+      <div class="tab-pane fade" id="current-visit" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="fas fa-stethoscope"></i> Текущий приём
+              
+                - 03.10.2025 15:00
+              
+            </h5>
+          </div>
+          <div class="card-body">
+
+            
+              <div class="alert alert-warning">
+                <i class="fas fa-lock"></i>
+                Только врачи могут работать с текущим приёмом
+              </div>
+            
+
+          </div>
+        </div>
+      </div>
+      <!-- Конец вкладки: Текущий приём -->
+
+      <!-- Модальное окно добавления услуги -->
+      <div class="modal fade" id="addServiceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Добавить услугу</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="text" class="form-control mb-3" id="service-search"
+                    placeholder="Поиск услуги...">
+              <div id="services-list" style="max-height: 400px; overflow-y: auto;">
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d599f"
+                      data-service-name="ALL oin 4 1 челюсть Dentium"
+                      data-service-price="320000">
+                    <strong>ALL oin 4 1 челюсть Dentium</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d599d"
+                      data-service-name="ALL oin 4 1 челюсть Nobel"
+                      data-service-price="400000">
+                    <strong>ALL oin 4 1 челюсть Nobel</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a0"
+                      data-service-name="ALL on 6 1 челюсть Dentium"
+                      data-service-price="480000">
+                    <strong>ALL on 6 1 челюсть Dentium</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d599e"
+                      data-service-name="ALL on 6 1 челюсть Nobel"
+                      data-service-price="600000">
+                    <strong>ALL on 6 1 челюсть Nobel</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5987"
+                      data-service-name="ICON"
+                      data-service-price="15000">
+                    <strong>ICON</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a8"
+                      data-service-name="Аппарат Марка Росса (несьемный аппарат для расширения верх челюсти)"
+                      data-service-price="100000">
+                    <strong>Аппарат Марка Росса (несьемный аппарат для расширения верх челюсти)</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a6"
+                      data-service-name="Брекеты"
+                      data-service-price="450000">
+                    <strong>Брекеты</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a7"
+                      data-service-name="Брекеты частичные локальные на 2 зуба"
+                      data-service-price="60000">
+                    <strong>Брекеты частичные локальные на 2 зуба</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b1"
+                      data-service-name="Винир простой"
+                      data-service-price="55000">
+                    <strong>Винир простой</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b0"
+                      data-service-name="Виниры авторские\высокая эстетика"
+                      data-service-price="85000">
+                    <strong>Виниры авторские\высокая эстетика</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b7"
+                      data-service-name="Вкладка"
+                      data-service-price="40000">
+                    <strong>Вкладка</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b4"
+                      data-service-name="Восковое моделирование для тотальных работ 1 челюсть 14 зубов, на 6 мес"
+                      data-service-price="120000">
+                    <strong>Восковое моделирование для тотальных работ 1 челюсть 14 зубов, на 6 мес</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d598f"
+                      data-service-name="Восстановление стенки зуба со штифтом (Build up)"
+                      data-service-price="21000">
+                    <strong>Восстановление стенки зуба со штифтом (Build up)</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b5"
+                      data-service-name="Временная композитная накладка длительного ношения (в кресле) 14 шт, 1 челюсть, на 6 мес"
+                      data-service-price="140000">
+                    <strong>Временная композитная накладка длительного ношения (в кресле) 14 шт, 1 челюсть, на 6 мес</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59aa"
+                      data-service-name="Временная коронка на зубе пластик"
+                      data-service-price="20000">
+                    <strong>Временная коронка на зубе пластик</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59ab"
+                      data-service-name="Временная коронка на имплантате"
+                      data-service-price="30000">
+                    <strong>Временная коронка на имплантате</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5982"
+                      data-service-name="Гигиена полости рта взр"
+                      data-service-price="13000">
+                    <strong>Гигиена полости рта взр</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5983"
+                      data-service-name="Гигиена полости рта дет"
+                      data-service-price="12000">
+                    <strong>Гигиена полости рта дет</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5998"
+                      data-service-name="Имплант Dentium"
+                      data-service-price="80000">
+                    <strong>Имплант Dentium</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5997"
+                      data-service-name="Имплант Nobel"
+                      data-service-price="100000">
+                    <strong>Имплант Nobel</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5996"
+                      data-service-name="Имплант shtraumann"
+                      data-service-price="100000">
+                    <strong>Имплант shtraumann</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5981"
+                      data-service-name="КТ"
+                      data-service-price="6000">
+                    <strong>КТ</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5986"
+                      data-service-name="Каппы для домашнего отбеливания с гелем"
+                      data-service-price="27000">
+                    <strong>Каппы для домашнего отбеливания с гелем</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d598a"
+                      data-service-name="Кариес глубокий взр"
+                      data-service-price="19000">
+                    <strong>Кариес глубокий взр</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d598b"
+                      data-service-name="Кариес глубокий детск"
+                      data-service-price="17000">
+                    <strong>Кариес глубокий детск</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5988"
+                      data-service-name="Кариес поверхностный взр"
+                      data-service-price="13000">
+                    <strong>Кариес поверхностный взр</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5989"
+                      data-service-name="Кариес поверхностный дет"
+                      data-service-price="11000">
+                    <strong>Кариес поверхностный дет</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d598d"
+                      data-service-name="Клиновидные дефекты"
+                      data-service-price="17000">
+                    <strong>Клиновидные дефекты</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d598c"
+                      data-service-name="Коронка детская"
+                      data-service-price="25000">
+                    <strong>Коронка детская</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d599a"
+                      data-service-name="Костная пластика"
+                      data-service-price="75000">
+                    <strong>Костная пластика</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5991"
+                      data-service-name="Кюретаж, 1 зуб"
+                      data-service-price="3000">
+                    <strong>Кюретаж, 1 зуб</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b3"
+                      data-service-name="Миосплинт для профилактики стираемости"
+                      data-service-price="30000">
+                    <strong>Миосплинт для профилактики стираемости</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a2"
+                      data-service-name="Ортопедическая конструкция ALL on 4 1 челюсть протез временный"
+                      data-service-price="200000">
+                    <strong>Ортопедическая конструкция ALL on 4 1 челюсть протез временный</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a4"
+                      data-service-name="Ортопедическая конструкция ALL on 4 1 челюсть протез постоянный"
+                      data-service-price="250000">
+                    <strong>Ортопедическая конструкция ALL on 4 1 челюсть протез постоянный</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a1"
+                      data-service-name="Ортопедическая конструкция ALL on 6 1 челюсть протез временный"
+                      data-service-price="250000">
+                    <strong>Ортопедическая конструкция ALL on 6 1 челюсть протез временный</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a3"
+                      data-service-name="Ортопедическая конструкция ALL on 6 1 челюсть протез постоянный"
+                      data-service-price="300000">
+                    <strong>Ортопедическая конструкция ALL on 6 1 челюсть протез постоянный</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5985"
+                      data-service-name="Отбеливание"
+                      data-service-price="35000">
+                    <strong>Отбеливание</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5984"
+                      data-service-name="Пародонтологическое лечение десен мембранами"
+                      data-service-price="13000">
+                    <strong>Пародонтологическое лечение десен мембранами</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5992"
+                      data-service-name="Первичное лечение 1канального зуба в одно посещение (пульпит)"
+                      data-service-price="27000">
+                    <strong>Первичное лечение 1канального зуба в одно посещение (пульпит)</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5993"
+                      data-service-name="Перелечивание 1 канала"
+                      data-service-price="27000">
+                    <strong>Перелечивание 1 канала</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d599c"
+                      data-service-name="Пластика десны"
+                      data-service-price="13000">
+                    <strong>Пластика десны</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59ac"
+                      data-service-name="Постоянная коронка на зубе Emax керамика"
+                      data-service-price="55000">
+                    <strong>Постоянная коронка на зубе Emax керамика</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59ad"
+                      data-service-name="Постоянная коронка на зубе диоксид циркония"
+                      data-service-price="50000">
+                    <strong>Постоянная коронка на зубе диоксид циркония</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59ae"
+                      data-service-name="Постоянная коронка на импланте Емах"
+                      data-service-price="55000">
+                    <strong>Постоянная коронка на импланте Емах</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59af"
+                      data-service-name="Постоянная коронка на импланте на основе диоксида циркония"
+                      data-service-price="50000">
+                    <strong>Постоянная коронка на импланте на основе диоксида циркония</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a5"
+                      data-service-name="Постоянный протез сьемный пластик без имплантации 1 челюсть"
+                      data-service-price="100000">
+                    <strong>Постоянный протез сьемный пластик без имплантации 1 челюсть</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5990"
+                      data-service-name="Реставрация художественная= аналог виниров"
+                      data-service-price="30000">
+                    <strong>Реставрация художественная= аналог виниров</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d598e"
+                      data-service-name="Реставрация эстетическая (сколы)"
+                      data-service-price="19000">
+                    <strong>Реставрация эстетическая (сколы)</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5999"
+                      data-service-name="Синус-лифтинг"
+                      data-service-price="65000">
+                    <strong>Синус-лифтинг</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b2"
+                      data-service-name="Сплинт"
+                      data-service-price="120000">
+                    <strong>Сплинт</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5994"
+                      data-service-name="Удаление зуба простой"
+                      data-service-price="15000">
+                    <strong>Удаление зуба простой</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d5995"
+                      data-service-name="Удаление зуба сложный"
+                      data-service-price="22000">
+                    <strong>Удаление зуба сложный</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d599b"
+                      data-service-name="Формирователь десны"
+                      data-service-price="13000">
+                    <strong>Формирователь десны</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59a9"
+                      data-service-name="Элайнеры"
+                      data-service-price="500000">
+                    <strong>Элайнеры</strong>
+                    
+                  </div>
+                
+                  <div class="service-item border-bottom p-2 hover-bg" style="cursor: pointer;"
+                      data-service-id="68d84379ac13a134ea0d59b6"
+                      data-service-name="этап 1. воск моделир+накладка, 2 нед работа на 6 мес"
+                      data-service-price="260000">
+                    <strong>этап 1. воск моделир+накладка, 2 нед работа на 6 мес</strong>
+                    
+                  </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка: История записей -->
+      <div class="tab-pane fade" id="history" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0">История записей</h6>
+          </div>
+          <div class="card-body">
+            
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Врач</th>
+                    <th>Услуга</th>
+                    <th>Статус</th>
+                    <th>Стоимость</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>
+                      03.10.2025
+                    </td>
+                    <td>
+                      15:00
+                    </td>
+                    <td>Курдов Кадыр Мурадович</td>
+                    <td>Гигиена полости рта взр</td>
+                    <td>
+                      <span
+                        class="badge bg-secondary"
+                      >
+                        scheduled
+                      </span>
+                    </td>
+                    <td>13000₽</td>
+                  </tr>
+                  
+                  <tr>
+                    <td>
+                      02.10.2025
+                    </td>
+                    <td>
+                      15:00
+                    </td>
+                    <td>Курдов Кадыр Мурадович</td>
+                    <td>Гигиена полости рта взр</td>
+                    <td>
+                      <span
+                        class="badge bg-secondary"
+                      >
+                        scheduled
+                      </span>
+                    </td>
+                    <td>13000₽</td>
+                  </tr>
+                  
+                  <tr>
+                    <td>
+                      01.10.2025
+                    </td>
+                    <td>
+                      14:30
+                    </td>
+                    <td>Гогуева Алина Темурлановна</td>
+                    <td>Гигиена полости рта взр</td>
+                    <td>
+                      <span
+                        class="badge bg-secondary"
+                      >
+                        scheduled
+                      </span>
+                    </td>
+                    <td>13000₽</td>
+                  </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      <!-- Конец вкладки: История записей -->
+
+    <div class="col-md-4">
+      <!-- Финансовая информация -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">Финансы</h6>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="border-end">
+                <h4 class="text-success mb-0">
+                  0₽
+                </h4>
+                <small class="text-muted">Оплачено</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <h4 class="text-danger mb-0">0₽</h4>
+              <small class="text-muted">Долг</small>
+            </div>
+          </div>
+
+          
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div
+          class="card-header"
+          style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          "
+        >
+          <h6 class="mb-0">🎁 Бонусная программа</h6>
+        </div>
+        <div class="card-body">
+          <!-- Баланс бонусов -->
+          <div class="text-center mb-3">
+            <div style="font-size: 14px; color: #6c757d; margin-bottom: 8px">
+              Доступно бонусов
+            </div>
+            <h2 class="mb-0" style="color: #667eea; font-weight: 700">
+              0 ₽
+            </h2>
+          </div>
+
+          <!-- Кнопки управления -->
+          <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-sm btn-outline-success" onclick="addBonus()">
+              <i class="fas fa-plus-circle"></i> Начислить бонусы
+            </button>
+            <button
+              class="btn btn-sm btn-outline-warning"
+              onclick="withdrawBonus()"
+            >
+              <i class="fas fa-minus-circle"></i> Списать бонусы
+            </button>
+            <button
+              class="btn btn-sm btn-outline-info"
+              onclick="transferBonus()"
+            >
+              <i class="fas fa-exchange-alt"></i> Перевести другому
+            </button>
+          </div>
+
+          <!-- Реферальная информация -->
+          <div style="padding-top: 12px; border-top: 1px solid #e9ecef">
+            
+            <p class="mb-2" style="font-size: 13px">
+              <strong>Кто привёл:</strong>
+              
+              <a href="/patients/68dd287e20210e8e4cad772a"
+                >Пациент</a
+              >
+              
+            </p>
+             
+            <p class="mb-0" style="font-size: 13px">
+              <strong>Привёл пациентов:</strong> 1
+              <a
+                href="#"
+                onclick="showReferredPatients(); return false;"
+                style="margin-left: 8px"
+                >(показать)</a
+              >
+            </p>
+            
+          </div>
+
+          <!-- История бонусов (свернутая) -->
+          <div style="margin-top: 12px">
+            <a
+              href="#"
+              onclick="toggleBonusHistory(); return false;"
+              class="text-decoration-none"
+              style="font-size: 13px"
+            >
+              <i class="fas fa-history"></i> История бонусов
+            </a>
+            <div
+              id="bonusHistory"
+              style="
+                display: none;
+                margin-top: 12px;
+                max-height: 200px;
+                overflow-y: auto;
+              "
+            >
+              <!-- Здесь будет загружаться история через JS -->
+              <div class="text-center">
+                <div class="spinner-border spinner-border-sm"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Быстрые действия -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">Быстрые действия</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button
+              class="btn btn-outline-primary btn-sm"
+              onclick="callPatient()"
+            >
+              <i class="fas fa-phone"></i> Позвонить
+            </button>
+            <button class="btn btn-outline-info btn-sm" onclick="sendMessage()">
+              <i class="fas fa-sms"></i> SMS
+            </button>
+            <button
+              class="btn btn-outline-success btn-sm"
+              onclick="sendWhatsApp()"
+            >
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+        function editPatient() {
+            window.location.href = '/patients/68dd28b620210e8e4cad772b/edit';
+        }
+
+        function createAppointment() {
+            window.location.href = '/calendar?patient_id=68dd28b620210e8e4cad772b';
+        }
+
+        function processPayment() {
+            window.location.href = '/finance/add?patient_id=68dd28b620210e8e4cad772b&type=income';
+        }
+
+        // Управление бонусами
+        function addBonus() {
+            const amount = prompt('Сумма начисления бонусов:');
+            if (!amount || isNaN(amount)) return;
+
+            const comment = prompt('Комментарий (необязательно):') || 'Ручное начисление';
+
+            fetch('/api/patients/68dd28b620210e8e4cad772b/bonus/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount: parseInt(amount), comment: comment})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('Бонусы начислены!');
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            });
+        }
+
+        function withdrawBonus() {
+            const currentBalance = 0;
+            const amount = prompt('Сумма списания бонусов (доступно: ' + currentBalance + '₽):');
+            if (!amount || isNaN(amount)) return;
+
+            if (parseInt(amount) > currentBalance) {
+                alert('Недостаточно бонусов!');
+                return;
+            }
+
+            const comment = prompt('Комментарий (необязательно):') || 'Ручное списание';
+
+            fetch('/api/patients/68dd28b620210e8e4cad772b/bonus/withdraw', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount: parseInt(amount), comment: comment})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('Бонусы списаны!');
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            });
+        }
+
+        function transferBonus() {
+            alert('Функция в разработке');
+        }
+
+        function toggleBonusHistory() {
+            const el = document.getElementById('bonusHistory');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                loadBonusHistory();
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function loadBonusHistory() {
+            fetch('/api/patients/68dd28b620210e8e4cad772b/bonus/history')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('bonusHistory');
+                    if (data.items && data.items.length > 0) {
+                        el.innerHTML = data.items.map(function(h) {
+                            return '<div style="padding: 8px; border-bottom: 1px solid #f1f3f5; font-size: 13px;">' +
+                                '<div style="display: flex; justify-content: space-between;">' +
+                                    '<span>' + h.date + '</span>' +
+                                    '<span style="color: ' + (h.amount > 0 ? '#28a745' : '#dc3545') + '; font-weight: 600;">' +
+                                        (h.amount > 0 ? '+' : '') + h.amount + '₽' +
+                                    '</span>' +
+                                '</div>' +
+                                '<div style="color: #6c757d; font-size: 12px;">' + h.comment + '</div>' +
+                            '</div>';
+                        }).join('');
+                    } else {
+                        el.innerHTML = '<p class="text-muted text-center">История пуста</p>';
+                    }
+                });
+        }
+
+        function showReferredPatients() {
+            alert('Функция в разработке');
+        }
+
+        function callPatient() {
+            
+            window.location.href = 'tel:+79168524512';
+            
+        }
+
+        function sendMessage() {
+            
+            window.location.href = 'sms:+79168524512';
+            
+        }
+
+        function sendWhatsApp() {
+            
+            const phone = '+79168524512'.replace(/\D/g, '');
+            window.open('https://wa.me/' + phone, '_blank');
+            
+        }
+
+        function updatePreferentialPricing(patientId) {
+            const checked = document.getElementById('use_preferential').checked;
+
+            fetch('/api/patients/' + patientId + '/update_info', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({use_preferential_pricing: checked})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    const msg = checked ? 'Льготный прайс активирован' : 'Используется основной прайс';
+                    alert(msg);
+                }
+            });
+        }
+
+        // ========== ТЕКУЩИЙ ПРИЁМ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Поиск услуг в модальном окне
+            const serviceSearch = document.getElementById('service-search');
+            if (serviceSearch) {
+                serviceSearch.addEventListener('input', function(e) {
+                    const search = e.target.value.toLowerCase();
+                    document.querySelectorAll('.service-item').forEach(function(item) {
+                        const name = item.dataset.serviceName.toLowerCase();
+                        item.style.display = name.includes(search) ? 'block' : 'none';
+                    });
+                });
+            }
+
+            // Добавление услуги из прайса
+            document.querySelectorAll('.service-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const id = this.dataset.serviceId;
+                    const name = this.dataset.serviceName;
+                    const price = this.dataset.servicePrice;
+
+                    if (document.querySelector('#added-svc-' + id)) {
+                        alert('Эта услуга уже добавлена');
+                        return;
+                    }
+
+                    const container = document.getElementById('added-services-container');
+                    if (!container) return;
+
+                    const div = document.createElement('div');
+                    div.id = 'added-svc-' + id;
+                    div.className = 'form-check mb-3 p-3 border rounded bg-light';
+
+                    const userRole = 'None';
+                    const priceDisplay = (userRole === 'admin' || userRole === 'chief_doctor')
+                        ? '<span class="badge bg-success float-end">' + parseInt(price).toLocaleString('ru-RU') + ' ₽</span>'
+                        : '';
+
+                    div.innerHTML =
+                        '<input class="form-check-input service-checkbox" type="checkbox" name="service_ids[]" ' +
+                            'value="' + id + '" id="svc-' + id + '" checked data-price="' + price + '">' +
+                        '<label class="form-check-label w-100" for="svc-' + id + '">' +
+                            '<strong>' + name + '</strong>' +
+                            priceDisplay +
+                            '<div class="mt-2">' +
+                                '<input type="text" class="form-control form-control-sm" ' +
+                                    'name="comment_' + id + '" ' +
+                                    'placeholder="Комментарий (необязательно)">' +
+                            '</div>' +
+                            '<button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeService(\'' + id + '\')">' +
+                                '<i class="fas fa-trash"></i> Удалить' +
+                            '</button>' +
+                        '</label>';
+
+                    container.appendChild(div);
+
+                    div.querySelector('.service-checkbox').addEventListener('change', updateTotal);
+
+                    const modalEl = document.getElementById('addServiceModal');
+                    if (modalEl) {
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    }
+
+                    updateTotal();
+                });
+            });
+
+            updateTotal();
+
+            document.querySelectorAll('input[name="service_ids[]"]').forEach(function(cb) {
+                cb.addEventListener('change', updateTotal);
+            });
+
+        });
+
+        function removeService(serviceId) {
+            const element = document.getElementById('added-svc-' + serviceId);
+            if (element) {
+                element.remove();
+                updateTotal();
+            }
+        }
+
+        function updateTotal() {
+            const userRole = 'None';
+            if (userRole !== 'admin' && userRole !== 'chief_doctor') return;
+
+            let total = 0;
+            document.querySelectorAll('input[name="service_ids[]"]:checked').forEach(function(checkbox) {
+                const priceAttr = checkbox.dataset.price;
+                const badgeEl = checkbox.closest('.form-check, .border').querySelector('.badge');
+                const priceText = badgeEl ? badgeEl.textContent.replace(/\D/g, '') : '';
+                const price = parseInt(priceAttr || priceText || 0);
+                total += price;
+            });
+
+            const totalElement = document.getElementById('total-amount');
+            if (totalElement) {
+                totalElement.textContent = total.toLocaleString('ru-RU') + ' ₽';
+            }
+        }
+</script>
+
+
+      </main>
+    </div>
+  </div>
+
+  
+  <script>
+    // Открытие меню профиля
+    function toggleProfileMenu() {
+      let menu = document.getElementById('profileMenu');
+      menu.style.display = (menu.style.display === 'flex' ? 'none' : 'flex');
+    }
+    window.onclick = function(e) {
+      let menu = document.getElementById('profileMenu');
+      if (menu && e.target.closest('.profile-block') == null && e.target.closest('.profile-menu') == null) {
+        menu.style.display = 'none';
+      }
+    };
+
+    // --- Переключатель темы ---
+    document.addEventListener("DOMContentLoaded", function() {
+      const themeBtn = document.getElementById('themeToggleBtn');
+      if (themeBtn) {
+        themeBtn.onclick = function() {
+          const sun = this.querySelector('.theme-sun');
+          const moon = this.querySelector('.theme-moon');
+          const body = document.body;
+          if (sun && sun.style.display !== 'none') {
+            sun.style.display = 'none';
+            moon.style.display = 'inline';
+            body.classList.add('dark-theme');
+          } else {
+            if (sun) sun.style.display = 'inline';
+            if (moon) moon.style.display = 'none';
+            body.classList.remove('dark-theme');
+          }
+        };
+      }
+    });
+    // Можно добавить сохранение выбора темы в localStorage, если надо.
+  </script>
+  
+  <script>
+function toggleProfileMenu() {
+  let menu = document.getElementById('profileMenu');
+  menu.style.display = (menu.style.display === 'flex' ? 'none' : 'flex');
+}
+window.onclick = function(e) {
+  let menu = document.getElementById('profileMenu');
+  if (menu && e.target.closest('.profile-block') == null && e.target.closest('.profile-menu') == null) {
+    menu.style.display = 'none';
+  }
+}
+
+// Переключение темы
+document.addEventListener('DOMContentLoaded', function() {
+  const themeBtn = document.getElementById('themeToggleBtn');
+  const sunIcon = document.querySelector('.theme-sun');
+  const moonIcon = document.querySelector('.theme-moon');
+  // Сохраняем тему между сессиями
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-theme');
+    sunIcon.style.display = 'none';
+    moonIcon.style.display = 'inline';
+  }
+  themeBtn.onclick = function() {
+    if (document.body.classList.contains('dark-theme')) {
+      document.body.classList.remove('dark-theme');
+      sunIcon.style.display = 'inline';
+      moonIcon.style.display = 'none';
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.body.classList.add('dark-theme');
+      sunIcon.style.display = 'none';
+      moonIcon.style.display = 'inline';
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+});
+</script>
+
+<script>
+// Выделение активного пункта меню
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const menuLinks = document.querySelectorAll('.nav-link, .sidebar a');
+
+    menuLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && currentPath.startsWith(href) && href !== '/') {
+            link.classList.add('active');
+            link.style.background = 'rgba(255,255,255,0.1)';
+        }
+    });
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+</body>
+</html>

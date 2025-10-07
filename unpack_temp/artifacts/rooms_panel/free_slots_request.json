@@ -1,0 +1,14 @@
+﻿{
+    "query":  {
+                  "date":  "2025-09-12",
+                  "step":  15,
+                  "room":  "Ортопедия"
+              },
+    "method":  "GET or POST (fallback)",
+    "url":  "http://localhost:5000/api/free_slots",
+    "body":  {
+                 "date":  "2025-09-12",
+                 "step":  15,
+                 "room":  "Ортопедия"
+             }
+}

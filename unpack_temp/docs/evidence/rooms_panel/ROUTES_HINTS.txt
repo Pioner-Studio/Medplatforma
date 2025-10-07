@@ -1,0 +1,3 @@
+﻿
+ROUTES.freeSlots=http://localhost:5000/api/rooms/busy
+ROUTES.todayDetails=http://localhost:5000/api/events

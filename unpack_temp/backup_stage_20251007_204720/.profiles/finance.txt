@@ -1,0 +1,4 @@
+templates\finance\*.html
+static\js\*finance*.js
+routes*\*finance*.py
+main.py

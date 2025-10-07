@@ -1,0 +1,253 @@
+﻿### main.py (часть 2/12)
+```python
+
+
+def from_minutes(x: int) -> str:
+    h = x // 60
+    m = x % 60
+    return f"{h:02d}:{m:02d}"
+
+
+def clinic_hours(date_dt):
+    # рабочие часы по умолчанию (можно вынести в настройки)
+    return "08:00", "20:00"
+
+
+def recalc_room_status(room_id):
+    """Переcчитает статус кабинета на текущий момент времени и сохранит в rooms.status.
+    Правило: если есть приём, пересекающий now → occupied; иначе available.
+    (maintenance имеет приоритет и не затирается.)"""
+    if not room_id:
+        return
+    room = db.rooms.find_one({"_id": ObjectId(room_id)})
+    if not room:
+        return
+    if room.get("status") == "maintenance":
+        # обслуживание вручную выставляют — не трогаем
+        return
+    now = datetime.now()
+    busy = db.appointments.find_one(
+        {"room_id": ObjectId(room_id), "start": {"$lte": now}, "end": {"$gt": now}}
+    )
+    new_status = "occupied" if busy else "available"
+    db.rooms.update_one(
+        {"_id": ObjectId(room_id)},
+        {"$set": {"status": new_status, "updated_at": datetime.utcnow()}},
+    )
+
+
+def s(val):  # безопасная строка
+    return (val or "").strip()
+
+
+def parse_date_yyyy_mm_dd(val):
+    """Принимаем 'YYYY-MM-DD' -> возвращаем ту же строку (храним строкой)"""
+    v = s(val)
+    if not v:
+        return ""
+    # лёгкая валидация
+    try:
+        datetime.strptime(v, "%Y-%m-%d")
+        return v
+    except Exception:
+        return ""
+
+
+def next_seq(name: str) -> int:
+    """Глобальный инкремент в MongoDB (коллекция counters)."""
+    doc = db.counters.find_one_and_update(
+        {"_id": name}, {"$inc": {"seq": 1}}, upsert=True, return_document=ReturnDocument.AFTER
+    )
+    return int(doc.get("seq", 1))
+
+
+def make_card_no() -> str:
+    """Формируем номер карточки вида CT-000123."""
+    n = next_seq("patient_card_no")
+    return f"CT-{n:06d}"
+
+
+def main():
+    parser = argparse.ArgumentParser(description="ClubStom docs/zip generator")
+    parser.add_argument("--zip", action="store_true", help="сделать архив проекта в /exports")
+    parser.add_argument("--note", type=str, default="", help="заметка/комментарий")
+    parser.add_argument("--lint", action="store_true", help="проверить дубли и вывести отчёт")
+    args = parser.parse_args()
+
+    app, err = _load_flask_app()
+    if err:
+        (DOCS / "ROUTES.md").write_text(
+            "# ROUTES\n\nНе удалось импортировать приложение:\n\n```\n" + err + "\n```\n",
+            encoding="utf-8",
+        )
+        print("[WARN] Ошибка импорта app. Подробности в docs/ROUTES.md")
+    else:
+        routes_md = _dump_routes_md(app)
+        (DOCS / "ROUTES.md").write_text(routes_md, encoding="utf-8")
+        print("[OK] docs/ROUTES.md обновлён")
+
+        if args.lint:
+            problems, count = _lint_project(app)
+            report = "# LINT REPORT\n\n"
+            if count == 0:
+                report += "Проблем не найдено ✅\n"
+            else:
+                report += "\n".join(f"- {p}" for p in problems) + "\n"
+            (DOCS / "LINT.md").write_text(report, encoding="utf-8")
+            print(f"[OK] docs/LINT.md создан ({count} проблем)")
+
+
+# --- быстрая health‑проверка (смок-тест)
+@app.route("/healthz")
+def healthz():
+    try:
+        client.admin.command("ping")
+        return jsonify({"ok": True, "db": MONGO_DB})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/roadmap")
+def roadmap_view():
+    md_path = Path(app.root_path) / "roadmap_clubstom.md"
+    if not md_path.exists():
+        return render_template("roadmap_missing.html"), 404
+
+    text = md_path.read_text(encoding="utf-8")
+    if markdown:
+        html = markdown.markdown(text, extensions=["tables", "fenced_code", "toc"])
+    else:
+        # Фолбэк: показываем как pre, если markdown не установлен
+        html = f"<pre style='white-space:pre-wrap'>{text}</pre>"
+
+    return render_template("roadmap.html", content=Markup(html))
+
+
+@app.route("/api/free_slots", methods=["POST"])
+def api_free_slots():
+    """
+    Вход: {doctor_id, room_name, date: 'YYYY-MM-DD', duration_min: 30}
+    Выход: ["09:00","09:30",...]
+    Логика: берём все приёмы врача И/ИЛИ кабинета на дату, вычитаем из рабочего окна.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    doctor_id = data.get("doctor_id") or ""
+    room_name = data.get("room_name") or ""
+    date_s = data.get("date") or ""
+    duration = int(data.get("duration_min") or 30)
+    if not doctor_id or not date_s:
+        return jsonify({"ok": False, "error": "bad_params"}), 400
+
+    try:
+        day = datetime.strptime(date_s, "%Y-%m-%d").date()
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_date"}), 400
+
+    # границы дня
+    start_day = datetime.combine(day, datetime.min.time())
+    end_day = start_day + timedelta(days=1)
+
+    # маппим кабинет по имени в _id (если передан)
+    room = db.rooms.find_one({"name": room_name}, {"_id": 1}) if room_name else None
+    room_id = room["_id"] if room else None
+
+    # собираем занятость (врач + по возможности кабинет)
+    match = {"start": {"$lt": end_day}, "end": {"$gt": start_day}}
+    try:
+        match["doctor_id"] = ObjectId(doctor_id)
+    except Exception:
+        match["doctor_id"] = doctor_id  # вдруг уже строкой
+    if room_id:
+        match["room_id"] = room_id
+
+    busy = []
+    for a in db.appointments.find(match, {"start": 1, "end": 1}).sort("start", 1):
+        s = to_dt(a["start"])
+        e = to_dt(a["end"])
+        if not (s and e):
+            continue
+        if s.date() != day:
+            s = datetime.combine(day, datetime.min.time())
+        if e.date() != day:
+            e = datetime.combine(day, datetime.max.time())
+        busy.append((s, e))
+
+    # рабочее окно клиники (можно заменить на расписание врача)
+    wh_start_s, wh_end_s = clinic_hours(day)
+    wh_start = datetime.combine(day, datetime.strptime(wh_start_s, "%H:%M").time())
+    wh_end = datetime.combine(day, datetime.strptime(wh_end_s, "%H:%M").time())
+
+    # шаг 5 минут, выдаём старты, которые не пересекаются с busy
+    step = 5
+    free = []
+    t = wh_start
+    delta = timedelta(minutes=duration)
+    while t + delta <= wh_end:
+        slot_ok = True
+        for s, e in busy:
+            if (t < e) and (t + delta > s):
+                slot_ok = False
+                break
+        if slot_ok:
+            free.append(t.strftime("%H:%M"))
+        t += timedelta(minutes=step)
+
+    return jsonify({"ok": True, "slots": free})
+
+
+# ======= АВТОРИЗАЦИЯ =======
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        if password == "demo":
+            session["user_id"] = "demo"
+            session["user_role"] = "admin"
+            session["user_name"] = "Демо Пользователь"
+            session["avatar_url"] = "/static/avatars/demo-user.png"
+            return redirect(url_for("calendar_view"))
+        else:
+            flash("Неверный пароль! Введите 'demo'", "danger")
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    write_log("logout", comment="Выход из системы", obj="Выход")
+    session.clear()
+    return redirect(url_for("login"))
+
+
+# --- Маршрут: Главный календарь ---
+@app.route("/")
+def home():
+    return redirect(url_for("calendar_view"))
+
+
+@app.route("/calendar")
+def calendar_view():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    doctors = list(db.doctors.find())
+    patients = list(db.patients.find())
+
+    rooms = list(db.rooms.find({}, {"name": 1, "status": 1}).sort("name", 1))
+    cabinets = [r["name"] for r in rooms]
+
+    now = datetime.now()
+
+    # Считаем статус "на сейчас" + ближайший приём (если свободен)
+    room_info = {}
+    for r in rooms:
+        state = calc_room_status_now(r, now)  # 'available'|'occupied'|'maintenance'
+        text = (
+            "Обслуживание"
+            if state == "maintenance"
+            else ("Занят" if state == "occupied" else "Свободен")
+        )
+        color = (
+            "#d97706" if state == "maintenance" else ("#cc0000" if state == "occupied" else "green")
+        )
+
+```

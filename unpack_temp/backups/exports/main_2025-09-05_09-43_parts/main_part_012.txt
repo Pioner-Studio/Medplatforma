@@ -1,0 +1,229 @@
+﻿### main.py (часть 12/12)
+```python
+        except Exception:
+            bd_iso = None  # не валим запрос, просто пропускаем
+
+    doc = {
+        "full_name": full_name,
+        "phone": phone,
+        "birthdate": bd_iso,  # храним как YYYY-MM-DD
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+    }
+    ins = db.patients.insert_one(doc)
+    return jsonify({"ok": True, "id": str(ins.inserted_id), "full_name": full_name})
+
+
+# ======= ЗАПУСК =======
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+def api_appointments_create():
+    payload = request.get_json(force=True, silent=True) or {}
+
+    start_str = payload.get("start")
+    end_str = payload.get("end")
+    room_id = _to_oid(payload.get("room_id"))
+    doctor_id = _to_oid(payload.get("doctor_id"))
+    patient_id = _to_oid(payload.get("patient_id"))
+    service_id = _to_oid(payload.get("service_id"))
+    status_key = (payload.get("status_key") or "scheduled").strip()
+    note = (payload.get("note") or payload.get("comment") or "").strip()
+
+    if not start_str or not end_str or not room_id:
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
+
+    start = to_dt(start_str)
+    end = to_dt(end_str)
+    if not isinstance(start, datetime) or not isinstance(end, datetime) or end <= start:
+        return jsonify({"ok": False, "error": "bad_datetime"}), 400
+
+    conflict = {"start": {"$lt": end}, "end": {"$gt": start}}
+    filters = [{"room_id": room_id, **conflict}]
+    if doctor_id:
+        filters.append({"doctor_id": doctor_id, **conflict})
+    if db.appointments.find_one({"$or": filters}):
+        return jsonify({"ok": False, "error": "conflict"}), 409
+
+    ins = db.appointments.insert_one(
+        {
+            "start": start,
+            "end": end,
+            "room_id": room_id,
+            "doctor_id": doctor_id,
+            "patient_id": patient_id,
+            "service_id": service_id,
+            "status_key": status_key,
+            "comment": note,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+        }
+    )
+
+    try:
+        p_name = (db.patients.find_one({"_id": patient_id}, {"full_name": 1}) or {}).get(
+            "full_name", ""
+        )
+        s_name = (db.services.find_one({"_id": service_id}, {"name": 1}) or {}).get("name", "")
+        write_log(
+            "create_appointment",
+            obj=str(ins.inserted_id),
+            extra={"patient": p_name, "service": s_name},
+        )
+    except Exception:
+        pass
+
+    return jsonify({"ok": True, "id": str(ins.inserted_id)})
+
+
+# === API: создать запись (appointments.create) ===============================
+from datetime import datetime
+from bson import ObjectId
+
+
+def _to_oid(s):
+    try:
+        return ObjectId(s)
+    except Exception:
+        return None
+
+
+def _parse_dt(value: str) -> datetime:
+    """
+    Принимает 'YYYY-MM-DDTHH:MM' | 'YYYY-MM-DDTHH:MM:SS' | c суффиксом 'Z'.
+    Возвращает datetime (naive, UTC-агностичный).
+    """
+    if not value:
+        raise ValueError("empty datetime")
+    v = value.strip().replace("Z", "")
+    # добавим секунды при необходимости
+    if len(v) == 16:  # 'YYYY-MM-DDTHH:MM'
+        v = v + ":00"
+    try:
+        return datetime.fromisoformat(v[:19])
+    except Exception:
+        # запасные варианты
+        for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"):
+            try:
+                return datetime.strptime(v[:19], fmt)
+            except Exception:
+                pass
+    raise ValueError(f"bad datetime: {value}")
+
+
+@app.route("/api/appointments/create_core", methods=["POST"])
+def api_appointments_create():
+    """
+    Создать приём (запись в календаре).
+    Ожидает JSON:
+    {
+      start, end, room_id, doctor_id, patient_id, service_id,
+      note? (строка), status_key? ("scheduled" по умолчанию)
+    }
+    Возвращает: { ok: true, id } | { ok:false, error }
+    """
+    payload = request.get_json(silent=True) or {}
+
+    # обязательные поля
+    room_id = payload.get("room_id") or ""
+    doctor_id = payload.get("doctor_id") or ""
+    patient_id = payload.get("patient_id") or ""
+    service_id = payload.get("service_id") or ""
+    start_raw = payload.get("start") or ""
+    end_raw = payload.get("end") or start_raw
+
+    if not (room_id and doctor_id and patient_id and service_id and start_raw):
+        return jsonify({"ok": False, "error": "required_fields"}), 400
+
+    try:
+        start_dt = _parse_dt(start_raw)
+        end_dt = _parse_dt(end_raw)
+    except ValueError:
+        return jsonify({"ok": False, "error": "bad_datetime"}), 400
+
+    if end_dt <= start_dt:
+        return jsonify({"ok": False, "error": "bad_range"}), 400
+
+    room_oid = _to_oid(room_id)
+    doctor_oid = _to_oid(doctor_id)
+    patient_oid = _to_oid(patient_id)
+    service_oid = _to_oid(service_id)
+
+    if not all([room_oid, doctor_oid, patient_oid, service_oid]):
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    # --- конфликт по КАБИНЕТУ (пересечение интервалов)
+    # условие пересечения: (existing.start < new.end) AND (existing.end > new.start)
+    room_conflict = db.appointments.find_one(
+        {
+            "room_id": room_oid,
+            "start": {"$lt": end_dt},
+            "end": {"$gt": start_dt},
+            # можно исключить "cancelled", если у вас такие записи есть:
+            # "status_key": {"$ne": "cancelled"}
+        },
+        {"_id": 1},
+    )
+    if room_conflict:
+        # фронт понимает и "conflict", и "room_conflict"
+        return jsonify({"ok": False, "error": "room_conflict"}), 409
+
+    # --- (необязательно) конфликт по ВРАЧУ
+    doctor_conflict = db.appointments.find_one(
+        {
+            "doctor_id": doctor_oid,
+            "start": {"$lt": end_dt},
+            "end": {"$gt": start_dt},
+            # "status_key": {"$ne": "cancelled"}
+        },
+        {"_id": 1},
+    )
+    if doctor_conflict:
+        return jsonify({"ok": False, "error": "conflict"}), 409
+
+    doc = {
+        "start": start_dt,
+        "end": end_dt,
+        "room_id": room_oid,
+        "doctor_id": doctor_oid,
+        "patient_id": patient_oid,
+        "service_id": service_oid,
+        "status_key": (payload.get("status_key") or "scheduled"),
+        "note": (payload.get("note") or "").strip(),
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+    }
+    ins = db.appointments.insert_one(doc)
+
+    # (опционально) лог
+    try:
+        write_log(
+            "create_appointment",
+            obj=str(ins.inserted_id),
+            extra={
+                "room_id": str(room_oid),
+                "doctor_id": str(doctor_oid),
+                "patient_id": str(patient_oid),
+                "service_id": str(service_oid),
+                "start": start_dt.isoformat(),
+                "end": end_dt.isoformat(),
+            },
+        )
+    except Exception:
+        pass
+
+    return jsonify({"ok": True, "id": str(ins.inserted_id)})
+
+
+# --- unified aliases for creation (одна точка входа, без дублей endpoints) ---
+@app.route("/api/appointments", methods=["POST"])
+@app.route("/api/appointments/create", methods=["POST"])
+@app.route("/schedule/api/create", methods=["POST"])
+def api_appointments_create_router():
+    return api_appointments_create()
+
+
+# === END create appointment ===================================================
+
+```

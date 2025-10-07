@@ -1,0 +1,44 @@
+﻿{
+    "Детский":  {
+                    "color":  "green",
+                    "next":  null,
+                    "state":  "available",
+                    "text":  "Свободен"
+                },
+    "Кабинет 6 (кастомный)":  {
+                                  "color":  "green",
+                                  "next":  null,
+                                  "state":  "available",
+                                  "text":  "Свободен"
+                              },
+    "Кастомный":  {
+                      "color":  "green",
+                      "next":  null,
+                      "state":  "available",
+                      "text":  "Свободен"
+                  },
+    "Ортодонтия":  {
+                       "color":  "green",
+                       "next":  null,
+                       "state":  "available",
+                       "text":  "Свободен"
+                   },
+    "Ортопедия":  {
+                      "color":  "green",
+                      "next":  null,
+                      "state":  "available",
+                      "text":  "Свободен"
+                  },
+    "Терапия":  {
+                    "color":  "green",
+                    "next":  null,
+                    "state":  "available",
+                    "text":  "Свободен"
+                },
+    "Хирургия":  {
+                     "color":  "green",
+                     "next":  null,
+                     "state":  "available",
+                     "text":  "Свободен"
+                 }
+}

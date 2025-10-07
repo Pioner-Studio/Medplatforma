@@ -1,0 +1,253 @@
+﻿### main.py (часть 5/12)
+```python
+            "specialization": request.form.get("specialization", ""),
+            "email": request.form.get("email", ""),
+            "phone": request.form.get("phone", ""),
+            "avatar_url": request.form.get("avatar_url", "/static/avatars/demo-doctor.png"),
+            "status": request.form.get("status", "активен"),
+        }
+        db.doctors.insert_one(doctor)
+        write_log("add_doctor", comment=f"Добавлен врач {doctor['full_name']}", obj="Врач")
+        return redirect(url_for("doctors"))
+    return render_template("add_doctor.html")
+
+
+@app.route("/doctor_card/<doctor_id>")
+def doctor_card(doctor_id):
+    doctor = db.doctors.find_one({"_id": ObjectId(doctor_id)})
+    if not doctor:
+        return "Врач не найден", 404
+    appointments = list(db.events.find({"doctor_id": doctor_id}))
+    return render_template("doctor_card.html", doctor=doctor, appointments=appointments)
+
+
+@app.route("/doctor_busy_slots/<doctor_id>")
+def doctor_busy_slots(doctor_id):
+    # Находим все события по doctor_id (за ближайшие 30 дней, чтобы не тянуть всё подряд)
+    from datetime import datetime, timedelta
+
+    start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + timedelta(days=30)
+    events = list(
+        db.events.find(
+            {"doctor_id": doctor_id, "start": {"$gte": start.isoformat(), "$lt": end.isoformat()}}
+        )
+    )
+    # Для каждого события возвращаем start и end
+    busy = []
+    for e in events:
+        busy.append({"start": e["start"], "end": e.get("end", e["start"])})
+    return jsonify({"busy_slots": busy})
+
+
+from flask import jsonify, request
+
+
+@app.route("/api/doctor_schedule", methods=["POST"])
+def doctor_schedule():
+    """
+    Вход:  { doctor_id }
+    Выход: { ok: true, schedule: { "0": {"start":"09:00","end":"21:00"}, ..., "6": {...} } }
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    did = _to_oid(payload.get("doctor_id"))
+    if not did:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    doc = db.doctors.find_one({"_id": did}, {"schedule": 1})
+    if not doc:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    schedule = doc.get("schedule", {})  # ожидаемый словарь с ключами "0"..."6"
+    return jsonify(ok=True, schedule=schedule)
+
+
+# ======= ФИНАНСЫ =======
+@app.route("/finance_report")
+def finance_report():
+    operations = list(db.finance.find())
+    # ---- Фильтры из формы ----
+    search = request.args.get("search", "").strip()
+    type_filter = request.args.get("type", "")
+    status_filter = request.args.get("status", "")
+
+    # --- Фильтруем ---
+    def match(op):
+        ok = True
+        if search:
+            ok &= (
+                search.lower() in op.get("doctor", "").lower()
+                or search.lower() in op.get("patient", "").lower()
+                or search.lower() in op.get("service", "").lower()
+            )
+        if type_filter:
+            ok &= op.get("type", "") == type_filter
+        if status_filter:
+            ok &= op.get("status", "").lower() == status_filter.lower()
+        return ok
+
+    filtered_ops = [op for op in operations if match(op)]
+
+    # --- Статистика по операциям ---
+    income_ops = [int(op["amount"]) for op in filtered_ops if op["type"] == "Доход"]
+    expense_ops = [int(op["amount"]) for op in filtered_ops if op["type"] == "Расход"]
+
+    income = sum(income_ops)
+    expenses = sum(expense_ops)
+    debtors_count = 4  # demo
+    debtors_sum = 32000  # demo
+    avg_check = int(sum(income_ops) / len(income_ops)) if income_ops else 0
+
+    # --- Для новых summary-полей (максимально топ) ---
+    operations_count = len(filtered_ops)
+    paid_ops = [op for op in filtered_ops if op.get("status") == "оплачен"]
+    paid_count = len(paid_ops)
+    paid_percent = int(100 * paid_count / operations_count) if operations_count else 0
+
+    # Топ врач и услуга (по количеству операций)
+    from collections import Counter
+
+    top_doctor = Counter([op["doctor"] for op in filtered_ops if op.get("doctor")]).most_common(1)
+    top_service = Counter([op["service"] for op in filtered_ops if op.get("service")]).most_common(
+        1
+    )
+    top_doctor = top_doctor[0][0] if top_doctor else "—"
+    top_service = top_service[0][0] if top_service else "—"
+
+    # --- График по месяцам ---
+    months = OrderedDict()
+    for op in filtered_ops:
+        m = op["date"].split(".")[1]  # MM
+        months.setdefault(m, {"income": 0, "expenses": 0})
+        if op["type"] == "Доход":
+            months[m]["income"] += int(op["amount"])
+        else:
+            months[m]["expenses"] += int(op["amount"])
+    chart_data = {
+        "labels": [calendar.month_abbr[int(m)] for m in months.keys()],
+        "datasets": [
+            {
+                "label": "Доходы",
+                "borderColor": "#22c55e",
+                "backgroundColor": "#dcfce7",
+                "data": [v["income"] for v in months.values()],
+                "tension": 0.4,
+            },
+            {
+                "label": "Расходы",
+                "borderColor": "#ef4444",
+                "backgroundColor": "#fee2e2",
+                "data": [v["expenses"] for v in months.values()],
+                "tension": 0.4,
+            },
+        ],
+    }
+
+    summary = {
+        "income": income,
+        "expenses": expenses,
+        "debtors_count": debtors_count,
+        "debtors_sum": debtors_sum,
+        "month_name": "июль",  # можно сделать динамично!
+        "avg_check": avg_check,
+        "operations_count": operations_count,
+        "paid_count": paid_count,
+        "paid_percent": paid_percent,
+        "top_doctor": top_doctor,
+        "top_service": top_service,
+    }
+
+    return render_template(
+        "finance_report.html", summary=summary, operations=filtered_ops, chart_data=chart_data
+    )
+
+
+@app.route("/finance_report/export")
+def finance_report_export():
+    write_log("export", comment="Экспорт финансового отчёта", obj="Финансовый отчёт")
+    operations = list(db.finance.find())
+    income_sum = sum(int(op["amount"]) for op in operations if op["type"] == "Доход")
+    expense_sum = sum(int(op["amount"]) for op in operations if op["type"] == "Расход")
+    income_ops = [int(op["amount"]) for op in operations if op["type"] == "Доход"]
+    avg_check = int(sum(income_ops) / len(income_ops)) if income_ops else 0
+    debtors_count = 4  # demo
+    debtors_sum = 32000  # demo
+    report_month = "июль"
+
+    data = {
+        "Доходы": [income_sum],
+        "Расходы": [expense_sum],
+        "Средний чек": [avg_check],
+        "Должники (чел)": [debtors_count],
+        "Долги (₽)": [debtors_sum],
+        "Месяц": [report_month],
+    }
+    format = request.args.get("format", "xlsx")
+    if format == "csv":
+        output = io.StringIO()
+        df = pd.DataFrame(data)
+        df.to_csv(output, index=False, sep=";")
+        output.seek(0)
+        return send_file(
+            io.BytesIO(output.getvalue().encode("utf-8")),
+            as_attachment=True,
+            download_name="finance_report.csv",
+            mimetype="text/csv",
+        )
+    else:
+        output = io.BytesIO()
+        df = pd.DataFrame(data)
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="Финансы")
+        output.seek(0)
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name="finance_report.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+
+# ======= ОСНОВНЫЕ СТРАНИЦЫ/МОДУЛИ (ЗАГЛУШКИ) =======
+@app.route("/tasks")
+def tasks():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    # Формируем задачи для шаблона:
+    tasks = list(db.tasks.find())
+    for t in tasks:
+        t["_id"] = str(t["_id"])
+        assignee = (
+            db.doctors.find_one({"_id": ObjectId(t.get("assigned_to", ""))})
+            if t.get("assigned_to")
+            else None
+        )
+        t["assigned_name"] = assignee["full_name"] if assignee else "Без исполнителя"
+        t["assigned_avatar_url"] = (
+            assignee["avatar_url"]
+            if assignee and "avatar_url" in assignee
+            else "/static/avatars/demo-user.png"
+        )
+    doctors = list(db.doctors.find())
+    return render_template(
+        "tasks.html", tasks=tasks, doctors=doctors
+    )  # <-- ВОТ ЭТО ДОЛЖНО БЫТЬ ВНУТРИ ФУНКЦИИ!
+
+
+@app.route("/add_task", methods=["POST"])
+def add_task():
+    task = {
+        "title": request.form.get("title", ""),
+        "description": request.form.get("description", ""),
+        "assigned_to": request.form.get("assigned_to", ""),
+        "due_date": request.form.get("due_date", ""),
+        "status": "active",
+        "priority": request.form.get("priority", "normal"),
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+    db.tasks.insert_one(task)
+    return redirect(url_for("tasks"))
+
+
+@app.route("/mark_task_done/<task_id>")
+```

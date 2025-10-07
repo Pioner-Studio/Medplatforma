@@ -1,0 +1,54 @@
+<aside class="sidebar">
+  <div class="sidebar-header" style="padding: 24px 0 50px 0; display: flex; justify-content: center">
+    <img src="{{ url_for('static', filename='logo_test123.png') }}" alt="ClubStom" class="sidebar-logo-img" />
+  </div>
+  <nav>
+    <ul>
+      <li>
+        <a href="{{ url_for('calendar_view') }}" class="{% if '/calendar' in request.path or request.path == '/' %}active{% endif %}">
+          <i class="fa-solid fa-calendar-days"></i> Расписание
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('patients_list') }}">
+          <i class="fa-solid fa-user"></i> Пациенты
+        </a>
+      </li>
+      {% if session.get('role') in ['owner', 'admin'] %}
+      <li>
+        <a href="/chief/pending-plans" class="{% if '/chief/pending-plans' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-clipboard-check"></i> На согласовании
+        </a>
+      </li>
+      {% endif %}
+      <li>
+        <a href="{{ url_for('doctors') }}" class="{% if '/doctors' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-user-md"></i> Врачи
+        </a>
+      </li>
+      {% if session.get('role') in ['admin', 'owner'] %}
+      <li>
+        <a href="{{ url_for('rooms') }}" class="{% if '/rooms' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-door-open"></i> Кабинеты
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('services_list') }}" class="{% if '/services' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-list"></i> Услуги
+        </a>
+      </li>
+      <li>
+        <a href="/finance" class="{% if '/finance' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-file-invoice-dollar"></i> Финансы
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('logs') }}" class="{% if '/logs' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-book"></i> Журнал действий
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</aside>
+

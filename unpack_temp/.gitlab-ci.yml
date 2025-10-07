@@ -1,0 +1,14 @@
+stages: [build]
+
+build:docs:
+  stage: build
+  image: python:3.11
+  script:
+    - pip install --upgrade pip
+    - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - python tools/generate_docs.py --zip
+  artifacts:
+    name: "docs-zip-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - docs.zip
+    expire_in: 7 days

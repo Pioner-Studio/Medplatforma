@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Должники/Депозиты</h2>
+<table>
+  <tr><th>Пациент</th><th>Долг</th></tr>
+  {% for d in debtors %}
+    <tr>
+      <td>{{ d.full_name }}</td>
+      <td>{{ d.debt }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}

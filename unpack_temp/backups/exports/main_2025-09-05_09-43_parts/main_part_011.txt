@@ -1,0 +1,253 @@
+﻿### main.py (часть 11/12)
+```python
+
+    if s(p.get("card_no")):
+        return jsonify({"ok": False, "error": "already_exists"}), 409
+
+    cn = make_card_no()
+    db.patients.update_one({"_id": oid}, {"$set": {"card_no": cn}})
+    return jsonify({"ok": True, "card_no": cn})
+
+
+@app.route("/api/patients/<id>/full")
+def api_patient_full(id):
+    _id = oid(id)
+    if not _id:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    p = db.patients.find_one({"_id": _id})
+    if not p:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    # ledger (финансовые операции)
+    ledger = []
+    for x in db.ledger.find({"patient_id": _id}).sort("ts", -1).limit(200):
+        # подтянем имя услуги
+        sname = ""
+        sid = x.get("service_id")
+        if sid:
+            svc = db.services.find_one({"_id": sid}, {"name": 1})
+            sname = svc.get("name", "") if svc else ""
+        ledger.append(
+            {
+                "ts": x.get("ts_iso") or iso_now(x.get("ts")),
+                "kind": x.get("kind", ""),
+                "amount": int(x.get("amount", 0) or 0),
+                "source": x.get("source", ""),
+                "service_name": sname,
+                "comment": x.get("comment", ""),
+            }
+        )
+
+    # долги/депозит: простая модель
+    # debt = сумма услуг (kind=service_charge) - оплаты (kind=payment) - списания с депозита (kind=deposit_use)
+    # deposit = внесено (kind=deposit) - использовано (kind=deposit_use)
+    svc_total = sum(
+        int(x.get("amount", 0) or 0)
+        for x in db.ledger.find({"patient_id": _id, "kind": "service_charge"})
+    )
+    pay_total = sum(
+        int(x.get("amount", 0) or 0) for x in db.ledger.find({"patient_id": _id, "kind": "payment"})
+    )
+    dep_in = sum(
+        int(x.get("amount", 0) or 0) for x in db.ledger.find({"patient_id": _id, "kind": "deposit"})
+    )
+    dep_use = sum(
+        int(x.get("amount", 0) or 0)
+        for x in db.ledger.find({"patient_id": _id, "kind": "deposit_use"})
+    )
+
+    debt = max(0, svc_total - pay_total - dep_use)
+    deposit = max(0, dep_in - dep_use)
+
+    # простые агрегаты для карточки
+    plans = list(db.plans.find({"patient_id": _id}, {"title": 1, "comment": 1}).sort("created", -1))
+    plans = [{"title": pl.get("title", ""), "comment": pl.get("comment", "")} for pl in plans]
+
+    # последние визиты
+    appts = []
+    for a in db.appointments.find({"patient_id": _id}).sort("start", -1).limit(20):
+        appts.append({"start": iso_now(a.get("start")), "title": a.get("title") or "Визит"})
+
+    survey = db.surveys.find_one({"patient_id": _id}) or {}
+    survey = {
+        "allergy": survey.get("allergy", ""),
+        "chronic": survey.get("chronic", ""),
+        "surgeries": survey.get("surgeries", ""),
+        "other": survey.get("other", ""),
+    }
+
+    tasks = []
+    for t in db.tasks.find({"patient_id": _id}).sort("created", -1).limit(50):
+        tasks.append(
+            {
+                "title": t.get("title", ""),
+                "status": t.get("status", "в работе"),
+                "deadline": t.get("deadline_iso", ""),
+            }
+        )
+
+    chat = []
+    for m in db.messages.find({"patient_id": _id}).sort("ts", -1).limit(50):
+        chat.append(
+            {
+                "from": m.get("from", "admin"),
+                "ts": m.get("ts_iso") or iso_now(m.get("ts")),
+                "text": m.get("text", ""),
+            }
+        )
+    chat.reverse()
+
+    return jsonify(
+        {
+            "ok": True,
+            "patient": {
+                "id": id,
+                "full_name": p.get("full_name", ""),
+                "card_number": p.get("card_number", ""),
+            },
+            "stats": {
+                "debt": debt,
+                "deposit": deposit,
+                "incash": pay_total,  # условно показываем суммы оплат как "в кассе (пациент)"
+            },
+            "ledger": ledger,
+            "plans": plans,
+            "appts": appts,
+            "survey": survey,
+            "tasks": tasks,
+            "chat": chat,
+        }
+    )
+
+    # нормализация полей, чтобы шаблон не падал
+    p["_id"] = str(p["_id"])
+    contacts = p.get("contacts") or {}
+    if not isinstance(contacts, dict):
+        contacts = {}
+    contacts.setdefault("phone", "")
+    contacts.setdefault("email", "")
+    contacts.setdefault("whatsapp", "")
+    contacts.setdefault("telegram", "")
+    p["contacts"] = contacts
+
+    addr = p.get("address") or {}
+    if not isinstance(addr, dict):
+        addr = {}
+    addr.setdefault("city", "")
+    addr.setdefault("street", "")
+    addr.setdefault("zip", "")
+    p["address"] = addr
+
+    if not p.get("avatar"):
+        p["avatar"] = "/static/avatars/patients/default.jpg"
+
+    # последние 50 визитов пациента
+    visits = list(
+        db.appointments.find({"patient_id": ObjectId(p["_id"])}).sort("start", -1).limit(50)
+    )
+
+    # справочники для отображения
+    doctor_map = {str(d["_id"]): d for d in db.doctors.find({}, {"full_name": 1})}
+    service_map = {
+        str(s["_id"]): s
+        for s in db.services.find({}, {"name": 1, "price": 1, "color": 1, "duration_min": 1})
+    }
+    room_map = {str(r["_id"]): r for r in db.rooms.find({}, {"name": 1})}
+    status_map = {
+        s["key"]: s for s in db.visit_statuses.find({}, {"key": 1, "title": 1, "color": 1})
+    }
+
+    # приводим события к удобному виду
+    visits_view = []
+    for v in visits:
+        sid = str(v.get("service_id") or "")
+        did = str(v.get("doctor_id") or "")
+        rid = str(v.get("room_id") or "")
+        st_key = v.get("status_key", "")
+        v_start = to_dt(v.get("start"))
+        v_end = to_dt(v.get("end"))
+        if not v_start:
+            continue
+        if not v_end:
+            dur = service_map.get(sid, {}).get("duration_min", 30)
+            try:
+                dur = int(dur)
+            except:
+                dur = 30
+            v_end = add_minutes(v_start, dur)
+
+        visits_view.append(
+            {
+                "_id": str(v["_id"]),
+                "start_iso": v_start.strftime("%Y-%m-%d %H:%M"),
+                "end_iso": v_end.strftime("%Y-%m-%d %H:%M"),
+                "doctor": doctor_map.get(did, {}).get("full_name", "—"),
+                "service": service_map.get(sid, {}).get("name", "—"),
+                "service_price": service_map.get(sid, {}).get("price", None),
+                "room": room_map.get(rid, {}).get("name", "—"),
+                "status": status_map.get(st_key, {}).get("title", "—"),
+                "status_color": status_map.get(st_key, {}).get("color", "#3498db"),
+                "sum": v.get("sum", 0),
+                "comment": v.get("comment", ""),
+            }
+        )
+
+    return render_template("patient_card.html", p=p, visits=visits_view)
+
+
+# --- ROUTES.md auto-refresh on startup (write to docs/ and project root) --
+# DOCS dir exists
+DOCS = Path(app.root_path) / "docs"
+DOCS.mkdir(parents=True, exist_ok=True)
+
+# fallback: define _dump_routes_md if откуда-то не подтянулся
+if "_dump_routes_md" not in globals():
+
+    def _dump_routes_md(flask_app):
+        lines = []
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        lines.append("# Flask routes map\n")
+        lines.append(f"_generated: {ts}_\n")
+        lines.append("\n| Rule | Endpoint | Methods |")
+        lines.append("|------|----------|---------|")
+        for r in sorted(flask_app.url_map.iter_rules(), key=lambda x: str(x.rule)):
+            methods = ",".join(sorted(m for m in r.methods if m not in {"HEAD", "OPTIONS"}))
+            lines.append(f"| `{r.rule}` | `{r.endpoint}` | `{methods}` |")
+        lines.append("")
+        return "\n".join(lines)
+
+
+try:
+    md = _dump_routes_md(app)
+    p_docs = DOCS / "ROUTES.md"
+    p_root = Path(app.root_path) / "ROUTES.md"  # дублируем в корень
+    p_docs.write_text(md, encoding="utf-8")
+    p_root.write_text(md, encoding="utf-8")
+    print(f"[OK] ROUTES.md updated:\n - {p_docs}\n - {p_root}")
+except Exception as e:
+    print(f"[WARN] ROUTES.md update failed: {e}")
+
+
+# === API: создать пациента (для модалки календаря) ===
+@app.route("/api/patients", methods=["POST"])
+def api_patients_create():
+    payload = request.get_json(silent=True) or {}
+
+    full_name = (payload.get("full_name") or "").strip()
+    phone = (payload.get("phone") or "").strip()
+    birth_date = (payload.get("birth_date") or payload.get("birth") or "").strip()
+
+    if not full_name:
+        return jsonify({"ok": False, "error": "full_name_required"}), 400
+
+    # dd.mm.yyyy | yyyy-mm-dd -> YYYY-MM-DD
+    bd_iso = None
+    if birth_date:
+        try:
+            if "." in birth_date:
+                bd = datetime.strptime(birth_date, "%d.%m.%Y")
+            else:
+                bd = datetime.strptime(birth_date[:10], "%Y-%m-%d")
+            bd_iso = bd.date().isoformat()
+```

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Сотрудники и структура клиники{% endblock %}
+{% block content %}
+<div style="max-width:950px; margin:0 auto; background:#fff; border-radius:24px; box-shadow:0 6px 32px rgba(20,40,80,.08); padding:34px 44px;">
+    <h2 style="font-size:2.1rem; font-weight:700; margin-bottom:28px;">Структура клиники</h2>
+    <table style="width:100%; background:#fff; border-radius:18px; font-size:1.11rem;">
+        <thead style="background:#f2f6ff;">
+            <tr>
+                <th>ФИО</th>
+                <th>Должность</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for staff in staff_list %}
+            <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="font-weight:600;">
+                    <img src="{{ staff.avatar_url or '/static/avatars/demo-staff.png' }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-right:8px; vertical-align:middle;">
+                    {{ staff.full_name }}
+                </td>
+                <td>{{ staff.position }}</td>
+                <td>{{ staff.phone }}</td>
+                <td>{{ staff.email }}</td>
+                <td>{{ staff.role }}</td>
+                <td style="color: {% if staff.status == 'активен' %}#13b949{% else %}#d91f3c{% endif %}; font-weight:600;">
+                    {{ staff.status|capitalize }}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6" style="text-align:center; color:#aaa; padding:26px;">Пока нет сотрудников</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

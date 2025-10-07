@@ -1,0 +1,52 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+
+# ГЛОБАЛЬНЫЕ ИСКЛЮЧЕНИЯ: ничего лишнего
+exclude: >
+  ^(
+    \.venv/|
+    venv/|
+    env/|
+    __pycache__/|
+    node_modules/|
+    static/avatars_clubstom_humans_30/|
+    static/xrays/|
+    static/ztl/|
+    .*\.zip$|
+    .*\.7z$|
+    .*\.rar$|
+    .*\.png$|
+    .*\.jpg$|
+    .*\.jpeg$|
+    .*\.gif$|
+    .*\.ico$|
+    .*\.pdf$|
+    .*\.xlsx$|
+    .*\.xls$|
+    .*\.mp4$|
+    .*\.mp3$|
+    .*\.wav$
+  )
+
+# Ограничим область «полезными» путями (опционально, но безопасно)
+files: >
+  ^(
+    (main|app)\.py|
+    tools/.*|
+    seed_.*\.py|
+    templates/.*|
+    static/(style\.css|.*\.js)|
+    requirements.*\.txt|
+    README\.md|
+    docs/.*|
+    .*\.(yml|yaml|json|toml|md)
+  )$

@@ -1,0 +1,96 @@
+﻿<aside class="sidebar">
+  <div
+    class="sidebar-header"
+    style="padding: 24px 0 50px 0; display: flex; justify-content: center"
+  >
+    <img
+      src="{{ url_for('static', filename='logo_test123.png') }}"
+      alt="ClubStom"
+      class="sidebar-logo-img"
+    />
+  </div>
+  <nav>
+    <ul>
+      <li>
+        <a
+          href="{{ url_for('calendar_view') }}"
+          class="{% if '/calendar' in request.path or request.path == '/' %}active{% endif %}"
+        >
+          <i class="fa-solid fa-calendar-days"></i> Р Р°СЃРїРёСЃР°РЅРёРµ
+        </a>
+      </li>
+      <li><a href="{{ url_for('patients_list') }}">РџР°С†РёРµРЅС‚С‹</a></li>
+      <li>
+        <a
+          href="{{ url_for('doctors') }}"
+          class="{% if '/doctors' in request.path %}active{% endif %}"
+        >
+          <i class="fa-solid fa-user-md"></i> Р’СЂР°С‡Рё
+        </a>
+      </li>
+      <li>
+        <a
+          href="{{ url_for('tasks') }}"
+          class="{% if '/tasks' in request.path %}active{% endif %}"
+        >
+          <i class="fa-solid fa-list-check"></i> Р—Р°РґР°С‡Рё
+        </a>
+      </li>
+      <li>
+        <a
+          href="{{ url_for('messages') }}"
+          class="{% if '/messages' in request.path %}active{% endif %}"
+        >
+          <i class="fa-solid fa-comments"></i> РЎРѕРѕР±С‰РµРЅРёСЏ
+        </a>
+      </li>
+
+      <li>
+        <a href="{{ url_for('rooms_list') }}"
+          ><i class="fa-solid fa-door-open"></i> РљР°Р±РёРЅРµС‚С‹</a
+        >
+      </li>
+      <
+      <li><a href="{{ url_for('services_list') }}">РЈСЃР»СѓРіРё</a></li>
+      <li>
+        <a href="{{ url_for('patients_list') }}"
+          ><i class="fa-solid fa-user-injured"></i> РџР°С†РёРµРЅС‚С‹</a
+        >
+      </li>
+      <li>
+        <a
+          href="{{ url_for('ztl') }}"
+          class="{% if '/ztl' in request.path %}active{% endif %}"
+        >
+          <i class="fa-solid fa-flask"></i> Р—РўР›
+        </a>
+      </li>
+      <li>
+        <a
+          href="{{ url_for('partners') }}"
+          class="{% if '/partners' in request.path %}active{% endif %}"
+        >
+          <i class="fa-solid fa-handshake"></i> РџР°СЂС‚РЅРµСЂСЃРєР°СЏ РїСЂРѕРіСЂР°РјРјР°
+        </a>
+      </li>
+      <li><a href="{{ url_for('finance_view') }}">Р¤РёРЅР°РЅСЃРѕРІС‹Р№ РѕС‚С‡С‘С‚</a></li>
+      <li>
+        <a
+          href="{{ url_for('logs') }}"
+          class="{% if '/logs' in request.path %}active{% endif %}"
+        >
+          <i class="fa-solid fa-book"></i> Р–СѓСЂРЅР°Р» РґРµР№СЃС‚РІРёР№
+        </a>
+      </li>
+      <li>
+        <a
+          href="{{ url_for('data_tools') }}"
+          class="{% if '/data_tools' in request.path %}active{% endif %}"
+        >
+          <i class="fa-solid fa-cloud-arrow-down"></i> Р­РєСЃРїРѕСЂС‚ / РРјРїРѕСЂС‚
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>
+

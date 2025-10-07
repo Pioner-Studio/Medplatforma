@@ -1,0 +1,253 @@
+﻿### main.py (часть 8/12)
+```python
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    def strid(v):  # аккуратно приводим к строке
+        return str(v) if isinstance(v, ObjectId) else (v or "")
+
+    def fmt(dt):
+        return dt.strftime("%Y-%m-%dT%H:%M") if isinstance(dt, datetime) else ""
+
+    return jsonify(
+        {
+            "ok": True,
+            "item": {
+                "id": str(a["_id"]),
+                "doctor_id": strid(a.get("doctor_id")),
+                "patient_id": strid(a.get("patient_id")),
+                "service_id": strid(a.get("service_id")),
+                "room_id": strid(a.get("room_id")),
+                "status_key": a.get("status_key", "scheduled"),
+                "comment": a.get("comment", ""),
+                "start": fmt(a.get("start")),
+                "end": fmt(a.get("end")),
+            },
+        }
+    )
+
+
+# --- 2.3.2: полное обновление записи из модалки ---
+
+
+@app.route("/api/appointments/<id>/update", methods=["POST"])
+def api_appointment_update(id):
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    a = db.appointments.find_one({"_id": oid})
+    if not a:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    updates = {}
+
+    def as_oid(val):
+        if not val:
+            return None
+        try:
+            return ObjectId(val)
+        except Exception:
+            return None
+
+    doc_oid = as_oid(data.get("doctor_id"))
+    pat_oid = as_oid(data.get("patient_id"))
+    srv_oid = as_oid(data.get("service_id"))
+    room_oid = as_oid(data.get("room_id")) or a.get("room_id")
+
+    if doc_oid:
+        updates["doctor_id"] = doc_oid
+    if pat_oid:
+        updates["patient_id"] = pat_oid
+    if srv_oid:
+        updates["service_id"] = srv_oid
+    if room_oid:
+        updates["room_id"] = room_oid
+
+    if "status_key" in data:
+        updates["status_key"] = (data.get("status_key") or "scheduled").strip()
+    if "comment" in data:
+        updates["comment"] = (data.get("comment") or "").strip()
+
+    start_dt = to_dt(data.get("start")) or a.get("start")
+    end_dt = to_dt(data.get("end")) or a.get("end")
+
+    if not end_dt:
+        dur = 30
+        if srv_oid:
+            srv = db.services.find_one({"_id": srv_oid}, {"duration_min": 1}) or {}
+            try:
+                dur = int(srv.get("duration_min", 30))
+            except Exception:
+                dur = 30
+        end_dt = start_dt + timedelta(minutes=dur)
+
+    if not isinstance(start_dt, datetime) or not isinstance(end_dt, datetime) or end_dt <= start_dt:
+        return jsonify({"ok": False, "error": "bad_dates"}), 400
+
+    updates["start"] = start_dt
+    updates["end"] = end_dt
+
+    if room_oid:
+        conflict = db.appointments.find_one(
+            {
+                "_id": {"$ne": oid},
+                "room_id": room_oid,
+                "start": {"$lt": end_dt},
+                "end": {"$gt": start_dt},
+            }
+        )
+        if conflict:
+            return jsonify({"ok": False, "error": "room_conflict"}), 409
+
+    db.appointments.update_one({"_id": oid}, {"$set": updates})
+    try:
+        recalc_room_status(room_oid)
+        write_log(
+            "update_appointment",
+            obj=str(oid),
+            extra={"start": start_dt.isoformat(), "end": end_dt.isoformat()},
+        )
+    except Exception:
+        pass
+    return jsonify({"ok": True})
+
+
+@app.route("/api/appointments/update_time", methods=["POST"])
+def api_appointments_update_time():
+    data = request.get_json(force=True, silent=True) or {}
+    appt_id = data.get("id")
+    start_s = data.get("start")
+    end_s = data.get("end")
+    if not appt_id or not start_s or not end_s:
+        return jsonify({"ok": False, "error": "bad_params"}), 400
+    try:
+        oid = ObjectId(appt_id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+    start_dt = to_dt(start_s)
+    end_dt = to_dt(end_s)
+    if not isinstance(start_dt, datetime) or not isinstance(end_dt, datetime) or end_dt <= start_dt:
+        return jsonify({"ok": False, "error": "bad_datetime"}), 400
+    appt = db.appointments.find_one({"_id": oid}, {"room_id": 1})
+    if not appt:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+    room_id = appt.get("room_id")
+    # conflict by room
+    if room_id:
+        conflict = db.appointments.find_one(
+            {
+                "_id": {"$ne": oid},
+                "room_id": room_id,
+                "start": {"$lt": end_dt},
+                "end": {"$gt": start_dt},
+            }
+        )
+        if conflict:
+            return jsonify({"ok": False, "error": "room_conflict"}), 409
+    db.appointments.update_one({"_id": oid}, {"$set": {"start": start_dt, "end": end_dt}})
+    try:
+        if room_id:
+            recalc_room_status(room_id)
+        write_log(
+            "move_appointment",
+            obj=str(oid),
+            extra={"start": start_dt.isoformat(), "end": end_dt.isoformat()},
+        )
+    except Exception:
+        pass
+    return jsonify({"ok": True})
+
+
+@app.route("/schedule/api/create", methods=["POST"])
+def schedule_api_create_proxy():
+    return api_appointments_create()
+
+
+# --- DELETE appointment (все совместимые варианты) ---
+@app.route("/api/appointments/<id>", methods=["DELETE"])
+def api_appointments_delete_by_id(id):
+    oid = _to_oid(id)
+    if not oid:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+    db.appointments.delete_one({"_id": oid})
+    return jsonify({"ok": True})
+
+
+@app.route("/api/appointments/delete", methods=["POST"])
+def api_appointments_delete_post():
+    payload = request.get_json(force=True, silent=True) or {}
+    return api_appointments_delete_by_id(payload.get("id"))
+
+
+@app.route("/schedule/api/delete", methods=["POST"])
+def schedule_api_delete_proxy():
+    return api_appointments_delete_post()
+
+
+# лёгкие справочники для фронта
+@app.route("/api/services_min")
+def api_services_min():
+    items = []
+    for s in db.services.find({}, {"name": 1, "duration_min": 1}).sort("name", 1):
+        items.append(
+            {"id": str(s["_id"]), "name": s["name"], "duration_min": s.get("duration_min", 30)}
+        )
+    return jsonify(items)
+
+
+@app.route("/api/visit_statuses_min")
+def api_visit_statuses_min():
+    items = []
+    for s in db.visit_statuses.find({}, {"key": 1, "title": 1}).sort("title", 1):
+        items.append({"key": s["key"], "title": s["title"]})
+    return jsonify(items)
+
+
+@app.route("/api/finance/record", methods=["POST"])
+def api_finance_record():
+    data = request.get_json(force=True, silent=True) or {}
+    pid = oid(data.get("patient_id"))
+    kind = data.get("kind")  # payment | deposit | expense | payroll | procurement
+    amount = int(data.get("amount", 0) or 0)
+    source = data.get("source")  # alpha | sber | cash
+    comment = (data.get("comment") or "").strip()
+    doctor_id = oid(data.get("doctor_id")) if data.get("doctor_id") else None
+    service_id = oid(data.get("service_id")) if data.get("service_id") else None
+    expense_cat = data.get("expense_cat")  # rent/procurement/marketing/dividends/other
+
+    if not kind or amount <= 0:
+        return jsonify({"ok": False, "error": "bad_params"}), 400
+
+    # строго из прайса: если указан service_id при payment — добавим сервис-чардж (чтобы долг считался)
+    ts = datetime.now()
+    doc = {
+        "patient_id": pid,
+        "kind": kind,
+        "amount": amount,
+        "source": source,
+        "comment": comment,
+        "doctor_id": doctor_id,
+        "service_id": service_id,
+        "expense_cat": expense_cat,
+        "ts": ts,
+        "ts_iso": ts.strftime("%Y-%m-%dT%H:%M"),
+    }
+    db.ledger.insert_one(doc)
+
+    # если выбрана услуга и это оплата услуги — добавим строку service_charge (если её ещё нет на этот визит)
+    if kind == "payment" and service_id:
+        s = db.services.find_one({"_id": service_id}, {"price": 1})
+        price = int((s or {}).get("price", 0) or 0)
+        if price > 0:
+            db.ledger.insert_one(
+                {
+                    "patient_id": pid,
+                    "kind": "service_charge",
+                    "amount": price,
+                    "source": None,
+                    "comment": f"Начисление за услугу",
+                    "service_id": service_id,
+                    "ts": ts,
+```

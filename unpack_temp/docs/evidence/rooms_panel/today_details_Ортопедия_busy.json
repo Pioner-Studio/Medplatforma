@@ -1,0 +1,11 @@
+﻿# Функция на текущую сессию: кладёт JSON из буфера в файл (UTF-8)
+function clipjson { param([string]$Path) Get-Clipboard | Set-Content -Path $Path -Encoding UTF8 }
+
+# Папка для артефактов (создастся, если нет)
+New-Item -ItemType Directory -Path .\docs\evidence\rooms_panel -Force | Out-Null
+
+# Вставь СКОПИРОВАННЫЙ из DevTools JSON для каждого файла:
+clipjson ".\docs\evidence\rooms_panel\doctor_schedule_today_Ортопедия.json"
+clipjson ".\docs\evidence\rooms_panel\status_now.json"
+clipjson ".\docs\evidence\rooms_panel\today_details_Ортопедия_busy.json"
+

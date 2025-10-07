@@ -1,0 +1,9 @@
+docs\WORKFLOW.md
+docs\PROJECT_HEADER.md
+docs\API_CONTRACTS.md
+docs\DB_SCHEMA.md
+docs\ROUTES_MAP.md
+docs\TEMPLATES_MAP.md
+# exclusions examples:
+!docs\CHANGELOG.md
+!docs\CHECKLIST.md

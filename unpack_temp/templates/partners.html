@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="partners-wrap">
+  <h2 class="partners-title">Партнёрская программа</h2>
+  <div class="partners-table-zone">
+    <table class="partners-table">
+      <thead>
+        <tr>
+          <th>Пациент</th>
+          <th>Пригласил</th>
+          <th>Рефералы</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for patient in patients %}
+        <tr>
+          <!-- Пациент (кликабельно) -->
+          <td>
+            <a href="{{ url_for('patient_card', id=patient._id) }}" class="partner-link">
+              <img src="{{ patient.avatar_url }}" class="mini-avatar avatar-shadow">
+              <span>{{ patient.full_name }}</span>
+            </a>
+          </td>
+          <!-- Пригласил -->
+          <td>
+            {# Найдём пригласителя по patients_map #}
+            {% set inviter = patient.invited_by and patients_map.get(patient.invited_by|string) %}
+            {% if inviter %}
+              <a href="{{ url_for('patient_card', id=inviter._id) }}" class="partner-link" style="color:#3797bc;">
+                <img src="{{ inviter.avatar_url }}" class="mini-avatar avatar-shadow">
+                <span>{{ inviter.full_name }}</span>
+              </a>
+            {% else %}
+              <span class="badge-none">— нет</span>
+            {% endif %}
+          </td>
+          <!-- Рефералы -->
+          <td>
+            {% set refs = referrals[patient._id|string] if patient._id|string in referrals else [] %}
+            {% if refs and refs|length > 0 %}
+              {% for ref in refs %}
+                <a href="{{ url_for('patient_card', id=ref._id) }}" class="partner-link" style="color:#2aa44d;">
+                  <img src="{{ ref.avatar_url }}" class="mini-avatar avatar-shadow">
+                  <span>{{ ref.full_name }}</span>
+                </a>
+                {% if not loop.last %}<span style="margin:0 5px;color:#b2b6c3;">,</span>{% endif %}
+              {% endfor %}
+            {% else %}
+              <span class="badge-none">— нет</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+.partners-wrap {
+  display: flex; flex-direction: column; align-items: center; padding-top: 36px;
+}
+.partners-title {
+  text-align: center;
+  font-size: 2.45em;
+  font-weight: 800;
+  margin-bottom: 32px;
+  color: #233a59;
+  letter-spacing: 0.04em;
+}
+.partners-table-zone {
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: 0 6px 38px #cde7fa26;
+  padding: 26px 30px 26px 30px;
+  min-width: 720px;
+  max-width: 980px;
+}
+.partners-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 1.17em;
+}
+.partners-table thead tr {
+  background: #f6fbff;
+}
+.partners-table th, .partners-table td {
+  padding: 15px 14px;
+  text-align: left;
+  vertical-align: middle;
+}
+.partners-table tbody tr {
+  border-bottom: 1px solid #f0f3fa;
+  transition: background 0.12s;
+}
+.partners-table tbody tr:hover {
+  background: #f4faff;
+}
+.partner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #2465c3;
+  font-weight: 600;
+  font-size: 1em;
+  transition: color 0.14s;
+}
+.partner-link:hover {
+  color: #183d66;
+}
+.mini-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f7fafd;
+}
+.avatar-shadow {
+  box-shadow: 0 1px 8px #d1e4fa6b;
+}
+.badge-none {
+  background: #f4f7fa;
+  color: #c1c8d1;
+  border-radius: 8px;
+  padding: 5px 17px;
+  font-size: .98em;
+  font-weight: 600;
+  letter-spacing: .01em;
+  display: inline-block;
+}
+</style>
+{% endblock %}

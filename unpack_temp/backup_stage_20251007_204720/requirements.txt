@@ -1,0 +1,15 @@
+Flask==3.0.3
+Jinja2==3.1.4
+Werkzeug==3.0.3
+itsdangerous==2.2.0
+click==8.1.7
+pymongo==4.8.0
+dnspython==2.6.1
+python-dotenv==1.0.1
+
+# отчёты/экспорты
+pandas==2.2.2
+XlsxWriter==3.2.0
+
+# опционально, если используем Markdown в /roadmap
+Markdown==3.6

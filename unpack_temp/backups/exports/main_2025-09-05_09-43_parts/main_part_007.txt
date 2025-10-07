@@ -1,0 +1,253 @@
+﻿### main.py (часть 7/12)
+```python
+    elif room_name:
+        r = db.rooms.find_one({"name": room_name}, {"_id": 1})
+        if r:
+            q["room_id"] = r["_id"]
+
+    # 6) Фильтр по услуге
+    if service_id:
+        try:
+            q["service_id"] = ObjectId(service_id)
+        except Exception:
+            pass
+    elif service_name:
+        s = db.services.find_one({"name": service_name}, {"_id": 1})
+        if s:
+            q["service_id"] = s["_id"]
+
+    # 7) Справочники для названий/цветов
+    doctors_map = {str(d["_id"]): d for d in db.doctors.find({}, {"full_name": 1, "avatar": 1})}
+    patients_map = {str(p["_id"]): p for p in db.patients.find({}, {"full_name": 1, "avatar": 1})}
+    services_map = {
+        str(s["_id"]): s for s in db.services.find({}, {"name": 1, "color": 1, "duration_min": 1})
+    }
+    status_map = {
+        s["key"]: s for s in db.visit_statuses.find({}, {"key": 1, "title": 1, "color": 1})
+    }
+    rooms_map = {str(r["_id"]): r for r in db.rooms.find({}, {"name": 1})}
+
+    # 8) Формируем ответ в формате FullCalendar
+    events = []
+    cursor = db.appointments.find(q).sort("start", 1)
+
+    for a in cursor:
+        # --- нормализуем ID как строки (могут быть None)
+        did = str(a.get("doctor_id") or "")
+        pid = str(a.get("patient_id") or "")
+        sid = str(a.get("service_id") or "")
+        rid = str(a.get("room_id") or "")
+
+        # --- гарантируем тип datetime
+        a_start = to_dt(a.get("start"))
+        if not a_start:
+            # битая запись без даты — пропускаем
+            continue
+
+        a_end = to_dt(a.get("end"))
+        if not a_end:
+            # если нет end — считаем по длительности услуги (если есть), иначе 30 мин
+            dur = services_map.get(sid, {}).get("duration_min", 30)
+            try:
+                dur = int(dur)
+            except Exception:
+                dur = 30
+            a_end = add_minutes(a_start, dur)
+
+        # --- справочники
+        doc = doctors_map.get(did, {})
+        pat = patients_map.get(pid, {})
+        srv = services_map.get(sid, {})
+        rm = rooms_map.get(rid, {})
+        st = status_map.get(a.get("status_key", "scheduled"), {})
+
+        # --- заголовок события
+        title = f'{srv.get("name", "Услуга")} — {pat.get("full_name", "Пациент")}'
+
+        events.append(
+            {
+                "id": str(a["_id"]),
+                "title": title,
+                "start": a_start.isoformat(),
+                "end": a_end.isoformat(),
+                "backgroundColor": st.get("color") or srv.get("color") or "#3498db",
+                "borderColor": st.get("color") or srv.get("color") or "#3498db",
+                "extendedProps": {
+                    "patient": pat.get("full_name"),
+                    "doctor": doc.get("full_name"),
+                    "service": srv.get("name"),
+                    "room": rm.get("name"),
+                    "status": st.get("title"),
+                    "doctor_id": did,
+                    "patient_id": pid,
+                    "service_id": sid,
+                    "room_id": rid,
+                },
+            }
+        )
+
+    return jsonify(events)
+
+
+@app.route("/api/services/<id>")
+def api_service_get(id):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+    s = db.services.find_one({"_id": oid}, {"name": 1, "duration_min": 1, "price": 1, "color": 1})
+    if not s:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+    return jsonify(
+        {
+            "ok": True,
+            "item": {
+                "id": str(s["_id"]),
+                "name": s.get("name"),
+                "duration_min": int(s.get("duration_min") or 30),
+                "price": s.get("price"),
+                "color": s.get("color"),
+            },
+        }
+    )
+
+
+# 1) Справочники для модалки (РАСШИРЕНО: +patients, +rooms)
+@app.route("/api/dicts", methods=["GET"])
+def api_dicts():
+    _db = app.config.get("DB", db)
+    # на случай, если у тебя DB кладётся в app.config
+
+    # Врачи
+    docs = list(db.doctors.find({}, {"full_name": 1}))
+    doctors = [{"id": str(x["_id"]), "name": x.get("full_name", "")} for x in docs]
+
+    # Услуги
+    srvs = list(db.services.find({}, {"name": 1, "duration_min": 1, "price": 1}))
+    services = [
+        {
+            "id": str(x["_id"]),
+            "name": x.get("name", ""),
+            "duration_min": int(x.get("duration_min") or 30),
+            "price": x.get("price", 0),
+        }
+        for x in srvs
+    ]
+
+    # Пациенты
+    pats = list(db.patients.find({}, {"full_name": 1, "birthdate": 1}))
+    patients = [
+        {
+            "id": str(p["_id"]),
+            "name": p.get("full_name", "Без имени"),
+            "birthdate": p.get("birthdate"),
+        }
+        for p in pats
+    ]
+
+    # Кабинеты
+    rms = list(db.rooms.find({}, {"name": 1}))
+    rooms = [{"id": str(r["_id"]), "name": r.get("name", "Кабинет")} for r in rms]
+
+    return jsonify(
+        {
+            "ok": True,
+            "doctors": doctors,
+            "services": services,
+            "patients": patients,
+            "rooms": rooms,
+        }
+    )
+
+
+# --- 2.2: занятость кабинета на день ---
+@app.route("/api/rooms/busy")
+def api_room_busy():
+    """
+    GET /api/rooms/busy?room_id=<oid|str>&date=YYYY-MM-DD
+    Возвращает интервалы занятости кабинета на указанный день:
+    { ok: True, items: [{start:'HH:MM', end:'HH:MM'}, ...] }
+    """
+    room_id = request.args.get("room_id", "").strip()
+    date_s = request.args.get("date", "").strip()
+
+    if not room_id or not date_s:
+        return jsonify({"ok": False, "error": "bad_params"}), 400
+
+    try:
+        room_oid = ObjectId(room_id)
+    except Exception:
+        # допускаем, что к нам пришло имя кабинета — попробуем найти
+        room = db.rooms.find_one({"name": room_id}, {"_id": 1})
+        if not room:
+            return jsonify({"ok": False, "error": "room_not_found"}), 404
+        room_oid = room["_id"]
+
+    try:
+        day_start = datetime.strptime(date_s, "%Y-%m-%d")
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_date"}), 400
+
+    day_end = day_start + timedelta(days=1)
+
+    # Берём все приёмы в этом кабинете, пересекающие день
+    cur = db.appointments.find(
+        {"room_id": room_oid, "start": {"$lt": day_end}, "end": {"$gt": day_start}},
+        {"start": 1, "end": 1},
+    )
+
+    items = []
+    for a in cur:
+        st = max(a.get("start"), day_start)
+        en = min(a.get("end"), day_end)
+        if not isinstance(st, datetime) or not isinstance(en, datetime) or en <= st:
+            continue
+        items.append(
+            {
+                "start": st.strftime("%H:%M"),
+                "end": en.strftime("%H:%M"),
+            }
+        )
+
+    # Отсортируем по началу
+    items.sort(key=lambda x: x["start"])
+    return jsonify({"ok": True, "items": items})
+
+
+# === Удаление приёма ===
+@app.route("/delete_appointment/<id>", methods=["POST"])
+def delete_appointment(id):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    appt = db.appointments.find_one({"_id": oid}, {"room_id": 1})
+    if not appt:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    room_id = appt.get("room_id")
+
+    db.appointments.delete_one({"_id": oid})
+
+    try:
+        write_log("delete_appointment", obj=str(oid))
+    except Exception:
+        pass
+
+    # Пересчитать статус...
+
+    return jsonify({"ok": True})
+
+
+# --- 2.3.1: получить запись для модалки ---
+@app.route("/api/appointments/<id>")
+def api_appointment_get(id):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        return jsonify({"ok": False, "error": "bad_id"}), 400
+
+    a = db.appointments.find_one({"_id": oid})
+    if not a:
+```

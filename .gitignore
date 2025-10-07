@@ -1,0 +1,7 @@
+.venv/
+.venv_off_*/
+attic/
+*.zip
+backup_snapshot_*.zip
+snapshot_*.zip
+docs.zip

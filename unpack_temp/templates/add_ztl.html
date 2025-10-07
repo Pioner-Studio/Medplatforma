@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Добавить работу в лабораторию (ZTL)</h2>
+<form method="post" enctype="multipart/form-data" class="card shadow p-4" style="max-width:440px;">
+    <div class="mb-3">
+        <label>Пациент:</label>
+        <select name="patient_id" class="form-select" required>
+            {% for p in patients %}
+            <option value="{{ p._id }}">{{ p.full_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Врач:</label>
+        <select name="doctor_id" class="form-select" required>
+            {% for d in doctors %}
+            <option value="{{ d._id }}">{{ d.full_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Тип работы:</label>
+        <select name="type" class="form-select">
+            <option>Коронка</option>
+            <option>Винир</option>
+            <option>Брекеты</option>
+            <option>Протез</option>
+            <option>Каппа</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Файл (фото, 3D, pdf):</label>
+        <input type="file" name="file" accept="image/*,.pdf,.stl,.obj" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label>Дата заказа:</label>
+        <input type="date" name="order_date" class="form-control" required value="{{ (now or '').split('T')[0] }}">
+    </div>
+    <div class="mb-3">
+        <label>Срок исполнения:</label>
+        <input type="date" name="due_date" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Статус:</label>
+        <select name="status" class="form-select">
+            <option>В работе</option>
+            <option>Готово</option>
+            <option>Выдано</option>
+            <option>Ожидает оплаты</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Комментарий:</label>
+        <textarea name="comment" class="form-control" rows="2"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Добавить</button>
+</form>
+{% endblock %}

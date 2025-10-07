@@ -1,0 +1,142 @@
+﻿```html
+{% extends "base.html" %} {% block content %}
+
+<h2 style="margin: 8px 0 12px 0">РџР°С†РёРµРЅС‚С‹</h2>
+
+<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px">
+  <input
+    id="q"
+    type="text"
+    placeholder="РџРѕРёСЃРє (Р¤РРћ / С‚РµР»РµС„РѕРЅ / в„–РєР°СЂС‚С‹)"
+    style="
+      padding: 8px 12px;
+      border: 1px solid #dde7f7;
+      border-radius: 8px;
+      min-width: 260px;
+    "
+  />
+  <button id="btnSearch" class="btn">РСЃРєР°С‚СЊ</button>
+  <span style="opacity: 0.6">|</span>
+  <a href="/calendar" class="btn">в†©пёЋ Р’ РєР°Р»РµРЅРґР°СЂСЊ</a>
+</div>
+
+<div
+  style="
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px #e3eaf9b7;
+    padding: 10px;
+  "
+>
+  <table style="width: 100%; border-collapse: collapse">
+    <thead>
+      <tr style="text-align: left; border-bottom: 1px solid #eef2ff">
+        <th style="padding: 8px">в„– РєР°СЂС‚С‹</th>
+        <th style="padding: 8px">Р¤РРћ</th>
+        <th style="padding: 8px">РўРµР»РµС„РѕРЅ</th>
+        <th style="padding: 8px">Р”Р°С‚Р° СЂРѕР¶РґРµРЅРёСЏ</th>
+      </tr>
+    </thead>
+    <tbody id="tblBody">
+      <tr>
+        <td colspan="4" style="padding: 12px; opacity: 0.6">Р—Р°РіСЂСѓР·РєР°вЂ¦</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    id="pager"
+    style="display: flex; gap: 8px; align-items: center; margin-top: 10px"
+  >
+    <button id="prev" class="btn">вЂ№ РќР°Р·Р°Рґ</button>
+    <span id="pgInfo" style="opacity: 0.8"></span>
+    <button id="next" class="btn">Р’РїРµСЂС‘Рґ вЂє</button>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+  (function () {
+    let page = 1,
+      per_page = 50,
+      total = 0;
+
+    const $ = (s) => document.querySelector(s);
+    const q = $("#q"),
+      tbody = $("#tblBody"),
+      pgInfo = $("#pgInfo");
+
+    async function load() {
+      const url = new URL("/api/patients", location.origin);
+      if (q.value.trim()) url.searchParams.set("q", q.value.trim());
+      url.searchParams.set("page", page);
+      url.searchParams.set("per_page", per_page);
+
+      tbody.innerHTML = `<tr><td colspan="4" style="padding:12px; opacity:.6">Р—Р°РіСЂСѓР·РєР°вЂ¦</td></tr>`;
+      try {
+        const r = await fetch(url);
+        const data = await r.json();
+        total = data.total || 0;
+
+        if (!data.items || !data.items.length) {
+          tbody.innerHTML = `<tr><td colspan="4" style="padding:12px; opacity:.6">РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</td></tr>`;
+        } else {
+          tbody.innerHTML = (data.items || [])
+            .map(
+              (it) => `
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:8px; width:110px">${it.card_no ?? "вЂ”"}</td>
+              <td style="padding:8px">
+                <a href="/patients/${
+                  it.id
+                }" style="text-decoration:none; color:#1f6feb">${
+                it.full_name || "вЂ”"
+              }</a>
+              </td>
+              <td style="padding:8px">${it.phone || "вЂ”"}</td>
+              <td style="padding:8px">${
+                (it.birthdate || "").toString().slice(0, 10) || "вЂ”"
+              }</td>
+            </tr>
+          `
+            )
+            .join("");
+        }
+
+        const pages = Math.max(1, Math.ceil(total / per_page));
+        pgInfo.textContent = `РЎС‚СЂ. ${page} РёР· ${pages} вЂў РІСЃРµРіРѕ ${total}`;
+        $("#prev").disabled = page <= 1;
+        $("#next").disabled = page >= pages;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="4" style="padding:12px; color:#991b1b; background:#fee2e2; border:1px solid #fecaca">РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё</td></tr>`;
+        pgInfo.textContent = "";
+      }
+    }
+
+    $("#btnSearch").addEventListener("click", () => {
+      page = 1;
+      load();
+    });
+    q.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        page = 1;
+        load();
+      }
+    });
+    $("#prev").addEventListener("click", () => {
+      if (page > 1) {
+        page--;
+        load();
+      }
+    });
+    $("#next").addEventListener("click", () => {
+      page++;
+      load();
+    });
+
+    load();
+  })();
+</script>
+{% endblock %}
+
+```

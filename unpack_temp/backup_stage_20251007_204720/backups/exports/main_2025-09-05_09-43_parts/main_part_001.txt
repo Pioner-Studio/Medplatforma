@@ -1,0 +1,253 @@
+﻿### main.py (часть 1/12)
+```python
+import os
+import calendar
+import csv
+import io
+from collections import OrderedDict
+from datetime import datetime, timedelta
+from pathlib import Path
+
+# --- third-party
+from bson import ObjectId  # ОСТАВЛЯЕМ только ЭТОТ импорт ObjectId (без дубля из bson.objectid)
+from flask import (
+    Flask,
+    Response,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
+from markupsafe import Markup
+from pymongo import MongoClient, ReturnDocument
+import urllib
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+def _to_oid(v):
+    try:
+        return ObjectId(v) if v else None
+    except Exception:
+        return None
+
+
+# --- optional (markdown может отсутствовать)
+try:
+    import pandas as pd  # для экспортов/отчётов
+except Exception:
+    pd = None
+
+try:
+    import markdown  # pip install markdown
+except Exception:
+    markdown = None
+
+
+# --- helpers (каноничные)
+def oid(s):
+    """Безопасно преобразует строку в ObjectId или возвращает None."""
+    try:
+        return ObjectId(s) if s else None
+    except Exception:
+        return None
+
+
+def iso_now(dt=None):
+    """YYYY-MM-DDTHH:MM (локальное время)."""
+    return (dt or datetime.now()).strftime("%Y-%m-%dT%H:%M")
+
+
+def write_log(action, comment="", obj="", extra=None):
+    """Лёгкое журналирование действий пользователя."""
+    log = {
+        "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "user": session.get("user_name", "Гость"),
+        "role": session.get("user_role", ""),
+        "avatar_url": session.get("avatar_url", "/static/avatars/demo-user.png"),
+        "ip": request.remote_addr,
+        "action": action,
+        "object": obj,
+        "comment": comment,
+    }
+    if extra and isinstance(extra, dict):
+        log.update(extra)
+    db.logs.insert_one(log)
+
+
+# --- Flask app + конфиг из .env
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "dev")
+
+# --- JSON: всегда UTF-8 (без \uXXXX)
+app.config["JSON_AS_ASCII"] = False
+try:
+    # Flask ≥2.3
+    app.json.ensure_ascii = False
+except Exception:
+    pass
+
+# Авто-перезагрузка шаблонов и отключение cache статики в dev
+app.config.update(
+    TEMPLATES_AUTO_RELOAD=True,
+    SEND_FILE_MAX_AGE_DEFAULT=0,
+    JSON_AS_ASCII=False,  # ← добавь эту строку
+)
+
+# Mongo (через .env)
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME", "medplatforma")
+
+if not MONGO_URI:
+    raise RuntimeError("MONGO_URI is not set. Put it into .env")
+
+client = MongoClient(MONGO_URI)
+
+# Быстрая проверка соединения/авторизации
+try:
+    client.admin.command("ping")
+except Exception as e:
+    # Выведет понятное сообщение в консоль, если доступ не настроен
+    raise RuntimeError(f"MongoDB auth/connection failed: {e}")
+
+db = client[DB_NAME]
+
+# Регистрируем блюпринты
+from routes_schedule import bp as schedule_bp
+
+app.register_blueprint(schedule_bp, url_prefix="/schedule")
+
+# ВАЖНО: отдаём DB блюпринтам/роутам
+app.config["DB"] = db
+
+# --- финмодуль: импорт и регистрация блюпринта ---
+try:
+    # в routes_finance.py блюпринт называется bp
+    from routes_finance import bp as bp_finance
+
+    # url_prefix уже задан внутри файла: Blueprint("finance", ..., url_prefix="/finance")
+    app.register_blueprint(bp_finance)
+except Exception as e:
+    print(f"[WARN] routes_finance не подключён: {e}")
+
+
+def parse_iso(dt_str):
+    # FullCalendar шлет ISO, иногда без миллисекунд
+    # Пример: '2025-08-10T00:00:00Z' или '2025-08-10'
+    if not dt_str:
+        return None
+    try:
+        # варианты с 'Z'
+        if dt_str.endswith("Z"):
+            return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+        return datetime.fromisoformat(dt_str)
+    except Exception:
+        # последний шанс
+        return (
+            datetime.strptime(dt_str[:19], "%Y-%m-%dT%H:%M:%S")
+            if "T" in dt_str
+            else datetime.strptime(dt_str, "%Y-%m-%d")
+        )
+
+
+def to_dt(s):
+    """Parse various user date strings -> datetime | None.
+    Supports: 'YYYY-MM-DDTHH:MM', 'YYYY-MM-DD HH:MM', 'MM/DD/YYYY hh:mm AM/PM', 'DD.MM.YYYY HH:MM'.
+    If a datetime is passed, returns as is.
+    """
+    if isinstance(s, datetime):
+        return s
+    if not s:
+        return None
+    if isinstance(s, (int, float)):
+        try:
+            return datetime.fromtimestamp(s)
+        except Exception:
+            return None
+    ss = str(s).strip()
+    # normalize common separators
+    try_formats = [
+        "%Y-%m-%dT%H:%M",
+        "%Y-%m-%d %H:%M",
+        "%m/%d/%Y %I:%M %p",
+        "%d.%m.%Y %H:%M",
+    ]
+    for fmt in try_formats:
+        try:
+            if fmt == "%Y-%m-%dT%H:%M":
+                s2 = ss.replace(" ", "T")
+                return datetime.strptime(s2[:16], fmt)
+            return datetime.strptime(ss[:16] if "I" not in fmt else ss, fmt)
+        except Exception:
+            continue
+    return None
+
+
+def parse_local_dt(s: str) -> datetime | None:
+    """Принимает 'YYYY-MM-DDTHH:MM' или 'YYYY-MM-DD HH:MM', возвращает datetime (naive)."""
+    if not s:
+        return None
+    s = s.strip()
+    try:
+        if "T" in s:
+            return datetime.strptime(s[:16], "%Y-%m-%dT%H:%M")
+        return datetime.strptime(s[:16], "%Y-%m-%d %H:%M")
+    except Exception:
+        return None
+
+
+def add_minutes(dt: datetime, minutes: int) -> datetime:
+    return dt + timedelta(minutes=int(minutes or 0))
+
+
+def minutes_until(dt, now=None) -> int | None:
+    if not dt:
+        return None
+    now = now or datetime.now()
+    return int((dt - now).total_seconds() // 60)
+
+
+def calc_room_status_now(room_doc, now=None):
+    """'available' | 'occupied' | 'maintenance' на текущий момент."""
+    if room_doc.get("status") == "maintenance":
+        return "maintenance"
+    now = now or datetime.now()
+    busy_now = db.appointments.find_one(
+        {"room_id": room_doc["_id"], "start": {"$lte": now}, "end": {"$gt": now}}
+    )
+    return "occupied" if busy_now else "available"
+
+
+def get_next_event_for_room(room_id, now=None):
+    """Ближайший будущий приём по room_id (>= now) или None."""
+    now = now or datetime.now()
+    cur = (
+        db.appointments.find({"room_id": room_id, "start": {"$gte": now}}).sort("start", 1).limit(1)
+    )
+    for a in cur:
+        return a
+    return None
+
+
+def is_now_between(start_dt, end_dt, now=None) -> bool:
+    now = now or datetime.now()
+    return bool(start_dt and end_dt and start_dt <= now < end_dt)
+
+
+def fmt_hm(dt) -> str:
+    if not dt:
+        return ""
+    if isinstance(dt, str):
+        dt = to_dt(dt)
+    return dt.strftime("%H:%M") if dt else ""
+
+
+def to_minutes(t: str) -> int:
+    h, m = map(int, t.split(":"))
+    return h * 60 + m
+```

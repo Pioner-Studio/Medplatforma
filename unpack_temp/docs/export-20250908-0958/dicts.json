@@ -1,0 +1,309 @@
+﻿{
+    "doctors":  [
+                    {
+                        "id":  "68809b9ba3366315c9d55fb2",
+                        "name":  "Смирнов Павел"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fb3",
+                        "name":  "Иванова Анна"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fb4",
+                        "name":  "Кузнецов Дмитрий"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fb5",
+                        "name":  "Попова Мария"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fb6",
+                        "name":  "Волков Артём"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fb7",
+                        "name":  "Соколова Екатерина"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fb8",
+                        "name":  "Лебедев Сергей"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fb9",
+                        "name":  "Козлова Юлия"
+                    },
+                    {
+                        "id":  "68809b9ba3366315c9d55fba",
+                        "name":  "Новиков Андрей"
+                    },
+                    {
+                        "id":  "68809b9ca3366315c9d55fbb",
+                        "name":  "Федорова Елена"
+                    },
+                    {
+                        "id":  "689af8bd6f3856b8ed8d7752",
+                        "name":  "д-р Иван Соколов"
+                    },
+                    {
+                        "id":  "689af8bd6f3856b8ed8d7753",
+                        "name":  "д-р Мария Иванова"
+                    },
+                    {
+                        "id":  "689af8bd6f3856b8ed8d7754",
+                        "name":  "д-р Алексей Петров"
+                    },
+                    {
+                        "id":  "689af8be6f3856b8ed8d7755",
+                        "name":  "д-р Анна Волкова"
+                    },
+                    {
+                        "id":  "689af8be6f3856b8ed8d7756",
+                        "name":  "д-р Сергей Кузнецов"
+                    },
+                    {
+                        "id":  "689af8be6f3856b8ed8d7757",
+                        "name":  "д-р Ольга Смирнова"
+                    },
+                    {
+                        "id":  "689af8be6f3856b8ed8d7758",
+                        "name":  "д-р Дмитрий Орлов"
+                    },
+                    {
+                        "id":  "689af8be6f3856b8ed8d7759",
+                        "name":  "д-р Елена Фёдорова"
+                    },
+                    {
+                        "id":  "689af8be6f3856b8ed8d775a",
+                        "name":  "д-р Павел Егоров"
+                    },
+                    {
+                        "id":  "689af8be6f3856b8ed8d775b",
+                        "name":  "д-р София Никитина"
+                    }
+                ],
+    "ok":  true,
+    "patients":  [
+                     {
+                         "birthdate":  "1982-09-02",
+                         "id":  "68809b9ca3366315c9d55fbc",
+                         "name":  "Петров Иван"
+                     },
+                     {
+                         "birthdate":  "1982-10-01",
+                         "id":  "68809b9ca3366315c9d55fbd",
+                         "name":  "Сидорова Ольга"
+                     },
+                     {
+                         "birthdate":  "1989-05-17",
+                         "id":  "68809b9ca3366315c9d55fbe",
+                         "name":  "Михайлов Сергей"
+                     },
+                     {
+                         "birthdate":  "1981-08-26",
+                         "id":  "68809b9ca3366315c9d55fbf",
+                         "name":  "Егорова Татьяна"
+                     },
+                     {
+                         "birthdate":  "1985-08-22",
+                         "id":  "68809b9ca3366315c9d55fc0",
+                         "name":  "Орлов Дмитрий"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "68809b9ca3366315c9d55fc1",
+                         "name":  "Семенова Мария"
+                     },
+                     {
+                         "birthdate":  "1984-11-13",
+                         "id":  "68809b9ca3366315c9d55fc2",
+                         "name":  "Васильев Антон"
+                     },
+                     {
+                         "birthdate":  "1988-12-24",
+                         "id":  "68809b9ca3366315c9d55fc3",
+                         "name":  "Громова Наталья"
+                     },
+                     {
+                         "birthdate":  "1982-09-04",
+                         "id":  "68809b9da3366315c9d55fc4",
+                         "name":  "Зайцев Алексей"
+                     },
+                     {
+                         "birthdate":  "1987-08-20",
+                         "id":  "68809b9da3366315c9d55fc5",
+                         "name":  "Тихонова Ирина"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bc6f3856b8ed8d7748",
+                         "name":  "Иван Петров"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bc6f3856b8ed8d7749",
+                         "name":  "Мария Смирнова"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bc6f3856b8ed8d774a",
+                         "name":  "Алексей Иванов"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bc6f3856b8ed8d774b",
+                         "name":  "Анна Волкова"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bc6f3856b8ed8d774c",
+                         "name":  "Сергей Кузнецов"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bc6f3856b8ed8d774d",
+                         "name":  "Ольга Соколова"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bd6f3856b8ed8d774e",
+                         "name":  "Дмитрий Орлов"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bd6f3856b8ed8d774f",
+                         "name":  "Елена Фёдорова"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bd6f3856b8ed8d7750",
+                         "name":  "Павел Егоров"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "689af8bd6f3856b8ed8d7751",
+                         "name":  "Светлана Никитина"
+                     },
+                     {
+                         "birthdate":  "1983-07-27",
+                         "id":  "68adac53a43c9c676c8db53e",
+                         "name":  "Семёнова Мария"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "68b9aaac363309ebacb83483",
+                         "name":  "Турин"
+                     },
+                     {
+                         "birthdate":  "1980-03-14",
+                         "id":  "68ba8e590dfa10f08cab1aee",
+                         "name":  "Перов"
+                     },
+                     {
+                         "birthdate":  "2010-10-10",
+                         "id":  "68bb1559dc415bd43ce95d6d",
+                         "name":  "Дюк"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "68bc824056ceac5f3976395f",
+                         "name":  "Гармония"
+                     },
+                     {
+                         "birthdate":  null,
+                         "id":  "68bc834556ceac5f39763962",
+                         "name":  "Сидр"
+                     }
+                 ],
+    "rooms":  [
+                  {
+                      "id":  "68adac52a43c9c676c8db538",
+                      "name":  "Детский"
+                  },
+                  {
+                      "id":  "68adac52a43c9c676c8db539",
+                      "name":  "Ортопедия"
+                  },
+                  {
+                      "id":  "68adac52a43c9c676c8db53a",
+                      "name":  "Хирургия"
+                  },
+                  {
+                      "id":  "68adac52a43c9c676c8db53b",
+                      "name":  "Ортодонтия"
+                  },
+                  {
+                      "id":  "68adac52a43c9c676c8db53c",
+                      "name":  "Терапия"
+                  },
+                  {
+                      "id":  "68adac52a43c9c676c8db53d",
+                      "name":  "Кабинет 6 (кастомный)"
+                  },
+                  {
+                      "id":  "68ba9c54592d3c9ed281c810",
+                      "name":  "Кастомный"
+                  }
+              ],
+    "services":  [
+                     {
+                         "duration_min":  30,
+                         "id":  "68a8afd757294485fba4831f",
+                         "name":  "Приём терапевта",
+                         "price":  1500
+                     },
+                     {
+                         "duration_min":  30,
+                         "id":  "68aad158c4a73ffed350ac66",
+                         "name":  "Рентген зуба",
+                         "price":  1200
+                     },
+                     {
+                         "duration_min":  30,
+                         "id":  "68aad19fc4a73ffed350ac67",
+                         "name":  "Чистка зубов",
+                         "price":  2500
+                     },
+                     {
+                         "duration_min":  30,
+                         "id":  "68aad1e2c4a73ffed350ac68",
+                         "name":  "Удаление зуба",
+                         "price":  3500
+                     },
+                     {
+                         "duration_min":  30,
+                         "id":  "68aad21fc4a73ffed350ac69",
+                         "name":  "Осмотр терапевта",
+                         "price":  1500
+                     },
+                     {
+                         "duration_min":  15,
+                         "id":  "68adac53a43c9c676c8db53f",
+                         "name":  "Консультация",
+                         "price":  0
+                     },
+                     {
+                         "duration_min":  45,
+                         "id":  "68adb0c8a43c9c676c8db686",
+                         "name":  "Пломба",
+                         "price":  3500
+                     },
+                     {
+                         "duration_min":  60,
+                         "id":  "68adb0c8a43c9c676c8db687",
+                         "name":  "Лечение кариеса",
+                         "price":  5000
+                     },
+                     {
+                         "duration_min":  60,
+                         "id":  "68adb0c8a43c9c676c8db688",
+                         "name":  "Гигиена",
+                         "price":  4500
+                     },
+                     {
+                         "duration_min":  90,
+                         "id":  "68adb0c8a43c9c676c8db689",
+                         "name":  "Имплантация",
+                         "price":  65000
+                     }
+                 ]
+}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="data-tools-container">
+
+  <h2>Экспорт / Импорт данных</h2>
+  <div class="export-import-section">
+
+    <!-- Экспорт -->
+    <div class="export-block">
+      <h3>Экспорт</h3>
+      <form method="get" action="{{ url_for('export_data') }}">
+        <label>Что выгрузить:</label>
+        <select name="collection" class="filter-select">
+          <option value="patients">Пациенты</option>
+          <option value="doctors">Врачи</option>
+          <option value="events">События</option>
+          <option value="finance">Финансы</option>
+        </select>
+        <button type="submit" name="format" value="xlsx" class="btn btn-success">Excel</button>
+        <button type="submit" name="format" value="csv" class="btn btn-outline-primary">CSV</button>
+      </form>
+      <small>Файл будет полностью совместим с Google Таблицами и Excel. Структура данных — готова к повторному импорту.</small>
+    </div>
+
+    <!-- Импорт -->
+    <div class="import-block">
+      <h3>Импорт</h3>
+      <form method="post" action="{{ url_for('import_data') }}" enctype="multipart/form-data">
+        <label>Что загружать:</label>
+        <select name="collection" class="filter-select">
+          <option value="patients">Пациенты</option>
+          <option value="doctors">Врачи</option>
+          <option value="events">События</option>
+          <option value="finance">Финансы</option>
+        </select>
+        <input type="file" name="file" accept=".xlsx,.csv">
+        <button type="submit" class="btn btn-primary">Импортировать</button>
+        <a href="/static/templates/patients_template.xlsx" class="btn btn-link" download>Скачать шаблон Excel Пациенты</a>
+      </form>
+      <small>Структура файла: первая строка — названия столбцов (name, phone, email, ...). Все поля — в кодировке UTF-8.</small>
+    </div>
+  </div>
+
+  <!-- История загрузок/выгрузок -->
+  <div class="import-export-history">
+    <h4>История загрузок и выгрузок</h4>
+    <table class="table table-history">
+      <thead>
+        <tr>
+          <th>Дата/Время</th>
+          <th>Пользователь</th>
+          <th>Операция</th>
+          <th>Коллекция</th>
+          <th>Файл</th>
+          <th>Результат</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in history %}
+        <tr>
+          <td>{{ h.datetime }}</td>
+          <td>{{ h.user }}</td>
+          <td>{{ h.operation }}</td>
+          <td>{{ h.collection }}</td>
+          <td>{{ h.filename }}</td>
+          <td>{{ h.result }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align:center;color:#bbb;">Нет истории</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+<style>
+.data-tools-container { padding:30px 0 0 0; }
+.export-import-section { display: flex; gap: 46px; margin-bottom: 34px;}
+.export-block, .import-block { background: #fff; border-radius: 19px; box-shadow:0 2px 22px #e3eaf92a; padding:26px 30px; min-width:320px; }
+.table-history { margin-top:14px; }
+</style>
+{% endblock %}

@@ -1,0 +1,81 @@
+﻿{
+    "value":  [
+                  {
+                      "backgroundColor":  "#3498db",
+                      "borderColor":  "#3498db",
+                      "end":  "2025-09-07T10:00:00",
+                      "extendedProps":  {
+                                            "doctor":  "Смирнов Павел",
+                                            "doctor_id":  "68809b9ba3366315c9d55fb2",
+                                            "patient":  "Гармония",
+                                            "patient_id":  "68bc824056ceac5f3976395f",
+                                            "room":  "Детский",
+                                            "room_id":  "68adac52a43c9c676c8db538",
+                                            "service":  "Приём терапевта",
+                                            "service_id":  "68a8afd757294485fba4831f",
+                                            "status":  "Запланирована"
+                                        },
+                      "id":  "68bc824456ceac5f39763960",
+                      "start":  "2025-09-07T09:30:00",
+                      "title":  "Приём терапевта — Гармония"
+                  },
+                  {
+                      "backgroundColor":  "#3498db",
+                      "borderColor":  "#3498db",
+                      "end":  "2025-09-07T11:30:00",
+                      "extendedProps":  {
+                                            "doctor":  "Смирнов Павел",
+                                            "doctor_id":  "68809b9ba3366315c9d55fb2",
+                                            "patient":  "Петров Иван",
+                                            "patient_id":  "68809b9ca3366315c9d55fbc",
+                                            "room":  "Детский",
+                                            "room_id":  "68adac52a43c9c676c8db538",
+                                            "service":  "Приём терапевта",
+                                            "service_id":  "68a8afd757294485fba4831f",
+                                            "status":  "Запланирована"
+                                        },
+                      "id":  "68bc7a9a73ca68dfa3119db6",
+                      "start":  "2025-09-07T11:00:00",
+                      "title":  "Приём терапевта — Петров Иван"
+                  },
+                  {
+                      "backgroundColor":  "#3498db",
+                      "borderColor":  "#3498db",
+                      "end":  "2025-09-07T13:15:00",
+                      "extendedProps":  {
+                                            "doctor":  "Смирнов Павел",
+                                            "doctor_id":  "68809b9ba3366315c9d55fb2",
+                                            "patient":  "Петров Иван",
+                                            "patient_id":  "68809b9ca3366315c9d55fbc",
+                                            "room":  "Детский",
+                                            "room_id":  "68adac52a43c9c676c8db538",
+                                            "service":  "Приём терапевта",
+                                            "service_id":  "68a8afd757294485fba4831f",
+                                            "status":  "Запланирована"
+                                        },
+                      "id":  "68bc800e56ceac5f3976395d",
+                      "start":  "2025-09-07T12:45:00",
+                      "title":  "Приём терапевта — Петров Иван"
+                  },
+                  {
+                      "backgroundColor":  "#3498db",
+                      "borderColor":  "#3498db",
+                      "end":  "2025-09-07T14:15:00",
+                      "extendedProps":  {
+                                            "doctor":  "Смирнов Павел",
+                                            "doctor_id":  "68809b9ba3366315c9d55fb2",
+                                            "patient":  "Сидр",
+                                            "patient_id":  "68bc834556ceac5f39763962",
+                                            "room":  "Детский",
+                                            "room_id":  "68adac52a43c9c676c8db538",
+                                            "service":  "Приём терапевта",
+                                            "service_id":  "68a8afd757294485fba4831f",
+                                            "status":  "Запланирована"
+                                        },
+                      "id":  "68bc834f56ceac5f39763963",
+                      "start":  "2025-09-07T13:45:00",
+                      "title":  "Приём терапевта — Сидр"
+                  }
+              ],
+    "Count":  4
+}

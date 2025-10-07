@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if preview_data %}
+  <h3>Предпросмотр данных</h3>
+  <form method="post" action="{{ url_for('import_doctors_confirm') }}">
+    <input type="hidden" name="csv_data" value="{{ request.files['file'].stream.read().decode('utf-8-sig') | tojson }}">
+    <table border="1" cellpadding="3">
+      <tr>
+        <th>ФИО</th>
+        <th>Специализация</th>
+        <th>Телефон</th>
+        <th>Email</th>
+        <th>Статус</th>
+        <th>Ошибки</th>
+      </tr>
+      {% for item in preview_data %}
+        <tr {% if item.errors %} style="background:#ffb3b3"{% endif %}>
+          <td>{{ item.row.full_name }}</td>
+          <td>{{ item.row.specialization }}</td>
+          <td>{{ item.row.phone }}</td>
+          <td>{{ item.row.email }}</td>
+          <td>{{ item.row.status }}</td>
+          <td>
+            {% if item.errors %}
+              <span style="color:red">{{ item.errors|join(', ') }}</span>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% if show_confirm %}
+      <button type="submit">Подтвердить импорт</button>
+    {% endif %}
+  </form>
+{% endif %}
+<h2>Импорт врачей из Excel (CSV)</h2>
+<form method="post" enctype="multipart/form-data" style="margin:32px 0;">
+    <input type="file" name="file" accept=".csv" required>
+    <button class="btn btn-success" type="submit">Загрузить</button>
+</form>
+<div style="margin-top:18px;">
+    <b>Формат CSV (разделитель — точка с запятой):</b><br>
+    full_name;specialization;phone;email;status
+</div>
+{% endblock %}

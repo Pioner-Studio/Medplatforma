@@ -1,0 +1,14 @@
+# templates & js for FullCalendar
+templates\calendar.html
+static\js\*calendar*.js
+static\js\calendar*.js
+static\css\*calendar*.css
+
+# api routes touching calendar
+routes*\*calendar*.py
+routes*\*event*.py
+routes*\*schedule*.py
+main.py
+
+# optional exclusions (пример)
+!static\js\vendor\*
