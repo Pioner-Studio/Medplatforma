@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # чтобы можно было сравнить с предыдущим коммитом при push
+ 
 
       - name: Check out
         uses: actions/checkout@v4
@@ -22,11 +25,19 @@ jobs:
       - name: List changed files
         id: diff
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
-          echo "changed=$(cat changed_files.txt | tr '\n' ' ')" >> $GITHUB_OUTPUT
-          echo "Changed files:"
-          cat changed_files.txt || true
+          set -e
+          if [ -n "${{ github.base_ref }}" ]; then
+            echo "PR detected; base=${{ github.base_ref }}"
+            git fetch origin ${{ github.base_ref }} --depth=1
+            git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          else
+            echo "No PR detected; using HEAD~1 diff"
+            git fetch --depth=2
+            git diff --name-only HEAD~1 > changed_files.txt || true
+          fi
+          echo "changed=$(tr '\n' ' ' < changed_files.txt)" >> $GITHUB_OUTPUT
+          echo "Changed files:"; cat changed_files.txt || true
+   
 
       - name: Determine if code files changed
         id: code_changed
