@@ -1,48 +1,321 @@
-<header class="topbar">
-  <div class="topbar-center">
-  <div class="topbar-status">
-    <span class="topbar-task">
-      <i class="fa-solid fa-list-check"></i>
-      <b>3</b> открытые задачи
-    </span>
-    <span class="topbar-rating">
-      <i class="fa-solid fa-star" style="color:#f7ba07"></i>
-      4.9
-    </span>
-    <span class="topbar-online">
-      <i class="fa-solid fa-user-group"></i>
-      <b>5</b> пациентов в клинике
-    </span>
-    <span class="topbar-news">
-      <i class="fa-solid fa-bullhorn"></i>
-      <b>Новое:</b> Завтра рабочий день до 17:00
-    </span>
+  {% set user = session.get('user', {}) %}
+  {% set role = session.get('role', 'user') %}
+  {% set full_name = user.get('full_name', 'Пользователь') %}
+  {% set avatar = user.get('avatar', 'default.jpg') %}
+
+  <header class="topbar"></header>
+
+  <div class="topbar-left">
+    <img
+      src="{{ url_for('static', filename='logo_test123.png') }}"
+      alt="ClubStom"
+      style="height: 36px; margin-right: 12px"
+    />
+    <div>
+      <div style="font-weight: 700; color: #1e40af; font-size: 1.1em">
+        Клиника CLUBSTOM
+      </div>
+      <div style="font-size: 0.9em; color: #64748b">
+        Стоматологическая клиника
+      </div>
+    </div>
   </div>
-</div>
-  <div class="topbar-right">
-    <!-- Колокольчик -->
-    <button class="topbar-icon-btn" id="notifBellBtn">
-      <i class="fa-regular fa-bell"></i>
-      <span class="notif-badge" id="notifBadge" style="display:inline;">3</span>
-    </button>
 
-    <!-- Переключатель темы -->
-    <button id="themeToggleBtn" class="topbar-icon-btn">
-      <i class="fa-solid fa-sun theme-sun" style="color: #ffd700;"></i>
-      <i class="fa-solid fa-moon theme-moon" style="display:none; color:#4667b9;"></i>
-    </button>
+  <div class="topbar-center">
+    <div
+      style="display: flex; gap: 24px; align-items: center; font-size: 0.95em"
+    >
+      <div style="text-align: center">
+        <div style="font-weight: 600; color: #1e40af">
+          {{ metrics.total_rooms or 6 }}
+        </div>
+        <div style="color: #64748b">кабинетов</div>
+      </div>
+      <div style="text-align: center">
+        <div style="font-weight: 600; color: #059669">
+          {{ metrics.free_rooms or 6 }}
+        </div>
+        <div style="color: #64748b">свободно</div>
+      </div>
+      <div style="text-align: center">
+        <div style="font-weight: 600; color: #2563eb">Сегодня</div>
+        <div style="color: #64748b">рабочий день</div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Профиль + меню -->
-    <div class="profile-block" onclick="toggleProfileMenu()" tabindex="0" style="margin-left:20px; position:relative;">
-      <img src="{{ url_for('static', filename='investor_avatar.png') }}" alt="Профиль" class="profile-avatar">
-      <span class="profile-name">{{ session.get('user_name', 'Инвестор Инвесторович') }}</span>
-      <i class="fa fa-chevron-down" style="margin-left:7px; font-size:0.9em; color:#bbb"></i>
-      <div class="profile-menu" id="profileMenu" tabindex="0">
-  <a href="{{ url_for('profile') }}"><i class="fa fa-user"></i> Личный кабинет</a>
-  <a href="#"><i class="fa fa-cog"></i> Настройки</a>
-  <a href="#"><i class="fa fa-question-circle"></i> Помощь</a>
-  <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out-alt"></i> Выйти</a>
-</div>
+  <div
+    class="topbar-right"
+    style="display: flex; align-items: center; gap: 16px"
+  >
+    <!-- Компактные счетчики -->
+    <div style="display: flex; gap: 12px">
+      <!-- Записи -->
+      <a href="/calendar" style="text-decoration: none">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: #eff6ff;
+            border-radius: 6px;
+            cursor: pointer;
+          "
+        >
+          <i
+            class="fa fa-calendar-check"
+            style="color: #2563eb; font-size: 1.1em"
+          ></i>
+          <span
+            style="font-weight: 600; color: #1e40af; font-size: 1.1em"
+            id="todayAppointmentsCount"
+            >0</span
+          >
+          <span style="font-size: 0.85em; color: #64748b">записей</span>
+        </div>
+      </a>
+
+      <!-- Долги -->
+      <a href="/finance/debtors" style="text-decoration: none">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: #fef2f2;
+            border-radius: 6px;
+            cursor: pointer;
+          "
+        >
+          <i
+            class="fa fa-exclamation-circle"
+            style="color: #dc2626; font-size: 1.1em"
+          ></i>
+          <span
+            style="font-weight: 600; color: #dc2626; font-size: 1.1em"
+            id="debtorsCount"
+            >0</span
+          >
+          <span style="font-size: 0.85em; color: #64748b">долгов</span>
+        </div>
+      </a>
+    </div>
+    <!-- ДОБАВИТЬ СЮДА: Планы на согласовании (только для главврача) -->
+    {% if user_role == 'chief_doctor' %}
+    <a href="/chief/pending-plans" style="text-decoration: none">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          background: #fef3c7;
+          border-radius: 6px;
+          cursor: pointer;
+        "
+      >
+        <i
+          class="bi bi-clipboard2-pulse"
+          style="color: #d97706; font-size: 1.1em"
+        ></i>
+        <span
+          style="font-weight: 600; color: #d97706; font-size: 1.1em"
+          id="pendingPlansCount"
+          >0</span
+        >
+        <span style="font-size: 0.85em; color: #64748b">планов</span>
+      </div>
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Планы врача (для врачей и главврача) -->
+  {% if user_role in ['doctor', 'chief_doctor'] %}
+  <a href="/doctor/my-plans" style="text-decoration: none">
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: #f0f9ff;
+        border-radius: 6px;
+        cursor: pointer;
+      "
+    >
+      <i
+        class="bi bi-clipboard-check"
+        style="color: #0284c7; font-size: 1.1em"
+      ></i>
+      <span
+        style="font-weight: 600; color: #0284c7; font-size: 1.1em"
+        id="doctorPlansCount"
+        >0</span
+      >
+      <span style="font-size: 0.85em; color: #64748b">моих планов</span>
+    </div>
+  </a>
+  {% endif %}
+
+  <!-- Quick Add кнопка -->
+  <div class="dropdown" style="margin-right: 12px">
+    <button
+      class="btn btn-success rounded-circle d-flex align-items-center justify-content-center"
+      data-bs-toggle="dropdown"
+      style="width: 42px; height: 42px; padding: 0"
+    >
+      <i class="fa fa-plus fs-5"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li>
+        <a class="dropdown-item" href="/add_event">
+          <i class="fa fa-calendar-plus text-primary"></i> Новый приём
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="/add_patient">
+          <i class="fa fa-user-plus text-success"></i> Новый пациент
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="/finance/add">
+          <i class="fa fa-money-bill text-info"></i> Платёж
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Профиль -->
+  <div
+    class="profile-block"
+    onclick="toggleProfileMenu()"
+    style="position: relative; cursor: pointer"
+  >
+    {% set user = session.get('user', {}) %} {% set avatar = user.get('avatar',
+    'default.jpg') %} {% set full_name = user.get('full_name', 'Пользователь')
+    %} {% set role = user_role or 'user' %}
+
+    <img
+      src="{{ url_for('static', filename='avatars/' + avatar) }}"
+      alt="{{ full_name }}"
+      class="profile-avatar"
+      style="
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+      "
+      onerror="this.src='{{ url_for('static', filename='investor_avatar.png') }}'"
+    />
+    <div style="display: flex; flex-direction: column">
+      <span style="font-weight: 600; font-size: 0.95em">{{ full_name }}</span>
+      <span style="font-size: 0.75em; color: #94a3b8">
+        {% if role == 'admin' %}Администратор {% elif role == 'doctor' %}Врач {%
+        elif role == 'registrar' %}Регистратор {% else %}Пользователь{% endif %}
+      </span>
+    </div>
+    <i
+      class="fa fa-chevron-down"
+      style="margin-left: 8px; font-size: 0.85em; color: #94a3b8"
+    ></i>
+
+    <div class="profile-menu" id="profileMenu" style="display: none">
+      <a href="{{ url_for('profile') }}">
+        <i class="fa fa-user"></i> Личный кабинет
+      </a>
+      <a href="/settings"> <i class="fa fa-cog"></i> Настройки </a>
+      <hr style="margin: 8px 0; border: none; border-top: 1px solid #e2e8f0" />
+
+      <div style="padding: 8px 12px">
+        <small style="color: #94a3b8; font-weight: 600"
+          >СМЕНИТЬ ПОЛЬЗОВАТЕЛЯ</small
+        >
+      </div>
+
+      {% for u in (all_users or []) %}
+      <a
+        href="/switch-user/{{ u._id }}"
+        style="display: flex; align-items: center; gap: 10px; padding: 8px 12px"
+      >
+        <img
+          src="{{ url_for('static', filename='avatars/' + u.get('avatar', 'default.jpg')) }}"
+          style="
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+          "
+          onerror="this.src='{{ url_for('static', filename='investor_avatar.png') }}'"
+        />
+        <div style="flex: 1">
+          <div style="font-weight: 600; font-size: 0.9em">
+            {{ u.full_name }}
+          </div>
+          <small style="color: #94a3b8">
+            {% if u.role == 'admin' %}Администратор{% elif u.role == 'doctor'
+            %}Врач{% else %}Регистратор{% endif %}
+          </small>
+        </div>
+        {% if u._id|string == session.get('user_id') %}
+        <i class="fa fa-check text-success"></i>
+        {% endif %}
+      </a>
+      {% endfor %}
+
+      <hr style="margin: 8px 0; border: none; border-top: 1px solid #e2e8f0" />
+      <a href="{{ url_for('auth.logout') }}" style="color: #dc2626">
+        <i class="fa fa-sign-out-alt"></i> Выйти
+      </a>
     </div>
   </div>
 </header>
+
+<script>
+  // Загрузка счетчиков при загрузке страницы
+  document.addEventListener("DOMContentLoaded", function () {
+    loadTopbarCounters();
+    // Обновляем каждую минуту
+    setInterval(loadTopbarCounters, 60000);
+  });
+
+  function loadTopbarCounters() {
+    // Записи сегодня
+    fetch("/api/dashboard/today-appointments")
+      .then((res) => res.json())
+      .then((data) => {
+        const el = document.getElementById("todayAppointmentsCount");
+        if (el) el.textContent = data.count || 0;
+      })
+      .catch((err) => console.log("Error loading today appointments:", err));
+
+    // Должники
+    fetch("/api/dashboard/debtors")
+      .then((res) => res.json())
+      .then((data) => {
+        const el = document.getElementById("debtorsCount");
+        if (el) el.textContent = data.count || 0;
+      })
+      .catch((err) => console.log("Error loading debtors:", err));
+
+    // ДОБАВИТЬ: Планы на согласовании
+    fetch("/api/dashboard/pending-plans")
+      .then((res) => res.json())
+      .then((data) => {
+        const el = document.getElementById("pendingPlansCount");
+        if (el) el.textContent = data.count || 0;
+      })
+      .catch((err) => console.log("Error loading pending plans:", err));
+  }
+
+  // Планы врача
+  fetch("/api/dashboard/doctor-plans")
+    .then((res) => res.json())
+    .then((data) => {
+      const el = document.getElementById("doctorPlansCount");
+      if (el) el.textContent = data.total || 0;
+    })
+    .catch((err) => console.log("Error loading doctor plans:", err));
+</script>
